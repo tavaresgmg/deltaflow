@@ -31,10 +31,13 @@ const required = [
   "plugins/cairn/scripts/cairn-boundary.mjs",
   "plugins/cairn/scripts/cairn-guard.mjs",
   "plugins/cairn/scripts/cairn-analyze.mjs",
+  "plugins/cairn/scripts/cairn-version.mjs",
+  "plugins/cairn/agents/cairn-researcher.md",
   "plugins/cairn/skills/cairn/SKILL.md",
   "plugins/cairn/skills/cairn/references/modes.md",
   "plugins/cairn/skills/cairn/references/artifacts.md",
   "plugins/cairn/skills/cairn/references/memory.md",
+  "plugins/cairn/skills/cairn/references/research.md",
   "plugins/cairn/skills/cairn/references/workspace.md",
   "plugins/cairn/skills/cairn/references/gates.md",
   "plugins/cairn/skills/cairn/references/framework-lessons.md",
@@ -161,6 +164,25 @@ if (!missing.length) {
   const outside = runGuard({ tool_name: "Edit", tool_input: { file_path: "/tmp/cairn-outside.txt" }, cwd: root });
   if (inside !== 0) fail(`cairn-guard.mjs blocked an in-repo write (exit ${inside})`);
   if (outside !== 2) fail(`cairn-guard.mjs did not block an out-of-repo write (exit ${outside})`);
+
+  // Version resolver smoke test: must emit valid JSON with a found[] array.
+  try {
+    const out = execSync("node plugins/cairn/scripts/cairn-version.mjs nonexistent-pkg", {
+      cwd: root,
+      stdio: ["ignore", "pipe", "ignore"],
+    }).toString();
+    const v = JSON.parse(out);
+    if (!Array.isArray(v.found)) fail("cairn-version.mjs did not emit a found[] array");
+  } catch (e) {
+    fail(`cairn-version.mjs failed to run: ${e.message}`);
+  }
+
+  // Researcher agent frontmatter.
+  const agent = read("plugins/cairn/agents/cairn-researcher.md");
+  const agentFm = agent.match(/^---\n([\s\S]*?)\n---/);
+  if (!agentFm || !/^name:\s*cairn-researcher\s*$/m.test(agentFm[1])) {
+    fail("cairn-researcher.md missing name: cairn-researcher in frontmatter");
+  }
 }
 
 if (errors.length) {

@@ -49,6 +49,7 @@ Read these references only when needed:
 
 - `references/modes.md` for detailed mode selection and workflow steps.
 - `references/artifacts.md` for artifact templates and retention rules.
+- `references/research.md` for the brainstorm / web-research / docs-grounding stages.
 - `references/memory.md` for the `.cairn/` state layout and the resume protocol.
 - `references/workspace.md` for the umbrella model and boundary detection.
 - `references/gates.md` for what is deterministically enforced vs advisory, and reconciliation.
@@ -58,11 +59,13 @@ Read these references only when needed:
 
 - Brownfield first: inspect the current system before proposing architecture.
 - Evidence first: do not invent IDs, dates, owners, card facts, API behavior, or runtime status.
-- Research first when external truth can change the plan.
+- Research first when external truth can change the plan. Brainstorm, web research, and
+  official-docs grounding are first-class but intent-gated (see `references/research.md`):
+  skip them on small clear work; ground new libs on the lockfile version, not the newest.
+- Use subagents only for isolated research or adversarial review — never to parallelize coding.
 - Ask only when a wrong assumption changes path, risk, owner, cost, public effect, or outcome.
 - Do not create PRD/spec/plan artifacts for small direct work.
 - Do not implement before discovery when the request is vague and the wrong thing could be built.
-- Do not use subagents by default. Use them only for independent research, review, or disjoint implementation slices.
 - Do not impose TDD universally. Use tests proportional to risk and local patterns.
 - Resume from state: on existing `.cairn/changes/<slug>/` work, read `tasks.md` and the
   `decision-log.md` tail before acting; tick `tasks.md` incrementally, not at the end.
