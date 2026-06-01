@@ -1,21 +1,27 @@
 ---
 name: cairn
-description: "Routes brownfield software work to the lightest safe workflow that still protects correctness. ALWAYS invoke when the user wants to build, change, fix, refactor, plan, investigate, spec, or implement in an existing repo, or starts from a card, issue, ticket, link, screenshot, bug report, or rough idea (pt-BR — implementar, criar, corrigir, refatorar, ajustar, planejar, investigar, analisar; card, bug, tarefa). Do not start coding, planning, or speccing brownfield work directly without routing through Cairn first. Skip only for pure Q&A with no repo work, one-off shell commands, or tasks owned by a more specific active skill."
+description: "Routes software development work in or around a repo/workspace to the lightest safe workflow that still protects correctness. ALWAYS invoke for build, change, fix, refactor, plan, investigate, research, cleanup, reduce complexity, align with repo patterns, spec, implement, greenfield-in-repo work, or any card/issue/ticket/link/screenshot/bug/rough idea (pt-BR: implementar, criar, corrigir, refatorar, ajustar, planejar, pesquisar, investigar, limpar, reduzir complexidade, analisar). Skip pure Q&A, one-off shell commands, or tasks owned by a more specific active skill."
 when_to_use: |
-  Fire when the user says (en): build/change/fix/refactor/plan/investigate this;
+  Fire when the user says (en): build/change/fix/refactor/plan/research/investigate this;
   implement this card/issue/ticket; here's a bug/link/screenshot; brainstorm before
-  coding; write a spec for an existing system; work this repo.
+  coding; write a spec; clean this up; reduce complexity; align this with repo patterns;
+  create a new module/tool/feature in this repo; work this repo/workspace.
   (pt-BR): "implementa/cria/corrige/refatora/ajusta isso"; "esse card/bug/ticket";
-  "investiga/analisa esse problema"; "planeja antes de codar"; "cria spec pra esse
-  sistema"; "trabalha nesse repo".
+  "investiga/analisa esse problema"; "pesquisa"; "planeja antes de codar"; "cria spec";
+  "limpa/reduz complexidade"; "alinha com o padrao do repo"; "trabalha nesse repo".
   Do NOT fire for: pure Q&A with no repo work, one-off shell commands, or work owned
   by a more specific active skill.
 ---
 
 # Cairn
 
-Cairn routes brownfield work to the lightest workflow that still protects
-correctness. It is not a spec ceremony. It is a decision loop.
+Cairn routes software development work to the lightest workflow that still protects
+correctness. It is not card-only and it is not a spec ceremony. It is a decision loop.
+
+Brownfield is the default posture whenever a repo exists: inspect the current system,
+reuse patterns, and fit changes into the owner boundary. Greenfield work is supported
+when it is development work in or for a repo/workspace, but it starts in `discovery` or
+`tracked-change` when the wrong scaffold would be costly.
 
 A SessionStart bootstrap routes work here before you respond — you do not need to
 be invoked by name. Manual override: invoke the `cairn` skill / `/cairn`.
@@ -34,14 +40,16 @@ be invoked by name. Manual override: invoke the `cairn` skill / `/cairn`.
 
 | Mode | Use when | Artifact |
 | --- | --- | --- |
-| `direct` | small clear reversible change | none unless useful |
+| `direct` | small clear reversible change with obvious target; not broad greenfield/scaffold | none unless useful |
 | `diagnose` | concrete failure, bug, flake, slowness | repro notes and proof |
-| `discovery` | ambiguous idea, product/domain/architecture uncertainty | brief or decision note |
+| `discovery` | ambiguous idea, research, greenfield/scaffold, product/domain/architecture uncertainty | brief or decision note |
 | `delta-spec` | medium brownfield behavior change | brief, delta, plan, proof |
 | `tracked-change` | multi-phase, high-risk, cross-boundary, customer-visible | durable change folder |
 
 If unsure between two modes, choose the lower ceremony mode unless auth, data,
 money, production, public/customer impact, or multi-repo coordination is involved.
+When the user explicitly asks to plan before coding, or asks for a new module/tool/feature
+from scratch with unclear boundaries, choose `discovery` or `delta-spec`, not `direct`.
 
 ## Mode Details
 
@@ -58,6 +66,9 @@ Read these references only when needed:
 ## Required Behavior
 
 - Brownfield first: inspect the current system before proposing architecture.
+- Not card-only: route rough ideas, no-card tasks, greenfield-in-repo, research, cleanup,
+  simplification, implementation, SDD/spec work, and repo-pattern alignment through the same
+  proportional mode ladder.
 - Evidence first: do not invent IDs, dates, owners, card facts, API behavior, or runtime status.
 - Research first when external truth can change the plan. Brainstorm, web research, and
   official-docs grounding are first-class but intent-gated (see `references/research.md`):

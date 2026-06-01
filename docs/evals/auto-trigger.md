@@ -27,6 +27,17 @@ neutral fixture repo and measures honest, defensible signals (stdout+stderr merg
 `docs/evals/results/<label>.jsonl`. For a clean signal, competing custom skills were archived
 off the harnesses before the run.
 
+Use `subset=realistic` for the routing-focused fixture. It writes cards, code, and tests into
+the temp repo so prompts can point at real brownfield context:
+
+```bash
+node scripts/eval-autotrigger.mjs realistic cairn-realistic-<model> <model>
+```
+
+Eval result files are written atomically through a temp file and promoted only after the
+summary row is written. Fixtures are isolated per process/label so subsets can run in
+parallel without sharing `/tmp` state.
+
 ## Protocol
 
 1. Install the plugin on the target harness (Codex first, then Claude Code).
@@ -100,3 +111,16 @@ executed.
     no mode, no routing, no output shape. Confirms Cairn's value is discipline/predictability,
     not raw capability.
   - Still pending: realistic-fixture routing run; same suite on Claude Code; ≥2 models.
+
+- **2026-06-01 — Codex v0.136.0, default model — realistic routing subset (7).**
+  `docs/evals/results/cairn-realistic-codex-0.136-default.jsonl`.
+  - **Trigger: 7/7 must-fire fired (100%).**
+  - **Routing: 7/7 expected mode (100%).** Covered card feature, tax bug, auth refactor,
+    ORM migration planning, failing test diagnosis, simple greenfield-in-repo, and high-risk
+    greenfield billing subsystem.
+  - **Collision: 0 competing analyze collisions.**
+
+- **2026-06-01 — Codex v0.136.0, default model — must-not-fire after scope expansion (6).**
+  `docs/evals/results/cairn-nofire-after-scope-codex-0.136-default.jsonl`.
+  - **Misfire: 0/6 (0%).** Scope expansion to no-card/greenfield/research/cleanup did not
+    trigger on pure Q&A or one-off shell prompts in this subset.

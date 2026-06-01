@@ -1,8 +1,10 @@
 # MVP Architecture
 
-Cairn is a brownfield workflow **router** — autonomous, memory- and workspace-aware —
-that picks the lightest workflow that still protects correctness. It targets OpenAI
-Codex and Claude Code from one portable source.
+Cairn is a development workflow **router** — autonomous, memory- and workspace-aware —
+that picks the lightest workflow that still protects correctness. It is brownfield-first
+when a repo exists, but it is not card-only: no-card tasks, research, greenfield-in-repo,
+cleanup, SDD-style deltas, and repo-pattern alignment all route through the same mode
+ladder. It targets OpenAI Codex and Claude Code from one portable source.
 
 Decisions live in `docs/decisions/` (ADRs); the evidence behind them is in
 `docs/research/{frameworks,context-and-portability}.md`.
@@ -81,6 +83,8 @@ AGENTS.md                      # how to work (portable, imported into CLAUDE.md)
   plan.md
   tasks.md                     # [ ]/[x] checkboxes, updated live for resume
   proof.md
+.cairn/codebase/<area>.md      # optional scoped map for non-obvious repo knowledge
+.cairn/specs/<capability>.md   # optional living truth for durable behavior
 .cairn/decision-log.md         # append-only, written DURING the work
 ```
 

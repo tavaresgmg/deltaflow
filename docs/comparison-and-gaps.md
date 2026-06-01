@@ -13,8 +13,11 @@ next — by activation, modes/workflows, artifacts, deterministic automation, me
 | 5 modes (direct→tracked-change) | `references/modes.md` | routing measured by eval harness |
 | Artifact templates | `references/artifacts.md` | brainstorm/brief/delta/plan/tasks/proof/decision-log |
 | File-based memory + resume | `references/memory.md`, `.cairn/changes/<slug>/` | versioned, read-first/write-incremental |
+| Scoped codebase maps | `references/artifacts.md`, `references/memory.md` | optional, area-based, P0 primitive |
+| Living spec/archive lifecycle | `references/artifacts.md`, `references/gates.md` | guidance implemented; semantic sync pending |
 | Umbrella workspace + boundary guard | `scripts/cairn-boundary.mjs`, `cairn-guard.mjs` | deterministic, PreToolUse-enforced |
-| Consistency check | `scripts/cairn-analyze.mjs` | change-folder internal drift |
+| Consistency check | `scripts/cairn-analyze.mjs` | severity-bearing artifact/lifecycle/semantic-claim drift |
+| Next-step reporter | `scripts/cairn-next.mjs` | read-only change-folder state |
 | Research stages | `cairn-version.mjs`, `agents/cairn-researcher.md`, `references/research.md` | lockfile grounding, isolated subagent |
 | Dual-harness from one source | `build-manifests.mjs`, both marketplaces | install verified on Codex |
 
@@ -25,11 +28,11 @@ next — by activation, modes/workflows, artifacts, deterministic automation, me
 | Activation | description (native) | slash-first | none (manual) | **SessionStart hook** | hook + directive description ✓ |
 | Modes | quick-vs-full by intent | propose/explore | 8-cmd chain | brainstorm→implement | 5 modes, intent-gated ✓ |
 | Brownfield delta | addendum | **ADDED/MODIFIED/REMOVED** | greenfield-first | afterthought | delta.md (has the verbs) ~ |
-| Living truth (spec) | prd.md | **specs/ vs changes/** | specs/<feat> | none | **gap — no living specs/** |
-| Archive lifecycle | status frontmatter | **propose→apply→archive** | — | none | **gap — only mentioned** |
-| Consistency gate | — | — | **/analyze 6 passes** | — | partial (folder only) |
-| Verification gate | checkpoint | deps done | checklist | **Iron Law** | advisory only |
-| Codebase mapping | document-project | — | — | — | **gap — Observe is ephemeral** |
+| Living truth (spec) | prd.md | **specs/ vs changes/** | specs/<feat> | none | optional `.cairn/specs/`; semantic sync pending |
+| Archive lifecycle | status frontmatter | **propose→apply→archive** | — | none | guidance + analyzer warning; helper pending |
+| Consistency gate | — | — | **/analyze 6 passes** | — | structured artifact/lifecycle/semantic-claim analysis |
+| Verification gate | checkpoint | deps done | checklist | **Iron Law** | advisory except boundary/analyze scripts |
+| Codebase mapping | document-project | — | — | — | optional scoped codebase maps |
 | Determinism | Python (hot path) | CLI state machine | scripts | one bash hook | scripts + hooks ✓ |
 | Memory | .decision-log | filesystem-as-state | constitution | TodoWrite (ephemeral) | .cairn/ versioned ✓ |
 | Multi-repo | refuses nesting | one-instance | `.specify` over git | — | **umbrella (unique)** ✓ |
@@ -38,17 +41,12 @@ next — by activation, modes/workflows, artifacts, deterministic automation, me
 
 ### P0 — high value, fills a real hole
 
-1. **Codebase map for brownfield** (from GSD `map-codebase` / BMAD `document-project`). Today
-   `Observe` re-derives the repo every session and persists nothing. Add an on-demand,
-   scoped `codebase-map` artifact (`.cairn/codebase/<area>.md`: entry points, owners, the
-   non-obvious rules) — written once, reused, never mandatory. Highest brownfield leverage.
-2. **Living spec + archive lifecycle** (from OpenSpec). `delta.md` is the *proposal*; there is
-   no *current truth* after it lands. Add: on close, either sync the delta into a durable
-   `.cairn/specs/<capability>.md` or archive to `.cairn/changes/archive/<date>-<slug>/`.
-   Keep it optional/light — if the repo already uses OpenSpec, delegate to it.
-3. **`/analyze` real consistency** (from Spec Kit). Extend `cairn-analyze.mjs` beyond the
-   folder: cheap read-only passes for spec↔code drift (delta claims a behavior the code/tests
-   don't show, or vice versa), with severity levels. Read-only, never auto-remediates.
+1. **Broader eval matrix.** Realistic routing is proven on one Codex default model, but Phase 1
+   still needs >=2 models per harness and Claude Code parity.
+2. **Spec↔code semantic analysis v1.** `cairn-analyze.mjs` now checks explicit `Semantic Claims`;
+   the next level is cheap extraction/coverage between delta/spec claims and code/tests.
+3. **Archive/retention helper.** Lifecycle guidance exists. Add a read-only reporter or small
+   helper only after real changes show repeated stale-folder cleanup.
 
 ### P1 — sharpens correctness & quality
 

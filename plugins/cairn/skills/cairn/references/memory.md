@@ -22,6 +22,8 @@ each file are in `artifacts.md`.
 
 ```text
 .cairn/
+  codebase/<area>.md     # optional non-obvious repo map; scoped and revalidated
+  specs/<capability>.md  # optional living truth for durable behavior
   changes/<slug>/
     brainstorm.md          # tracked-change / when stakes warrant design-before-code
     research/<topic>.md     # distilled, reusable research summary (committed = memory)
@@ -30,11 +32,22 @@ each file are in `artifacts.md`.
     plan.md                 # phases, files/owners, proof, rollback
     tasks.md                # [ ] / [x] checkboxes, updated live
     proof.md                # commands + results
+  changes/archive/<date-slug>/
+                            # retained completed changes, not active work
   decision-log.md           # append-only, one line per decision, written DURING the work
 ```
 
 `.cairn/` is committed — research summaries and decisions are reusable memory. The umbrella
 workspace's ephemeral `.work/` layer (Phase 3) is separate and gitignored.
+
+## Codebase maps
+
+Use `.cairn/codebase/<area>.md` when repeated observations are expensive or error-prone:
+entry points, boundaries, non-obvious commands, data/control/auth edges, and proof commands.
+
+Do not make maps mandatory. Do not turn them into stale architecture essays. Before relying on
+a map, verify facts that can drift: generated clients, routes, schemas, env vars, owners,
+deploy/runtime state, and versions.
 
 ## Resume protocol
 
@@ -57,5 +70,7 @@ It records *why*, not *what happened*. No narrative logs — code, tests, and sp
 ## Hygiene
 
 Retention rules live in `artifacts.md`: keep specs that describe durable behavior; archive or
-delete transient plans after completion; never leave stale clutter. Memory is a hint, not
-authority — revalidate drift-prone external facts before acting on a recalled summary.
+delete transient plans after completion; never leave stale clutter. Completed `delta-spec` and
+`tracked-change` work must end with an explicit choice: sync to living spec, delegate to the
+repo's existing spec system, archive, or delete. Memory is a hint, not authority — revalidate
+drift-prone external facts before acting on a recalled summary.

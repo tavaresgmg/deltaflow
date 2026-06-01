@@ -2,6 +2,8 @@
 
 Decisions: `docs/decisions/`. Evidence: `docs/research/`.
 
+Scope: `docs/scope-and-workflows.md`.
+
 ## Phase 0: Seed + research + decisions — DONE
 
 - Repo and plugin scaffold; rename to Cairn; MIT license; public-repo hygiene.
@@ -43,9 +45,13 @@ Exit: the skill auto-fires on >=90% of must-fire prompts and routes to the right
 
 ## Phase 2: File-based layered memory (ADR-0004)
 
-- `.cairn/changes/<slug>/` templates (brainstorm, research, delta, plan, tasks, proof).
-- `.cairn/decision-log.md` append-only convention (write during the work).
-- `tasks.md` checkbox resume protocol; read-state-first / write-progress-last.
+- [x] `.cairn/changes/<slug>/` templates (brainstorm, research, delta, plan, tasks, proof).
+- [x] `.cairn/codebase/<area>.md` optional scoped maps for repeated brownfield observation.
+- [x] `.cairn/specs/<capability>.md` optional living truth guidance for durable behavior.
+- [x] `.cairn/decision-log.md` append-only convention (write during the work).
+- [x] `tasks.md` checkbox resume protocol; read-state-first / write-progress-last.
+- [x] `cairn-next.mjs` read-only next-step reporter over a change folder.
+- [ ] Worked examples proving that maps reduce repeated observe cost without becoming stale docs.
 
 Exit: medium changes persist intent and resume across sessions without ceremony for small fixes.
 
@@ -61,8 +67,14 @@ Exit: a task spanning 2+ repos in one workspace is coordinated without touching 
 
 - Correctness gates via PreToolUse hook (Claude) / command hook `exit 2` (Codex): no skipping
   brainstorm, fresh proof before `done`, boundary enforcement.
-- Spec<->code reconciliation step (close the OpenSpec drift gap ourselves).
-- Spec Kit-style cheap read-only `/analyze` consistency check.
+- [x] Spec<->code reconciliation closeout guidance: sync living spec, delegate to OpenSpec,
+  archive, or delete transient planning.
+- [x] Spec Kit-style cheap read-only `/analyze` consistency check with severity-bearing
+  findings and `--all` active-change scanning.
+- [x] Semantic-claim v0 analysis: explicit `## Semantic Claims` must name code/proof and
+  existing code refs.
+- [ ] Real spec<->code semantic extraction beyond explicit claims.
+- [ ] Live hook proof per harness.
 
 Exit: the gates that matter are deterministic, not advisory, with parity across harnesses.
 
@@ -80,4 +92,6 @@ Exit: brainstorm + research + docs improve quality without recreating ceremony o
 - [x] Prompt eval fixture (`docs/evals/auto-trigger.md`) with a first logged Codex run.
 - [x] Release checklist (`docs/release-checklist.md`).
 - [ ] Worked examples on a real brownfield card.
+- [x] Realistic routing fixture subset with cards + code + tests on Codex v0.136.0 default.
+- [ ] Same realistic routing subset on >=2 models and Claude Code.
 - [ ] Publish patterns only after real brownfield usage validates the core assumptions.

@@ -5,12 +5,16 @@
 Use when the request is scoped, local, reversible, and the target files or
 commands are obvious after a brief inspection.
 
+Do not use for broad greenfield/scaffold work, new modules with unclear boundaries, or
+requests that explicitly say to plan before coding. Use `discovery` or `delta-spec`.
+
 Workflow:
 
 1. Inspect target files and tests.
-2. Patch root cause.
-3. Run focused proof.
-4. Report concise result.
+2. Reuse existing code and maps before inventing a new path.
+3. Patch root cause.
+4. Run focused proof.
+5. Report concise result.
 
 Do not create `.cairn/` artifacts.
 
@@ -22,8 +26,9 @@ Workflow:
 
 1. Reproduce or identify the failing signal.
 2. Trace root cause from the observed failure.
-3. Patch the minimal owner.
-4. Re-run the failing proof and a regression check.
+3. Reuse existing code and maps before inventing a new path.
+4. Patch the minimal owner.
+5. Re-run the failing proof and a regression check.
 
 Escalate to `delta-spec` only if the fix changes intended behavior.
 
@@ -32,13 +37,17 @@ Escalate to `delta-spec` only if the fix changes intended behavior.
 Use when the user has an idea, card, business goal, domain ambiguity, or
 architecture uncertainty.
 
+Also use for greenfield-in-repo work when the boundary, scaffold, or success criteria are
+not already obvious.
+
 Workflow:
 
 1. Identify the user/job/outcome and disproof path.
 2. Search current external sources when market, library, API, pricing, legal,
    or standards facts can change the decision.
 3. Inspect current repo docs and code before proposing integration shape.
-4. Produce a concise brief with options, recommendation, accepted downside,
+4. Create or update `.cairn/codebase/<area>.md` only when repeated observation would be costly.
+5. Produce a concise brief with options, recommendation, accepted downside,
    and proof strategy.
 
 Borrow from BMAD's analysis phase, but stop before PRD ceremony unless the

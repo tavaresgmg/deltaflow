@@ -46,6 +46,7 @@ const required = [
   "plugins/cairn/scripts/cairn-boundary.mjs",
   "plugins/cairn/scripts/cairn-guard.mjs",
   "plugins/cairn/scripts/cairn-analyze.mjs",
+  "plugins/cairn/scripts/cairn-next.mjs",
   "plugins/cairn/scripts/cairn-version.mjs",
   "plugins/cairn/agents/cairn-researcher.md",
   "plugins/cairn/skills/cairn/SKILL.md",
@@ -66,6 +67,8 @@ if (!missing.length) {
   const canonical = readJson("plugins/cairn/plugin.manifest.json");
   const codex = readJson("plugins/cairn/.codex-plugin/plugin.json");
   const claude = readJson("plugins/cairn/.claude-plugin/plugin.json");
+  const codexMarketplace = readJson(".agents/plugins/marketplace.json");
+  const claudeMarketplace = readJson(".claude-plugin/marketplace.json");
 
   const nameOk = /^[a-z][a-z0-9-]*$/;
   if (!nameOk.test(canonical.name)) fail(`manifest name not slug-safe: ${canonical.name}`);
@@ -91,11 +94,18 @@ if (!missing.length) {
   const { name, version, description, author, homepage, license, keywords, skills, interface: iface } = canonical;
   const expectedCodex = { name, version, description, author, skills, interface: iface };
   const expectedClaude = { name, version, description, author, homepage, license, keywords };
+  const expectedMarketplace = { name, owner: author, plugins: [{ name, source: "./plugins/cairn", description }] };
   if (JSON.stringify(codex) !== JSON.stringify(expectedCodex)) {
     fail("codex plugin.json is stale — run: node scripts/build-manifests.mjs");
   }
   if (JSON.stringify(claude) !== JSON.stringify(expectedClaude)) {
     fail("claude plugin.json is stale — run: node scripts/build-manifests.mjs");
+  }
+  if (JSON.stringify(codexMarketplace) !== JSON.stringify(expectedMarketplace)) {
+    fail(".agents/plugins/marketplace.json is stale — run: node scripts/build-manifests.mjs");
+  }
+  if (JSON.stringify(claudeMarketplace) !== JSON.stringify(expectedMarketplace)) {
+    fail(".claude-plugin/marketplace.json is stale — run: node scripts/build-manifests.mjs");
   }
 
   // No directories inside the per-harness manifest dirs (only the manifest/marketplace).
@@ -194,6 +204,72 @@ if (!missing.length) {
     fail(`cairn-version.mjs failed to run: ${e.message}`);
   }
 
+  // State helpers smoke test: must emit valid JSON on a minimal change folder.
+  const tmp = fs.mkdtempSync(path.join(fs.realpathSync("/tmp"), "cairn-validate-"));
+  try {
+    const change = path.join(tmp, ".cairn/changes/demo");
+    fs.mkdirSync(change, { recursive: true });
+    fs.writeFileSync(path.join(change, "delta.md"), "# Delta\n");
+    fs.writeFileSync(path.join(change, "plan.md"), "# Plan\n");
+    fs.writeFileSync(path.join(change, "tasks.md"), "# Tasks\n\n- [ ] step\n");
+    fs.writeFileSync(path.join(change, "proof.md"), "# Proof\n\nPending final run.\n");
+    const analyzeOut = execSync(`node ${JSON.stringify(path.join(root, "plugins/cairn/scripts/cairn-analyze.mjs"))} ${JSON.stringify(change)}`, {
+      cwd: root,
+      stdio: ["ignore", "pipe", "ignore"],
+    }).toString();
+    const analyze = JSON.parse(analyzeOut);
+    if (!Array.isArray(analyze.findings)) fail("cairn-analyze.mjs did not emit findings[]");
+    const goodSemantic = path.join(tmp, ".cairn/changes/good-semantic");
+    fs.mkdirSync(goodSemantic, { recursive: true });
+    fs.writeFileSync(path.join(goodSemantic, "delta.md"), [
+      "# Delta",
+      "",
+      "## Semantic Claims",
+      "",
+      "- Demo behavior is implemented; code: `README.md`; proof: `node scripts/validate-cairn.mjs`",
+      "",
+    ].join("\n"));
+    const goodOut = execSync(`node ${JSON.stringify(path.join(root, "plugins/cairn/scripts/cairn-analyze.mjs"))} ${JSON.stringify(goodSemantic)}`, {
+      cwd: root,
+      stdio: ["ignore", "pipe", "ignore"],
+    }).toString();
+    const good = JSON.parse(goodOut);
+    if (good.findings.some((f) => f.code?.startsWith("SEMANTIC_"))) {
+      fail("cairn-analyze.mjs flagged a valid semantic claim");
+    }
+    const badSemantic = path.join(tmp, ".cairn/changes/bad-semantic");
+    fs.mkdirSync(badSemantic, { recursive: true });
+    fs.writeFileSync(path.join(badSemantic, "delta.md"), [
+      "# Delta",
+      "",
+      "## Semantic Claims",
+      "",
+      "- Missing implementation reference; code: `missing/path.js`",
+      "",
+    ].join("\n"));
+    const badOut = execSync(`node ${JSON.stringify(path.join(root, "plugins/cairn/scripts/cairn-analyze.mjs"))} ${JSON.stringify(badSemantic)}`, {
+      cwd: root,
+      stdio: ["ignore", "pipe", "ignore"],
+    }).toString();
+    const bad = JSON.parse(badOut);
+    if (!bad.findings.some((f) => f.code === "SEMANTIC_REF_MISSING")) {
+      fail("cairn-analyze.mjs did not flag a missing semantic code reference");
+    }
+    if (!bad.findings.some((f) => f.code === "SEMANTIC_CLAIM_WITHOUT_PROOF")) {
+      fail("cairn-analyze.mjs did not flag a semantic claim without proof");
+    }
+    const nextOut = execSync(`node ${JSON.stringify(path.join(root, "plugins/cairn/scripts/cairn-next.mjs"))} ${JSON.stringify(change)}`, {
+      cwd: root,
+      stdio: ["ignore", "pipe", "ignore"],
+    }).toString();
+    const next = JSON.parse(nextOut);
+    if (!next.next?.code) fail("cairn-next.mjs did not emit next.code");
+  } catch (e) {
+    fail(`state helper smoke test failed: ${e.message}`);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+
   // Researcher agent frontmatter.
   const agent = read("plugins/cairn/agents/cairn-researcher.md");
   const agentFm = agent.match(/^---\n([\s\S]*?)\n---/);
@@ -209,4 +285,4 @@ if (errors.length) {
   for (const e of errors) console.error(`- ${e}`);
   process.exit(1);
 }
-console.log(`cairn validation passed (${required.length} files, manifests + SKILL + hooks checked)`);
+console.log(`cairn validation passed (${required.length} files, manifests + marketplaces + SKILL + hooks checked)`);

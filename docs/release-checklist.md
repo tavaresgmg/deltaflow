@@ -4,7 +4,10 @@ Run before tagging a version. Publish patterns only after real brownfield usage 
 the core assumptions (roadmap Phase 6).
 
 - [ ] `node scripts/build-manifests.mjs` — regenerate; commit any manifest/marketplace diff.
-- [ ] `node scripts/validate-cairn.mjs` passes (files, parity, drift, YAML safety, gate smoke).
+- [ ] `node scripts/validate-cairn.mjs` passes (files, parity, marketplace drift, YAML safety,
+      gate/helper smoke).
+- [ ] `node plugins/cairn/scripts/cairn-analyze.mjs --all .cairn/changes` reports no HIGH
+      findings for active release work.
 - [ ] Bump `version` in `plugins/cairn/plugin.manifest.json` and rebuild.
 - [ ] Install on Codex from the pushed repo: `SessionStart` hook fires, skill loads with no
       YAML errors, auto-fires on a brownfield prompt.

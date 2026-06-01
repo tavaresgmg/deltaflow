@@ -1,12 +1,13 @@
 # Cairn
 
-Brownfield-first, autonomous workflow router for AI coding agents.
+Development workflow router for AI coding agents. Brownfield-first, but not card-only.
 
-Cairn is an experimental plugin/skill set for turning rough ideas, cards, links, and
-bug reports into grounded plans, delta specs, implementation, proof, and cleanup without
-forcing a heavyweight spec framework on every task. It runs on **both OpenAI Codex and
-Claude Code** from one portable source, and auto-routes work via a SessionStart bootstrap
-so you don't have to invoke it by name.
+Cairn is an experimental plugin/skill set for turning rough ideas, no-card tasks, cards,
+links, bug reports, research questions, greenfield-in-repo work, cleanup, implementation,
+and SDD-style changes into the lightest safe workflow with proof. It avoids forcing a
+heavyweight spec framework on every task. It runs on **both OpenAI Codex and Claude Code**
+from one portable source, and auto-routes work via a SessionStart bootstrap so you don't
+have to invoke it by name.
 
 ## Thesis
 
@@ -14,6 +15,9 @@ Most coding-agent workflow frameworks overfit one of two extremes:
 
 - too little structure: chat-only plans rot across sessions and reviewers cannot see intent;
 - too much structure: every card becomes a mini product program with excess artifacts.
+
+Cairn's answer is proportional depth: tiny tasks stay tiny; research, SDD, greenfield, cleanup,
+and high-risk implementation get only the structure their risk justifies.
 
 Cairn keeps the useful parts:
 
@@ -32,6 +36,7 @@ plugins/cairn/
   .codex-plugin/plugin.json   # generated (Codex)
   .claude-plugin/plugin.json  # generated (Claude Code)
   hooks/                      # SessionStart bootstrap (autonomy layer 1)
+  scripts/                    # deterministic read-only helpers used by the skill
   skills/cairn/SKILL.md
   skills/cairn/references/
 scripts/
@@ -75,6 +80,8 @@ node scripts/validate-cairn.mjs    # structural + YAML-safety + gate smoke tests
 
 Phases 0-6 built and locally validated. On Codex (v0.135.0) the plugin installs, the
 SessionStart hook injects the bootstrap, the skill loads, and Cairn auto-fires on a
-brownfield prompt and routes to the right mode. Remaining: the full auto-trigger suite on
-≥2 models per harness, and the same pass on Claude Code (`docs/evals/auto-trigger.md`,
+brownfield prompt and routes to the right mode. The first P0 primitives are in place:
+optional codebase maps, living spec/archive guidance, structured `cairn-analyze`, and
+read-only `cairn-next`. Remaining: realistic routing fixtures, the full auto-trigger suite
+on ≥2 models per harness, and the same pass on Claude Code (`docs/evals/auto-trigger.md`,
 `docs/roadmap.md`).

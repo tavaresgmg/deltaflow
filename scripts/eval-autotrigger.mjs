@@ -4,7 +4,7 @@
 // right mode, and did the native Codex `analyze` skill collide. Writes JSONL + a summary.
 //
 //   node scripts/eval-autotrigger.mjs <subset> <label> [model]
-//     subset: "all" | "fire" | "nofire" | comma-separated ids (F1,N2,...)
+//     subset: "all" | "fire" | "nofire" | "realistic" | comma-separated ids (F1,N2,R1,...)
 //     label:  output file name under docs/evals/results/<label>.jsonl
 //     model:  optional, passed to codex exec -m
 //
@@ -15,7 +15,6 @@ import path from "node:path";
 import { execFileSync, spawnSync } from "node:child_process";
 
 const ROOT = process.cwd();
-const FIXTURE = "/tmp/cairn-eval-fixture";
 const PER_CASE_TIMEOUT_MS = 150000;
 
 const CASES = [
@@ -41,14 +40,129 @@ const CASES = [
   { id: "N6", lang: "en", expectFire: false, expectMode: [], prompt: "Explain how OAuth2 authorization code flow works in general." },
 ];
 
-function setupFixture() {
+const REALISTIC_CASES = [
+  {
+    id: "R1",
+    lang: "en",
+    expectFire: true,
+    expectMode: ["delta-spec", "direct"],
+    prompt: "Implement the card in CARD-csv-export.md in this repo.",
+  },
+  {
+    id: "R2",
+    lang: "pt",
+    expectFire: true,
+    expectMode: ["diagnose"],
+    prompt: "Corrige o bug descrito em CARD-tax-bug.md e valida com os testes locais.",
+  },
+  {
+    id: "R3",
+    lang: "en",
+    expectFire: true,
+    expectMode: ["delta-spec", "tracked-change"],
+    prompt: "Refactor the auth module according to CARD-auth-refactor.md, but plan before editing.",
+  },
+  {
+    id: "R4",
+    lang: "en",
+    expectFire: true,
+    expectMode: ["discovery", "tracked-change"],
+    prompt: "Plan the migration described in CARD-orm-migration.md before touching code.",
+  },
+  {
+    id: "R5",
+    lang: "pt",
+    expectFire: true,
+    expectMode: ["diagnose", "direct"],
+    prompt: "Investiga por que `npm test` falha nesse fixture e propõe o menor conserto.",
+  },
+  {
+    id: "R6",
+    lang: "en",
+    expectFire: true,
+    expectMode: ["direct", "discovery", "delta-spec"],
+    prompt: "Create a new webhook processor module in this repo from scratch. Plan the smallest safe path before coding.",
+  },
+  {
+    id: "R7",
+    lang: "en",
+    expectFire: true,
+    expectMode: ["discovery", "tracked-change", "delta-spec"],
+    prompt: "Design a new multi-tenant billing subsystem in this repo from scratch. Do not code yet; research risks, boundaries, rollback, and proof first.",
+  },
+];
+
+function setupFixture(realistic = false, caseId = null) {
   fs.rmSync(FIXTURE, { recursive: true, force: true });
   fs.mkdirSync(path.join(FIXTURE, "src"), { recursive: true });
   fs.writeFileSync(path.join(FIXTURE, "README.md"), "# Demo service\n\nSmall internal tool.\n");
-  fs.writeFileSync(path.join(FIXTURE, "package.json"), '{ "name": "demo", "version": "1.0.0" }\n');
-  fs.writeFileSync(path.join(FIXTURE, "src/calc.js"), "export function soma(a, b) { return a - b; }\n");
+  fs.writeFileSync(path.join(FIXTURE, "package.json"), JSON.stringify({
+    name: "demo",
+    version: "1.0.0",
+    type: "module",
+    scripts: { test: "node --test" },
+  }, null, 2) + "\n");
+  const shouldSeedCalcBug = !realistic || ["R2", "R5"].includes(caseId);
+  fs.writeFileSync(path.join(FIXTURE, "src/calc.js"), `export function soma(a, b) { return ${shouldSeedCalcBug ? "a - b" : "a + b"}; }\n`);
   fs.writeFileSync(path.join(FIXTURE, "src/payments.js"), "export function charge() { return legacyGateway(); }\n");
   fs.writeFileSync(path.join(FIXTURE, "src/export.js"), "export function toCsv(rows) { return rows; }\n");
+  if (realistic) {
+    fs.mkdirSync(path.join(FIXTURE, "test"), { recursive: true });
+    fs.writeFileSync(path.join(FIXTURE, "src/auth.js"), [
+      "export function canAccess(user, resource) {",
+      "  if (!user) return false;",
+      "  return user.role === 'admin' || resource.ownerId === user.id;",
+      "}",
+      "",
+    ].join("\n"));
+    fs.writeFileSync(path.join(FIXTURE, "test/calc.test.js"), [
+      "import test from 'node:test';",
+      "import assert from 'node:assert/strict';",
+      "import { soma } from '../src/calc.js';",
+      "",
+      "test('soma adds two values', () => {",
+      "  assert.equal(soma(2, 3), 5);",
+      "});",
+      "",
+    ].join("\n"));
+    fs.writeFileSync(path.join(FIXTURE, "CARD-csv-export.md"), [
+      "# Card: CSV Export",
+      "",
+      "Add `toCsv(rows)` support in `src/export.js`.",
+      "",
+      "Acceptance:",
+      "- returns a header row from object keys;",
+      "- escapes commas and quotes;",
+      "- preserves row order.",
+      "",
+    ].join("\n"));
+    fs.writeFileSync(path.join(FIXTURE, "CARD-tax-bug.md"), [
+      "# Card: Tax Calculation Bug",
+      "",
+      "`src/calc.js` has a regression: `soma(2, 3)` returns `-1`.",
+      "Reproduce with `npm test`, fix root cause, then rerun the failing test.",
+      "",
+    ].join("\n"));
+    fs.writeFileSync(path.join(FIXTURE, "CARD-auth-refactor.md"), [
+      "# Card: Auth Refactor",
+      "",
+      "Refactor `src/auth.js` so access decisions are explicit and testable.",
+      "Do not change behavior: admins keep access; owners keep access; anonymous users do not.",
+      "Plan first because this module is a security boundary.",
+      "",
+    ].join("\n"));
+    fs.writeFileSync(path.join(FIXTURE, "CARD-orm-migration.md"), [
+      "# Card: ORM Migration",
+      "",
+      "Plan a migration from raw SQL helpers to a new ORM.",
+      "No code edits yet. Identify boundaries, data risks, tests, rollback, and proof.",
+      "",
+    ].join("\n"));
+    fs.writeFileSync(path.join(FIXTURE, "src/webhooks.js"), [
+      "// Intentionally empty placeholder for R6 greenfield-in-repo routing.",
+      "",
+    ].join("\n"));
+  }
   execFileSync("git", ["init", "-q"], { cwd: FIXTURE });
   execFileSync("git", ["add", "-A"], { cwd: FIXTURE });
   execFileSync("git", ["-c", "user.email=e@e.com", "-c", "user.name=e", "commit", "-qm", "seed"], { cwd: FIXTURE });
@@ -101,25 +215,29 @@ function runCase(c, model) {
 const subsetArg = process.argv[2] || "all";
 const label = process.argv[3] || "run";
 const model = process.argv[4] || null;
+const safeLabel = label.replace(/[^a-zA-Z0-9_.-]/g, "-");
+const FIXTURE = path.join("/tmp", `cairn-eval-fixture-${safeLabel}-${process.pid}`);
 let subset = CASES;
 if (subsetArg === "fire") subset = CASES.filter((c) => c.expectFire);
 else if (subsetArg === "nofire") subset = CASES.filter((c) => !c.expectFire);
+else if (subsetArg === "realistic") subset = REALISTIC_CASES;
 else if (subsetArg !== "all") {
   const ids = subsetArg.split(",").map((s) => s.trim());
-  subset = CASES.filter((c) => ids.includes(c.id));
+  subset = [...CASES, ...REALISTIC_CASES].filter((c) => ids.includes(c.id));
 }
 
-setupFixture();
 const outDir = path.join(ROOT, "docs/evals/results");
 fs.mkdirSync(outDir, { recursive: true });
 const outFile = path.join(outDir, `${label}.jsonl`);
-fs.writeFileSync(outFile, ""); // fresh
+const outTmp = path.join(outDir, `.${label}.${process.pid}.tmp`);
+fs.writeFileSync(outTmp, ""); // fresh, promoted only after summary is written
 
 const results = [];
 for (const c of subset) {
+  setupFixture(/^R/.test(c.id), c.id);
   const r = runCase(c, model);
   results.push(r);
-  fs.appendFileSync(outFile, JSON.stringify(r) + "\n");
+  fs.appendFileSync(outTmp, JSON.stringify(r) + "\n");
   console.log(`${r.id} [${r.status}] fired=${r.firedStrong} (expect ${c.expectFire}) mode=${r.modeDetected} ok=${r.fireCorrect}${c.expectFire ? ` modeOk=${r.modeCorrect}` : ""} collideAnalyze=${r.collidedAnalyze}`);
 }
 
@@ -137,5 +255,6 @@ const summary = {
   collidedAnalyze: results.filter((r) => r.collidedAnalyze).length,
   errors: results.filter((r) => r.status !== "ok").length,
 };
-fs.appendFileSync(outFile, JSON.stringify({ summary }) + "\n");
+fs.appendFileSync(outTmp, JSON.stringify({ summary }) + "\n");
+fs.renameSync(outTmp, outFile);
 console.log("\nSUMMARY", JSON.stringify(summary, null, 2));
