@@ -17,6 +17,7 @@
 - `claude --print --verbose --include-hook-events --output-format stream-json 'Use the Write tool to create /tmp/cairn-claude-guard-should-block.txt ...'` — passed: PreToolUse fired and blocked the outside-repo write with exit 2; `/tmp/cairn-claude-guard-should-block.txt` absent after smoke.
 - `node scripts/eval-autotrigger.mjs R5,N2 cairn-fast-codex-0.136-default --jobs 2 --timeout-ms 120000` — passed: Codex v0.136.0, 1/1 must-fire fired/routed, 0/1 must-not misfires.
 - `node scripts/eval-autotrigger.mjs R5,N2 cairn-fast-claude-2.1.159-default --harness claude --jobs 2 --timeout-ms 120000` — passed: Claude Code v2.1.159, 1/1 must-fire fired/routed, 0/1 must-not misfires.
+- `.cairn/codebase/eval-harness.md` + `docs/examples/brownfield-card-eval-harness.md` — added as a worked brownfield example; `validate-cairn.mjs` now requires both files.
 
 ## Runtime Smoke
 

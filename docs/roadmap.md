@@ -93,7 +93,7 @@ Exit: brainstorm + research + docs improve quality without recreating ceremony o
 - [x] Install guide for both harnesses (`docs/install.md`), with verified Codex commands.
 - [x] Prompt eval fixture (`docs/evals/auto-trigger.md`) with a first logged Codex run.
 - [x] Release checklist (`docs/release-checklist.md`).
-- [ ] Worked examples on a real brownfield card.
+- [x] Worked example proving codebase maps on a realistic brownfield eval-harness card.
 - [x] Realistic routing fixture subset with cards + code + tests on Codex v0.136.0 default.
 - [x] Fast cross-harness subset on Codex v0.136.0 and Claude Code v2.1.159.
 - [ ] Same realistic routing subset on >=2 models per harness.
