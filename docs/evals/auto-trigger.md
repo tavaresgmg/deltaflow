@@ -10,6 +10,23 @@ in isolation: **install the plugin, do NOT mention Cairn, send the prompt, inspe
 the `cairn` skill was invoked.** The bootstrap is expected to lift fire-rate further; run
 the suite both with and without it to quantify each layer.
 
+## Harness
+
+`scripts/eval-autotrigger.mjs` runs each prompt through `codex exec --sandbox read-only` in a
+neutral fixture repo and measures honest, defensible signals (stdout+stderr merged):
+
+- `readCairn` — the agent actually read the Cairn SKILL.md/references (strongest "engaged" signal).
+- `modeDetected` — the mode the agent **chose** (parsed from its classification prose, not the
+  printed modes table), checked against the case's acceptable modes.
+- `uniqueMode` — chose a Cairn-exclusive mode (`delta-spec`/`tracked-change`); disambiguates from
+  the native `analyze` skill, which shares `diagnose`.
+- `outputShape` — emitted the Cairn Done/Proof/Risk/Next or Bloqueado shape.
+- `collidedAnalyze` — read a competing custom skill (env hygiene check).
+
+`firedStrong = readCairn || modeDetected || outputShape`. Results land in
+`docs/evals/results/<label>.jsonl`. For a clean signal, competing custom skills were archived
+off the harnesses before the run.
+
 ## Protocol
 
 1. Install the plugin on the target harness (Codex first, then Claude Code).
@@ -65,11 +82,21 @@ Borderline by design — watch these when tuning the `description`:
 Record runs here (date, harness, model, fire-rate, mis-fires, notes) as the suite is
 executed.
 
-- **2026-06-01 — Codex v0.135.0, gpt-5.5** — smoke (not full suite). Plugin installed from
-  local marketplace (`installed, enabled`). SessionStart hook injected the bootstrap. A
-  brownfield prompt ("there's a bug in calc.js: soma() subtracts; investigate and give the
-  fix plan") auto-fired Cairn without naming it — the model stated it would "use Cairn to
-  route the investigation" and selected **diagnose** mode, returning a repro + fix plan with
-  no edits. Caught and fixed first: the unquoted `:` in the `description` made the SKILL.md
-  fail YAML parsing and be skipped — now guarded by `validate-cairn.mjs`. Full 12+6 suite on
-  ≥2 models still pending.
+- **2026-06-01 — Codex v0.135.0, gpt-5.5 — smoke.** A bug prompt auto-fired Cairn without
+  naming it, selected **diagnose**, returned a repro + fix plan with no edits. Fixed first:
+  unquoted `:` in `description` broke SKILL.md YAML and skipped it — now guarded by validate.
+
+- **2026-06-01 — Codex v0.135.0, gpt-5.5 — full suite (18), competing skills archived.**
+  `docs/evals/results/cairn-on-clean.jsonl`.
+  - **Trigger: 12/12 must-fire fired (100%), 0/6 must-not misfired (0%).** Clean discrimination
+    between brownfield work and Q&A/shell. Zero collision with a competing skill.
+  - **Routing: 9/12 to the expected mode (75%).** The 3 misses (F3→direct, F8→discovery,
+    F10→unparsed) are all "implement a card/feature" prompts where, in an **empty fixture**
+    with no card and no relevant code, the agent correctly declines to force a `delta-spec`
+    and degrades to an exploratory mode. So the fixture measures the **trigger** rigorously
+    but **understates routing** — fair routing measurement needs fixtures that contain the
+    real code/card. Not a Cairn defect; a harness limitation to fix (see gaps P1.7).
+  - **Baseline (Cairn removed, `baseline-off.jsonl`): 0/4 must-fire showed any structure** —
+    no mode, no routing, no output shape. Confirms Cairn's value is discipline/predictability,
+    not raw capability.
+  - Still pending: realistic-fixture routing run; same suite on Claude Code; ≥2 models.
