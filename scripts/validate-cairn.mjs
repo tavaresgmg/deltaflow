@@ -29,11 +29,14 @@ const required = [
   "plugins/cairn/hooks/session-start.sh",
   "plugins/cairn/hooks/hooks.json",
   "plugins/cairn/scripts/cairn-boundary.mjs",
+  "plugins/cairn/scripts/cairn-guard.mjs",
+  "plugins/cairn/scripts/cairn-analyze.mjs",
   "plugins/cairn/skills/cairn/SKILL.md",
   "plugins/cairn/skills/cairn/references/modes.md",
   "plugins/cairn/skills/cairn/references/artifacts.md",
   "plugins/cairn/skills/cairn/references/memory.md",
   "plugins/cairn/skills/cairn/references/workspace.md",
+  "plugins/cairn/skills/cairn/references/gates.md",
   "plugins/cairn/skills/cairn/references/framework-lessons.md",
 ];
 
@@ -126,6 +129,9 @@ if (!missing.length) {
     fail("hooks.json must invoke ${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh");
   }
   if (!cmd.includes("SessionStart")) fail("hooks.json must register SessionStart");
+  if (!cmd.includes("PreToolUse") || !cmd.includes("cairn-guard.mjs")) {
+    fail("hooks.json must register PreToolUse -> cairn-guard.mjs");
+  }
 
   // Boundary detector smoke test: must emit valid JSON resolving this repo.
   try {
@@ -138,6 +144,23 @@ if (!missing.length) {
   } catch (e) {
     fail(`cairn-boundary.mjs failed to run: ${e.message}`);
   }
+
+  // Guard smoke test: allow inside the repo (exit 0), block outside (exit 2).
+  const runGuard = (event) => {
+    try {
+      execSync(`node plugins/cairn/scripts/cairn-guard.mjs ${JSON.stringify(JSON.stringify(event))}`, {
+        cwd: root,
+        stdio: ["ignore", "ignore", "ignore"],
+      });
+      return 0;
+    } catch (e) {
+      return e.status ?? 1;
+    }
+  };
+  const inside = runGuard({ tool_name: "Edit", tool_input: { file_path: path.join(root, "README.md") }, cwd: root });
+  const outside = runGuard({ tool_name: "Edit", tool_input: { file_path: "/tmp/cairn-outside.txt" }, cwd: root });
+  if (inside !== 0) fail(`cairn-guard.mjs blocked an in-repo write (exit ${inside})`);
+  if (outside !== 2) fail(`cairn-guard.mjs did not block an out-of-repo write (exit ${outside})`);
 }
 
 if (errors.length) {

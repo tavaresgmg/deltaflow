@@ -51,6 +51,7 @@ Read these references only when needed:
 - `references/artifacts.md` for artifact templates and retention rules.
 - `references/memory.md` for the `.cairn/` state layout and the resume protocol.
 - `references/workspace.md` for the umbrella model and boundary detection.
+- `references/gates.md` for what is deterministically enforced vs advisory, and reconciliation.
 - `references/framework-lessons.md` for what Cairn borrows and avoids.
 
 ## Required Behavior
@@ -65,7 +66,9 @@ Read these references only when needed:
 - Do not impose TDD universally. Use tests proportional to risk and local patterns.
 - Resume from state: on existing `.cairn/changes/<slug>/` work, read `tasks.md` and the
   `decision-log.md` tail before acting; tick `tasks.md` incrementally, not at the end.
-- Before saying done, provide fresh proof.
+- Before saying done, provide fresh proof and run `cairn-analyze.mjs` on any change folder.
+- A PreToolUse guard blocks writes outside the active repo; do not work around it without
+  confirming the target repo is intended.
 
 ## Output Shape
 

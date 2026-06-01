@@ -8,14 +8,22 @@ agent routes through Cairn before responding — no need to invoke the skill by 
   portable plugin-root var). On Claude it emits `SessionStart` `additionalContext` JSON;
   elsewhere (Codex) it emits plain text.
 
+Autonomy layer 3 (ADR-0003, Phase 4): a `PreToolUse` hook runs `scripts/cairn-guard.mjs`
+on file-mutating tools and blocks (exit 2) writes outside the active repo. Logic is
+harness-neutral and unit-tested; see `skills/cairn/references/gates.md`.
+
 ## Registration
 
-- **Claude Code:** `hooks.json` is discovered automatically when the plugin is installed.
-- **Codex:** add the hook to the project/user `config.toml`, e.g.
+- **Claude Code:** `hooks.json` is discovered automatically when the plugin is installed
+  (both `SessionStart` and `PreToolUse`).
+- **Codex:** add the hooks to the project/user `config.toml`, e.g.
 
   ```toml
   [[hooks.session_start]]
   command = "${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh"
+
+  [[hooks.pre_tool_use]]
+  command = "node ${CLAUDE_PLUGIN_ROOT}/scripts/cairn-guard.mjs"
   ```
 
 ## Validation status
