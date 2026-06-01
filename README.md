@@ -53,7 +53,6 @@ docs/
 ## Local Validation
 
 ```bash
-python3 /Users/tavares/.codex/skills/.system/plugin-creator/scripts/validate_plugin.py plugins/deltaflow
 node scripts/validate-deltaflow.mjs
 ```
 

@@ -2,6 +2,7 @@
 node_modules/
 .deltaflow/
 .codex-log/
+.work/
 dist/
 coverage/
 *.log

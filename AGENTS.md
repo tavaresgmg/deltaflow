@@ -7,5 +7,4 @@
 - Keep artifacts minimal and brownfield-first. Avoid copying BMAD, OpenSpec, Spec Kit, GSD, or Superpowers wholesale.
 - Before saying a workflow is good, test it on a real or realistic brownfield card and record the result.
 - Validation for plugin changes:
-  - `python3 /Users/tavares/.codex/skills/.system/plugin-creator/scripts/validate_plugin.py plugins/deltaflow`
   - `node scripts/validate-deltaflow.mjs`
