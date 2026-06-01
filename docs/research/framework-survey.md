@@ -2,7 +2,7 @@
 
 Date: 2026-06-01
 
-This survey captures what Deltaflow should borrow, avoid, or test from current
+This survey captures what Cairn should borrow, avoid, or test from current
 AI-coding workflow systems. It is not a claim that any tool is bad; the goal is
 to extract useful patterns for a brownfield-first workflow.
 
@@ -31,7 +31,7 @@ Risks:
 - Implementation phases can become ceremony when a card is already clear.
 - Tooling is heavier than needed for a single brownfield delta.
 
-Deltaflow take:
+Cairn take:
 
 - Borrow discovery and question quality.
 - Borrow project-context generation for existing systems.
@@ -53,7 +53,7 @@ Risks:
 - Specs can drift if archive/sync discipline is weak.
 - Planning quality depends heavily on the agent reading existing code correctly.
 
-Deltaflow take:
+Cairn take:
 
 - Adopt delta-based specs as the canonical planning artifact for medium+ changes.
 - Make archive/sync explicit.
@@ -74,7 +74,7 @@ Risks:
 - More suited to structured SDD adoption than incremental card work.
 - Setup and artifact stack can become the work.
 
-Deltaflow take:
+Cairn take:
 
 - Borrow phase separation and consistency checks.
 - Borrow preset/extension mindset later, after the core flow is proven.
@@ -95,7 +95,7 @@ Risks:
 - Many skills can create invocation and trigger complexity.
 - Subagent-per-task is expensive and unnecessary for routine edits.
 
-Deltaflow take:
+Cairn take:
 
 - Borrow verification-before-completion and review discipline.
 - Use subagents only for independent research/review or large task slices.
@@ -116,7 +116,7 @@ Risks:
 - Many command surfaces and state files can become another tool to maintain.
 - Claude-oriented command patterns do not map perfectly to Codex.
 
-Deltaflow take:
+Cairn take:
 
 - Borrow durable state and "verify before ship".
 - Add deterministic scripts only after repeated prompt-only failures.
@@ -142,9 +142,9 @@ Avoid:
 - duplicate board/task state;
 - copying commands instead of defining a native Codex skill surface.
 
-## Deltaflow Differentiator
+## Cairn Differentiator
 
-Deltaflow should be a router and operating loop, not another complete project
+Cairn should be a router and operating loop, not another complete project
 management universe. Its value is choosing the lightest workflow that still
 protects correctness.
 
@@ -153,6 +153,6 @@ protects correctness.
 - Read each upstream framework's implementation prompts, not only public docs.
 - Build a matrix of trigger phrases, artifacts, and stop conditions.
 - Run the same 5 brownfield tasks through vanilla Codex, OpenSpec, BMAD Quick
-  Flow, Superpowers, and Deltaflow.
+  Flow, Superpowers, and Cairn.
 - Record artifact count, time to patch, number of corrections, proof quality,
   and cleanup burden.

@@ -1,8 +1,8 @@
-# Deltaflow
+# Cairn
 
 Brownfield-first workflow for AI coding agents.
 
-Deltaflow is an experimental Codex plugin/skill set for turning rough ideas, cards,
+Cairn is an experimental Codex plugin/skill set for turning rough ideas, cards,
 links, and bug reports into grounded plans, delta specs, implementation, proof, and
 cleanup without forcing a heavyweight spec framework on every task.
 
@@ -13,7 +13,7 @@ Most coding-agent workflow frameworks overfit one of two extremes:
 - too little structure: chat-only plans rot across sessions and reviewers cannot see intent;
 - too much structure: every card becomes a mini product program with excess artifacts.
 
-Deltaflow keeps the useful parts:
+Cairn keeps the useful parts:
 
 - BMAD-style discovery, brainstorming, research, and PRD sharpening;
 - OpenSpec-style brownfield deltas and living specs;
@@ -26,10 +26,10 @@ requirement.
 ## Current MVP
 
 ```text
-plugins/deltaflow/
+plugins/cairn/
   .codex-plugin/plugin.json
-  skills/deltaflow/SKILL.md
-  skills/deltaflow/references/
+  skills/cairn/SKILL.md
+  skills/cairn/references/
 docs/
   research/framework-survey.md
   architecture/mvp-architecture.md
@@ -53,7 +53,7 @@ docs/
 ## Local Validation
 
 ```bash
-node scripts/validate-deltaflow.mjs
+node scripts/validate-cairn.mjs
 ```
 
 ## Status

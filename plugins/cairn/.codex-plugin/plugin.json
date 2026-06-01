@@ -1,0 +1,20 @@
+{
+  "name": "cairn",
+  "version": "0.1.0",
+  "description": "Brownfield-first workflow router for Codex.",
+  "author": {
+    "name": "Cairn"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Cairn",
+    "shortDescription": "Route brownfield work from idea or card to delta spec, implementation, proof, and closeout.",
+    "longDescription": "Cairn combines BMAD-style discovery, OpenSpec-style delta specs, Spec Kit-style consistency checks, and Superpowers/GSD-style verification discipline for brownfield agent workflows.",
+    "developerName": "Cairn",
+    "category": "Productivity",
+    "capabilities": [
+      "skills"
+    ],
+    "defaultPrompt": "Use Cairn to turn this card or idea into the right level of discovery, delta spec, implementation, proof, and closeout."
+  }
+}

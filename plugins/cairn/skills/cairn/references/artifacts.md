@@ -1,6 +1,6 @@
 # Artifact Policy
 
-Deltaflow creates artifacts only when they reduce risk, preserve context across
+Cairn creates artifacts only when they reduce risk, preserve context across
 sessions, or make review easier.
 
 ## No Artifact

@@ -11,7 +11,7 @@ Exit: repo has enough shape to test on real tasks.
 
 ## Phase 1: Prompt-Only MVP
 
-- Improve `deltaflow` skill trigger and routing.
+- Improve `cairn` skill trigger and routing.
 - Test against 5 real brownfield cards:
   - one bug;
   - one small feature;
@@ -25,7 +25,7 @@ Exit: router chooses the right mode in at least 4/5 cases without manual skill i
 ## Phase 2: Minimal Artifacts
 
 - Add templates for brief, delta, plan, and proof.
-- Add script to create `.deltaflow/changes/<slug>/` only for `delta-spec` and `tracked-change`.
+- Add script to create `.cairn/changes/<slug>/` only for `delta-spec` and `tracked-change`.
 - Add archive/sync guidance based on OpenSpec lessons.
 
 Exit: medium changes persist intent without creating ceremony for small fixes.

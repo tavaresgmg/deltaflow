@@ -1,4 +1,4 @@
-# Deltaflow Modes
+# Cairn Modes
 
 ## Direct
 
@@ -12,7 +12,7 @@ Workflow:
 3. Run focused proof.
 4. Report concise result.
 
-Do not create `.deltaflow/` artifacts.
+Do not create `.cairn/` artifacts.
 
 ## Diagnose
 

@@ -8,11 +8,11 @@ const required = [
   "docs/research/framework-survey.md",
   "docs/architecture/mvp-architecture.md",
   "docs/roadmap.md",
-  "plugins/deltaflow/.codex-plugin/plugin.json",
-  "plugins/deltaflow/skills/deltaflow/SKILL.md",
-  "plugins/deltaflow/skills/deltaflow/references/modes.md",
-  "plugins/deltaflow/skills/deltaflow/references/artifacts.md",
-  "plugins/deltaflow/skills/deltaflow/references/framework-lessons.md",
+  "plugins/cairn/.codex-plugin/plugin.json",
+  "plugins/cairn/skills/cairn/SKILL.md",
+  "plugins/cairn/skills/cairn/references/modes.md",
+  "plugins/cairn/skills/cairn/references/artifacts.md",
+  "plugins/cairn/skills/cairn/references/framework-lessons.md",
 ];
 
 const missing = required.filter((file) => !fs.existsSync(path.join(root, file)));
@@ -23,11 +23,11 @@ if (missing.length) {
 }
 
 const manifest = JSON.parse(
-  fs.readFileSync(path.join(root, "plugins/deltaflow/.codex-plugin/plugin.json"), "utf8"),
+  fs.readFileSync(path.join(root, "plugins/cairn/.codex-plugin/plugin.json"), "utf8"),
 );
 
-if (manifest.name !== "deltaflow") {
-  console.error("plugin.json name must be deltaflow");
+if (manifest.name !== "cairn") {
+  console.error("plugin.json name must be cairn");
   process.exit(1);
 }
 
@@ -37,15 +37,15 @@ if (manifest.skills !== "./skills/") {
 }
 
 const skill = fs.readFileSync(
-  path.join(root, "plugins/deltaflow/skills/deltaflow/SKILL.md"),
+  path.join(root, "plugins/cairn/skills/cairn/SKILL.md"),
   "utf8",
 );
 
-for (const needle of ["name: deltaflow", "description:", "Classify", "Proof"]) {
+for (const needle of ["name: cairn", "description:", "Classify", "Proof"]) {
   if (!skill.includes(needle)) {
-    console.error(`deltaflow skill missing expected text: ${needle}`);
+    console.error(`cairn skill missing expected text: ${needle}`);
     process.exit(1);
   }
 }
 
-console.log("deltaflow validation passed");
+console.log("cairn validation passed");

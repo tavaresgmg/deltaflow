@@ -2,9 +2,9 @@
 
 ## Product Shape
 
-Deltaflow starts as a Codex plugin containing one primary skill:
+Cairn starts as a Codex plugin containing one primary skill:
 
-- `deltaflow`: automatic router and workflow controller.
+- `cairn`: automatic router and workflow controller.
 
 The plugin can later split into multiple skills once real usage proves stable
 subflows. Starting with one skill avoids trigger ambiguity and keeps the system
@@ -57,7 +57,7 @@ state across sessions.
 Suggested future workspace:
 
 ```text
-.deltaflow/
+.cairn/
   changes/<slug>/
     brief.md
     delta.md
@@ -73,12 +73,12 @@ mode needs it.
 
 Codex first:
 
-- `plugins/deltaflow/.codex-plugin/plugin.json`
-- `skills/deltaflow/SKILL.md`
+- `plugins/cairn/.codex-plugin/plugin.json`
+- `skills/cairn/SKILL.md`
 
 Claude later:
 
-- generate `.claude/skills/deltaflow/SKILL.md` from the same source;
+- generate `.claude/skills/cairn/SKILL.md` from the same source;
 - add Claude plugin manifest only after the Codex skill proves useful;
 - keep prompt content portable and avoid Codex-only tool names inside core logic.
 

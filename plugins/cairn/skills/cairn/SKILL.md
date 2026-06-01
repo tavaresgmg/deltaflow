@@ -1,11 +1,11 @@
 ---
-name: deltaflow
+name: cairn
 description: Use for brownfield software work from a card, issue, link, rough idea, bug report, feature request, refactor, or planning request when Codex should automatically choose the right depth of brainstorming, research, delta spec, plan, implementation, proof, review, and archive without the user naming each step.
 ---
 
-# Deltaflow
+# Cairn
 
-Deltaflow routes brownfield work to the lightest workflow that still protects
+Cairn routes brownfield work to the lightest workflow that still protects
 correctness. It is not a spec ceremony. It is a decision loop.
 
 ## Trigger
@@ -49,7 +49,7 @@ Read these references only when needed:
 
 - `references/modes.md` for detailed mode selection and workflow steps.
 - `references/artifacts.md` for artifact templates and retention rules.
-- `references/framework-lessons.md` for what Deltaflow borrows and avoids.
+- `references/framework-lessons.md` for what Cairn borrows and avoids.
 
 ## Required Behavior
 
