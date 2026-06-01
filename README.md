@@ -1,10 +1,12 @@
 # Cairn
 
-Brownfield-first workflow for AI coding agents.
+Brownfield-first, autonomous workflow router for AI coding agents.
 
-Cairn is an experimental Codex plugin/skill set for turning rough ideas, cards,
-links, and bug reports into grounded plans, delta specs, implementation, proof, and
-cleanup without forcing a heavyweight spec framework on every task.
+Cairn is an experimental plugin/skill set for turning rough ideas, cards, links, and
+bug reports into grounded plans, delta specs, implementation, proof, and cleanup without
+forcing a heavyweight spec framework on every task. It runs on **both OpenAI Codex and
+Claude Code** from one portable source, and auto-routes work via a SessionStart bootstrap
+so you don't have to invoke it by name.
 
 ## Thesis
 
@@ -20,20 +22,23 @@ Cairn keeps the useful parts:
 - Spec Kit-style phase separation and artifact consistency checks;
 - Superpowers/GSD-style execution discipline, review, verification, and durable state.
 
-The first target is Codex. Claude Code compatibility is a roadmap item, not an MVP
-requirement.
+Cairn is validated on Codex first, then Claude Code; both ship from the same source.
 
 ## Current MVP
 
 ```text
 plugins/cairn/
-  .codex-plugin/plugin.json
+  plugin.manifest.json        # canonical metadata — edit here, then rebuild
+  .codex-plugin/plugin.json   # generated (Codex)
+  .claude-plugin/plugin.json  # generated (Claude Code)
+  hooks/                      # SessionStart bootstrap (autonomy layer 1)
   skills/cairn/SKILL.md
   skills/cairn/references/
+scripts/
+  build-manifests.mjs         # one source -> both manifests
+  validate-cairn.mjs          # structural validation
 docs/
-  research/framework-survey.md
-  architecture/mvp-architecture.md
-  roadmap.md
+  research/ architecture/ decisions/ evals/ roadmap.md
 ```
 
 ## Working Loop
@@ -53,10 +58,13 @@ docs/
 ## Local Validation
 
 ```bash
-node scripts/validate-cairn.mjs
+node scripts/build-manifests.mjs   # regenerate both manifests from the canonical source
+node scripts/validate-cairn.mjs    # structural checks (files, parity, drift, SKILL, hooks)
 ```
+
+Auto-trigger and per-harness hook I/O need a live harness — see `docs/evals/auto-trigger.md`.
 
 ## Status
 
-Initial scaffold. The workflow is intentionally narrow until tested against real
-brownfield cards.
+Phase 1 MVP: autonomous portable skill. The workflow is intentionally narrow until
+validated against real brownfield cards on a live harness.

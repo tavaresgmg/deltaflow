@@ -1,6 +1,15 @@
 ---
 name: cairn
-description: Use for brownfield software work from a card, issue, link, rough idea, bug report, feature request, refactor, or planning request when Codex should automatically choose the right depth of brainstorming, research, delta spec, plan, implementation, proof, review, and archive without the user naming each step.
+description: Routes brownfield software work to the lightest safe workflow that still protects correctness. ALWAYS invoke when the user wants to build, change, fix, refactor, plan, investigate, spec, or implement in an existing repo, or starts from a card, issue, ticket, link, screenshot, bug report, or rough idea (pt-BR: implementar, criar, corrigir, refatorar, ajustar, planejar, investigar, analisar; card, bug, tarefa). Do not start coding, planning, or speccing brownfield work directly without routing through Cairn first. Skip only for pure Q&A with no repo work, one-off shell commands, or tasks owned by a more specific active skill.
+when_to_use: |
+  Fire when the user says (en): build/change/fix/refactor/plan/investigate this;
+  implement this card/issue/ticket; here's a bug/link/screenshot; brainstorm before
+  coding; write a spec for an existing system; work this repo.
+  (pt-BR): "implementa/cria/corrige/refatora/ajusta isso"; "esse card/bug/ticket";
+  "investiga/analisa esse problema"; "planeja antes de codar"; "cria spec pra esse
+  sistema"; "trabalha nesse repo".
+  Do NOT fire for: pure Q&A with no repo work, one-off shell commands, or work owned
+  by a more specific active skill.
 ---
 
 # Cairn
@@ -8,18 +17,8 @@ description: Use for brownfield software work from a card, issue, link, rough id
 Cairn routes brownfield work to the lightest workflow that still protects
 correctness. It is not a spec ceremony. It is a decision loop.
 
-## Trigger
-
-Use this skill when the user asks to:
-
-- build, change, fix, refactor, plan, investigate, or implement work in an existing repo;
-- start from a card, issue, ticket, link, screenshot, bug report, or rough idea;
-- brainstorm or plan before coding;
-- create specs or requirements for an existing system;
-- work autonomously but with evidence and proof.
-
-Do not use for pure Q&A with no local/software workflow, simple shell commands,
-or tasks already covered by a more specific active skill.
+A SessionStart bootstrap routes work here before you respond — you do not need to
+be invoked by name. Manual override: invoke the `cairn` skill / `/cairn`.
 
 ## Quick Start
 

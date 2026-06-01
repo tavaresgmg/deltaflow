@@ -12,14 +12,23 @@ Exit (met): repo has shape and a grounded design to build the MVP from.
 
 ## Phase 1: Autonomous portable skill (MVP)
 
-- Rewrite the `cairn` `description` to be directive + front-loaded + negative boundary (ADR-0003).
-- SessionStart bootstrap hook (one bash script, harness-detecting, `${CLAUDE_PLUGIN_ROOT}`).
-- Generate both manifests (`.codex-plugin` + `.claude-plugin`) from one canonical source; add
-  `.claude-plugin/plugin.json` (currently missing).
-- Extend `validate-cairn.mjs` with a parity check (both manifests agree; `description` <=1024;
-  trigger words in first ~250 chars; no dirs inside the plugin manifest dirs).
-- Auto-trigger evals: >=10 pt-BR/en prompts that MUST fire + >=5 near-misses that MUST NOT,
-  on Opus and Sonnet, inspecting whether the Skill tool was called.
+Built and locally validated:
+
+- [x] Directive, front-loaded `description` + bilingual `when_to_use` (ADR-0003).
+- [x] SessionStart bootstrap hook — one harness-detecting bash script using
+  `${CLAUDE_PLUGIN_ROOT}` (`plugins/cairn/hooks/`), both branches tested.
+- [x] Canonical `plugin.manifest.json` + `build-manifests.mjs` emitting both
+  `.codex-plugin` and `.claude-plugin` manifests.
+- [x] `validate-cairn.mjs` extended: file set, manifest parity, build-drift, `description`
+  <=1024 + directive + negative boundary, no dirs in manifest dirs, hook portability.
+- [x] Auto-trigger eval fixture: 12 must-fire (pt-BR/en) + 6 must-not-fire + protocol
+  (`docs/evals/auto-trigger.md`).
+
+Pending (needs a live harness — Codex first):
+
+- [ ] Install on Codex, then Claude Code; confirm the bootstrap injects and the skill loads.
+- [ ] Run the auto-trigger suite on >=2 models per harness; log fire-rate.
+- [ ] Confirm per-harness SessionStart stdout contract (the I/O mapping is current best guess).
 
 Exit: the skill auto-fires on >=90% of must-fire prompts and routes to the right mode in
 >=4/5 real brownfield cards, validated on Codex first.

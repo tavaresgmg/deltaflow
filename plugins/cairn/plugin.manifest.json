@@ -2,9 +2,10 @@
   "name": "cairn",
   "version": "0.1.0",
   "description": "Brownfield-first, autonomous workflow router for AI coding agents (Codex + Claude Code).",
-  "author": {
-    "name": "Guilherme Tavares"
-  },
+  "author": { "name": "Guilherme Tavares" },
+  "homepage": "https://github.com/tavaresgmg/cairn",
+  "license": "MIT",
+  "keywords": ["brownfield", "workflow", "router", "agent-skill", "codex", "claude-code"],
   "skills": "./skills/",
   "interface": {
     "displayName": "Cairn",
@@ -12,9 +13,7 @@
     "longDescription": "Cairn combines BMAD-style discovery, OpenSpec-style delta specs, Spec Kit-style consistency checks, and Superpowers/GSD-style verification discipline for brownfield agent workflows.",
     "developerName": "Guilherme Tavares",
     "category": "Productivity",
-    "capabilities": [
-      "skills"
-    ],
+    "capabilities": ["skills"],
     "defaultPrompt": "Use Cairn to route this card or idea to the right depth of discovery, delta spec, implementation, proof, and closeout."
   }
 }
