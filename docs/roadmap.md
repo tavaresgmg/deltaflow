@@ -1,66 +1,63 @@
 # Roadmap
 
-## Phase 0: Repo Seed
+Decisions: `docs/decisions/`. Evidence: `docs/research/`.
 
-- Create repo and plugin scaffold.
-- Record framework survey and architecture decision.
-- Create first Codex skill.
-- Validate plugin structure.
+## Phase 0: Seed + research + decisions — DONE
 
-Exit: repo has enough shape to test on real tasks.
+- Repo and plugin scaffold; rename to Cairn; MIT license; public-repo hygiene.
+- Two multi-agent research passes (frameworks + harness/context), ~2M tokens, verified.
+- Six ADRs recording the load-bearing decisions and their tradeoffs.
 
-## Phase 1: Prompt-Only MVP
+Exit (met): repo has shape and a grounded design to build the MVP from.
 
-- Improve `cairn` skill trigger and routing.
-- Test against 5 real brownfield cards:
-  - one bug;
-  - one small feature;
-  - one medium multi-file change;
-  - one ambiguous product/architecture request;
-  - one high-risk auth/data/runtime change.
-- Record outcomes in `docs/evals/`.
+## Phase 1: Autonomous portable skill (MVP)
 
-Exit: router chooses the right mode in at least 4/5 cases without manual skill invocation.
+- Rewrite the `cairn` `description` to be directive + front-loaded + negative boundary (ADR-0003).
+- SessionStart bootstrap hook (one bash script, harness-detecting, `${CLAUDE_PLUGIN_ROOT}`).
+- Generate both manifests (`.codex-plugin` + `.claude-plugin`) from one canonical source; add
+  `.claude-plugin/plugin.json` (currently missing).
+- Extend `validate-cairn.mjs` with a parity check (both manifests agree; `description` <=1024;
+  trigger words in first ~250 chars; no dirs inside the plugin manifest dirs).
+- Auto-trigger evals: >=10 pt-BR/en prompts that MUST fire + >=5 near-misses that MUST NOT,
+  on Opus and Sonnet, inspecting whether the Skill tool was called.
 
-## Phase 2: Minimal Artifacts
+Exit: the skill auto-fires on >=90% of must-fire prompts and routes to the right mode in
+>=4/5 real brownfield cards, validated on Codex first.
 
-- Add templates for brief, delta, plan, and proof.
-- Add script to create `.cairn/changes/<slug>/` only for `delta-spec` and `tracked-change`.
-- Add archive/sync guidance based on OpenSpec lessons.
+## Phase 2: File-based layered memory (ADR-0004)
 
-Exit: medium changes persist intent without creating ceremony for small fixes.
+- `.cairn/changes/<slug>/` templates (brainstorm, research, delta, plan, tasks, proof).
+- `.cairn/decision-log.md` append-only convention (write during the work).
+- `tasks.md` checkbox resume protocol; read-state-first / write-progress-last.
 
-## Phase 3: Deterministic Helpers
+Exit: medium changes persist intent and resume across sessions without ceremony for small fixes.
 
-- Add state inspection script inspired by GSD.
-- Add artifact validation script inspired by Spec Kit consistency checks.
-- Add optional web-research checklist for discovery mode.
+## Phase 3: Workspace umbrella (ADR-0005)
 
-Exit: repeated mechanical logic is in scripts, not rewritten in prompts.
+- Deterministic boundary detection script (repo owner of cwd; worktree?).
+- Parent `HANDOFF.md` + repo map; per-repo `.work/` state; worktrees anchored per repo.
+- Cross-repo task coordination (parent `.work/`, separate PRs).
 
-## Phase 4: Review And Subagents
+Exit: a task spanning 2+ repos in one workspace is coordinated without touching the wrong repo.
 
-- Add optional independent review mode.
-- Use subagents only for:
-  - parallel source research;
-  - code review;
-  - independent module slices with disjoint files.
-- Do not require subagents for small work.
+## Phase 4: Deterministic gates + reconciliation
 
-Exit: review improves quality without doubling routine task cost.
+- Correctness gates via PreToolUse hook (Claude) / command hook `exit 2` (Codex): no skipping
+  brainstorm, fresh proof before `done`, boundary enforcement.
+- Spec<->code reconciliation step (close the OpenSpec drift gap ourselves).
+- Spec Kit-style cheap read-only `/analyze` consistency check.
 
-## Phase 5: Claude Compatibility
+Exit: the gates that matter are deterministic, not advisory, with parity across harnesses.
 
-- Generate Claude Code skill/plugin layout from the same source.
-- Verify model-invoked skill behavior in Claude.
-- Document differences in hooks, commands, and plugin packaging.
+## Phase 5: First-class research stages as subagents (ADR-0006)
 
-Exit: one source workflow, two harness targets.
+- Brainstorm hard-gate; Phase 0 web-research subagent writing reusable `research/<topic>.md`;
+  official-docs grounding rule (lockfile version).
+- Subagents only for isolated research / adversarial review — never to parallelize coding.
 
-## Phase 6: Public Readiness
+Exit: brainstorm + research + docs improve quality without recreating ceremony on small cards.
 
-- Add examples.
-- Add install guide.
-- Add prompt eval cases.
-- Add release checklist.
-- Publish only after real brownfield usage validates the core assumptions.
+## Phase 6: Public readiness
+
+- Examples, install guide, prompt eval cases, release checklist.
+- Publish patterns only after real brownfield usage validates the core assumptions.

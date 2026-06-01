@@ -1,47 +1,58 @@
 # MVP Architecture
 
-## Product Shape
+Cairn is a brownfield workflow **router** — autonomous, memory- and workspace-aware —
+that picks the lightest workflow that still protects correctness. It targets OpenAI
+Codex and Claude Code from one portable source.
 
-Cairn starts as a Codex plugin containing one primary skill:
+Decisions live in `docs/decisions/` (ADRs); the evidence behind them is in
+`docs/research/{frameworks,context-and-portability}.md`.
 
-- `cairn`: automatic router and workflow controller.
+## Product shape
 
-The plugin can later split into multiple skills once real usage proves stable
-subflows. Starting with one skill avoids trigger ambiguity and keeps the system
-easy to evaluate.
+One primary skill, `cairn` (the router/loop). Starting with one skill avoids trigger
+ambiguity and keeps evaluation simple; it can split once real usage proves stable
+subflows. On Claude, the core delegates to existing domain skills (`analyze`, `product`,
+etc.) when present; on Codex it must be self-contained.
 
-## Runtime Surfaces
+## Portability: one source, generated shims (ADR-0002)
 
-Current:
+Common substrate, identical across harnesses: `plugins/cairn/skills/cairn/SKILL.md` +
+`references/`, with the manifest pointing `skills: "./skills/"`. Portable frontmatter is
+**only** `name` + `description`.
 
-- Codex plugin manifest
-- Codex Agent Skill
-- Markdown references and templates
-- Local validation script
+The build emits the per-harness shims (never hand-edited parallel copies — drift is
+failure mode #1):
 
-Deferred:
+- Manifests: `.codex-plugin/plugin.json` **and** `.claude-plugin/plugin.json`, both from one
+  canonical `plugin.manifest.json`. Only the manifest goes inside those dirs.
+- Marketplace: `.agents/plugins/marketplace.json` (Codex) and `.claude-plugin/marketplace.json` (Claude).
+- Root instruction: `AGENTS.md` (Codex reads it natively) + generated `CLAUDE.md` importing
+  `@AGENTS.md` (Claude does not read AGENTS.md — issue #6235). Prefer generation/import over
+  symlink (Windows). Keep it <32 KiB (Codex truncates silently).
+- Hooks standardized on `${CLAUDE_PLUGIN_ROOT}` (the portable var; Codex exposes it too).
 
-- CLI
-- MCP server
-- hooks
-- Claude Code plugin
-- marketplace packaging
-- UI/dashboard
+Public install must not depend on anything under the author's `~/.codex` or `~/.claude`.
 
-## Why Plugin, Not CLI First
+## Autonomy (ADR-0003)
 
-Codex docs make skills the authoring format for reusable workflows and plugins
-the installable distribution unit. A plugin can later bundle skills, hooks, MCP,
-assets, and metadata. A CLI is useful only when deterministic state operations
-prove necessary.
+Auto-trigger by description is model-invoked and probabilistic in both harnesses, so it is
+reinforced in three layers:
 
-## Core Flow
+1. **Dispatch** — a single bash SessionStart hook detects the harness and injects a small
+   bootstrap (<2k tokens) that tells the agent to route through Cairn before responding.
+2. **Discovery** — a directive `description`: `[domain] + [ALWAYS directive] + [real trigger
+   phrases] + [negative boundary]`, front-loaded, third person; `when_to_use` carries pt-BR+en
+   trigger phrases with the same keywords duplicated in `description`.
+3. **Enforcement** — correctness gates (don't skip brainstorm, fresh proof before "done") via
+   PreToolUse hook (Claude) / command hook `exit 2` (Codex). Prose in AGENTS.md is advisory.
+
+## Core flow
 
 ```text
 input -> observe -> classify -> artifact policy -> execute -> prove -> close
 ```
 
-Classification:
+Modes (classified by size/risk, lowest ceremony wins):
 
 - `direct`: small, reversible, clear edit.
 - `diagnose`: concrete broken behavior needing repro.
@@ -49,43 +60,51 @@ Classification:
 - `delta-spec`: medium brownfield change needing durable intent.
 - `tracked-change`: high-risk or multi-phase change needing explicit gates.
 
-## Artifact Policy
+## First-class stages (ADR-0006)
 
-No artifact by default. Create artifacts only when they reduce risk or preserve
-state across sessions.
+Brainstorm (hard-gate: design before code, scales with stakes), web research (Phase 0
+subagent that returns a distilled summary and writes a reusable `research/<topic>.md`),
+and official-docs grounding (always-on rule; ground on the **lockfile** version, not the
+newest). Lightweight by default, gated by intent so a small card stays cheap.
 
-Suggested future workspace:
+## Memory (ADR-0004)
+
+Layered, file-based, versioned in the repo — not any harness's native memory as canonical
+state:
 
 ```text
-.cairn/
-  changes/<slug>/
-    brief.md
-    delta.md
-    plan.md
-    proof.md
-  specs/<capability>.md
+AGENTS.md                      # how to work (portable, imported into CLAUDE.md)
+.cairn/changes/<slug>/
+  brainstorm.md
+  research/<topic>.md
+  delta.md                     # ADDED / MODIFIED / REMOVED (brownfield)
+  plan.md
+  tasks.md                     # [ ]/[x] checkboxes, updated live for resume
+  proof.md
+.cairn/decision-log.md         # append-only, written DURING the work
 ```
 
-The MVP documents this shape but does not require repo mutation unless the task
-mode needs it.
+A spec↔code reconciliation step is ours to build (OpenSpec-style drift is by-design and
+has no native command in 2026).
 
-## Compatibility Plan
+## Workspace model (ADR-0005)
 
-Codex first:
+Umbrella workspace with explicit owner per level: parent `AGENTS.md` = scope + cross-repo
+safety + repo map (not a monorepo); child repos own git/code/tests; state in two `.work/`
+layers (parent `HANDOFF.md` + child `last-session`); deterministic boundary detection
+(`git rev-parse --show-toplevel`) before any mutation; worktrees anchored per child repo.
+Multi-repo task = parent `.work/` + separate PRs per repo.
 
-- `plugins/cairn/.codex-plugin/plugin.json`
-- `skills/cairn/SKILL.md`
+## Why plugin, not CLI first
 
-Claude later:
+Skills are the authoring format and plugins the installable unit on both harnesses. A CLI
+is justified only when deterministic state operations prove necessary — and per ADR-0003,
+the deterministic logic we do need (dispatch, gates) lives in hooks/scripts, not a CLI.
 
-- generate `.claude/skills/cairn/SKILL.md` from the same source;
-- add Claude plugin manifest only after the Codex skill proves useful;
-- keep prompt content portable and avoid Codex-only tool names inside core logic.
+## Risk controls
 
-## Risk Controls
-
-- Do not trust memory for current external facts.
-- Do not create full specs for small changes.
+- Do not trust memory for current external facts; revalidate against live source.
+- Do not create full specs for small changes (intent-based mode gate, default-light).
 - Do not invent card facts; mark `[confirm: ...]` when evidence is missing.
-- Require fresh proof before `done`.
-- External mutations remain behind user approval.
+- Require fresh, executable proof before `done`.
+- External mutations stay behind user approval; hard boundaries via hooks, not prose.
