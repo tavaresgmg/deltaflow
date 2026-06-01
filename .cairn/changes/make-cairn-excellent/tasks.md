@@ -11,6 +11,7 @@
 - [x] Check over-trigger after scope expansion — proof: `node scripts/eval-autotrigger.mjs nofire cairn-nofire-after-scope-codex-0.136-default` returned 0/6 must-not misfires.
 - [x] Add development-workflow scope beyond cards — proof: updated `SKILL.md`, `README.md`, `docs/scope-and-workflows.md`, and architecture docs.
 - [x] Add semantic-claim analyzer v0 — proof: `validate-cairn.mjs` includes good/bad semantic fixtures for `cairn-analyze.mjs`.
-- [ ] Validate Claude Code install/hooks/eval when the harness is available.
+- [x] Validate Claude Code install/hooks/eval — proof: `claude plugin validate plugins/cairn`, local marketplace install, `claude plugin details cairn@cairn`, live SessionStart/PreToolUse smokes, and `node scripts/eval-autotrigger.mjs R5,N2 ... --harness claude` passed.
+- [x] Add faster cross-harness eval support — proof: `scripts/eval-autotrigger.mjs` supports `--harness codex|claude`, `--jobs`, per-case `durationMs`, `harnessVersion`, and isolated per-case fixtures.
 - [ ] Add a worked brownfield example and use it to test codebase maps.
 - [ ] Extend `cairn-analyze.mjs` from artifact/lifecycle checks toward semantic spec-code drift.

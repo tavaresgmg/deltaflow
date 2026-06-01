@@ -41,8 +41,9 @@ next — by activation, modes/workflows, artifacts, deterministic automation, me
 
 ### P0 — high value, fills a real hole
 
-1. **Broader eval matrix.** Realistic routing is proven on one Codex default model, but Phase 1
-   still needs >=2 models per harness and Claude Code parity.
+1. **Broader eval matrix.** Realistic routing is proven on one Codex default model, and a fast
+   subset is proven on Codex + Claude Code. Phase 1 still needs the realistic/full suites on
+   >=2 models per harness.
 2. **Spec↔code semantic analysis v1.** `cairn-analyze.mjs` now checks explicit `Semantic Claims`;
    the next level is cheap extraction/coverage between delta/spec claims and code/tests.
 3. **Archive/retention helper.** Lifecycle guidance exists. Add a read-only reporter or small
@@ -57,8 +58,8 @@ next — by activation, modes/workflows, artifacts, deterministic automation, me
    "skip the gate" excuses and their rebuttals. Cheap, prose-only, high guardrail value.
 6. **Forced-reuse rule** (brownfield practice). Explicit: "search for an existing function
    before creating one." One line in Required Behavior + a note in modes.
-7. **Run the eval suite on Claude Code** too, and on ≥2 models per harness — close the
-   activation-validation loop both ways.
+7. **Run the full eval suite on Claude Code** too, and on ≥2 models per harness — the fast
+   subset already closes the first activation-validation loop.
 
 ### P2 — automation polish
 

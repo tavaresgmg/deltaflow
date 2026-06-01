@@ -1,21 +1,22 @@
 // Real auto-trigger evaluation harness (not vanity metrics). Runs each prompt through
-// `codex exec --sandbox read-only` in a neutral fixture repo, then measures honest signals:
+// Codex or Claude Code in a neutral fixture repo, then measures honest signals:
 // did Cairn actually engage (read its files / route via a Cairn-unique mode), did it pick the
 // right mode, and did the native Codex `analyze` skill collide. Writes JSONL + a summary.
 //
-//   node scripts/eval-autotrigger.mjs <subset> <label> [model]
+//   node scripts/eval-autotrigger.mjs <subset> <label> [model] [--harness codex|claude] [--jobs N]
 //     subset: "all" | "fire" | "nofire" | "realistic" | comma-separated ids (F1,N2,R1,...)
 //     label:  output file name under docs/evals/results/<label>.jsonl
-//     model:  optional, passed to codex exec -m
+//     model:  optional, passed to codex exec -m or claude --model
 //
 // Detection is deliberately multi-signal and conservative; the report is honest about
 // ambiguity (diagnose is shared with the native analyze skill, so it is not Cairn-unique).
 import fs from "node:fs";
 import path from "node:path";
-import { execFileSync, spawnSync } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 
 const ROOT = process.cwd();
-const PER_CASE_TIMEOUT_MS = 150000;
+const PLUGIN_DIR = path.join(ROOT, "plugins/cairn");
+const DEFAULT_TIMEOUT_MS = 150000;
 
 const CASES = [
   // must-fire (expectMode = acceptable modes; first is primary)
@@ -92,30 +93,30 @@ const REALISTIC_CASES = [
   },
 ];
 
-function setupFixture(realistic = false, caseId = null) {
-  fs.rmSync(FIXTURE, { recursive: true, force: true });
-  fs.mkdirSync(path.join(FIXTURE, "src"), { recursive: true });
-  fs.writeFileSync(path.join(FIXTURE, "README.md"), "# Demo service\n\nSmall internal tool.\n");
-  fs.writeFileSync(path.join(FIXTURE, "package.json"), JSON.stringify({
+function setupFixture(fixture, realistic = false, caseId = null) {
+  fs.rmSync(fixture, { recursive: true, force: true });
+  fs.mkdirSync(path.join(fixture, "src"), { recursive: true });
+  fs.writeFileSync(path.join(fixture, "README.md"), "# Demo service\n\nSmall internal tool.\n");
+  fs.writeFileSync(path.join(fixture, "package.json"), JSON.stringify({
     name: "demo",
     version: "1.0.0",
     type: "module",
     scripts: { test: "node --test" },
   }, null, 2) + "\n");
   const shouldSeedCalcBug = !realistic || ["R2", "R5"].includes(caseId);
-  fs.writeFileSync(path.join(FIXTURE, "src/calc.js"), `export function soma(a, b) { return ${shouldSeedCalcBug ? "a - b" : "a + b"}; }\n`);
-  fs.writeFileSync(path.join(FIXTURE, "src/payments.js"), "export function charge() { return legacyGateway(); }\n");
-  fs.writeFileSync(path.join(FIXTURE, "src/export.js"), "export function toCsv(rows) { return rows; }\n");
+  fs.writeFileSync(path.join(fixture, "src/calc.js"), `export function soma(a, b) { return ${shouldSeedCalcBug ? "a - b" : "a + b"}; }\n`);
+  fs.writeFileSync(path.join(fixture, "src/payments.js"), "export function charge() { return legacyGateway(); }\n");
+  fs.writeFileSync(path.join(fixture, "src/export.js"), "export function toCsv(rows) { return rows; }\n");
   if (realistic) {
-    fs.mkdirSync(path.join(FIXTURE, "test"), { recursive: true });
-    fs.writeFileSync(path.join(FIXTURE, "src/auth.js"), [
+    fs.mkdirSync(path.join(fixture, "test"), { recursive: true });
+    fs.writeFileSync(path.join(fixture, "src/auth.js"), [
       "export function canAccess(user, resource) {",
       "  if (!user) return false;",
       "  return user.role === 'admin' || resource.ownerId === user.id;",
       "}",
       "",
     ].join("\n"));
-    fs.writeFileSync(path.join(FIXTURE, "test/calc.test.js"), [
+    fs.writeFileSync(path.join(fixture, "test/calc.test.js"), [
       "import test from 'node:test';",
       "import assert from 'node:assert/strict';",
       "import { soma } from '../src/calc.js';",
@@ -125,7 +126,7 @@ function setupFixture(realistic = false, caseId = null) {
       "});",
       "",
     ].join("\n"));
-    fs.writeFileSync(path.join(FIXTURE, "CARD-csv-export.md"), [
+    fs.writeFileSync(path.join(fixture, "CARD-csv-export.md"), [
       "# Card: CSV Export",
       "",
       "Add `toCsv(rows)` support in `src/export.js`.",
@@ -136,14 +137,14 @@ function setupFixture(realistic = false, caseId = null) {
       "- preserves row order.",
       "",
     ].join("\n"));
-    fs.writeFileSync(path.join(FIXTURE, "CARD-tax-bug.md"), [
+    fs.writeFileSync(path.join(fixture, "CARD-tax-bug.md"), [
       "# Card: Tax Calculation Bug",
       "",
       "`src/calc.js` has a regression: `soma(2, 3)` returns `-1`.",
       "Reproduce with `npm test`, fix root cause, then rerun the failing test.",
       "",
     ].join("\n"));
-    fs.writeFileSync(path.join(FIXTURE, "CARD-auth-refactor.md"), [
+    fs.writeFileSync(path.join(fixture, "CARD-auth-refactor.md"), [
       "# Card: Auth Refactor",
       "",
       "Refactor `src/auth.js` so access decisions are explicit and testable.",
@@ -151,21 +152,21 @@ function setupFixture(realistic = false, caseId = null) {
       "Plan first because this module is a security boundary.",
       "",
     ].join("\n"));
-    fs.writeFileSync(path.join(FIXTURE, "CARD-orm-migration.md"), [
+    fs.writeFileSync(path.join(fixture, "CARD-orm-migration.md"), [
       "# Card: ORM Migration",
       "",
       "Plan a migration from raw SQL helpers to a new ORM.",
       "No code edits yet. Identify boundaries, data risks, tests, rollback, and proof.",
       "",
     ].join("\n"));
-    fs.writeFileSync(path.join(FIXTURE, "src/webhooks.js"), [
+    fs.writeFileSync(path.join(fixture, "src/webhooks.js"), [
       "// Intentionally empty placeholder for R6 greenfield-in-repo routing.",
       "",
     ].join("\n"));
   }
-  execFileSync("git", ["init", "-q"], { cwd: FIXTURE });
-  execFileSync("git", ["add", "-A"], { cwd: FIXTURE });
-  execFileSync("git", ["-c", "user.email=e@e.com", "-c", "user.name=e", "commit", "-qm", "seed"], { cwd: FIXTURE });
+  execFileSync("git", ["init", "-q"], { cwd: fixture });
+  execFileSync("git", ["add", "-A"], { cwd: fixture });
+  execFileSync("git", ["-c", "user.email=e@e.com", "-c", "user.name=e", "commit", "-qm", "seed"], { cwd: fixture });
 }
 
 const UNIQUE = ["delta-spec", "tracked-change"]; // modes exclusive to Cairn (analyze lacks these)
@@ -187,7 +188,7 @@ function extractMode(log) {
 }
 
 function detect(log) {
-  const readCairn = /plugins\/cache\/cairn|skills\/cairn\/(SKILL|references)|\.cairn\/changes/i.test(log);
+  const readCairn = /plugins\/cache\/cairn|skills\/cairn\/(SKILL|references)|\.cairn\/changes|Launching skill: cairn:cairn|"skill"\s*:\s*"cairn:cairn"/i.test(log);
   const collidedAnalyze = /skills\/analyze|\.agents\/skills\//i.test(log);
   const modeDetected = extractMode(log);
   const uniqueMode = UNIQUE.includes(modeDetected);
@@ -196,11 +197,61 @@ function detect(log) {
   return { firedStrong, readCairn, modeDetected, uniqueMode, outputShape, collidedAnalyze };
 }
 
-function runCase(c, model) {
+function harnessVersion(harness) {
+  try {
+    if (harness === "claude") return execFileSync("claude", ["--version"], { encoding: "utf8" }).trim();
+    return execFileSync("codex", ["--version"], { encoding: "utf8" }).trim();
+  } catch {
+    return "unknown";
+  }
+}
+
+function spawnCapture(command, args, opts) {
+  return new Promise((resolve) => {
+    const child = spawn(command, args, {
+      cwd: opts.cwd,
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    let stdout = "";
+    let stderr = "";
+    let timedOut = false;
+    const timer = setTimeout(() => {
+      timedOut = true;
+      child.kill("SIGTERM");
+    }, opts.timeout);
+    child.stdout.setEncoding("utf8");
+    child.stderr.setEncoding("utf8");
+    child.stdout.on("data", (chunk) => { stdout += chunk; });
+    child.stderr.on("data", (chunk) => { stderr += chunk; });
+    child.on("error", (error) => {
+      clearTimeout(timer);
+      resolve({ stdout, stderr, error, signal: null, status: null });
+    });
+    child.on("close", (status, signal) => {
+      clearTimeout(timer);
+      resolve({ stdout, stderr, error: null, signal: timedOut ? "timeout" : signal, status });
+    });
+  });
+}
+
+async function runCase(c, { harness, model, timeoutMs, safeLabel }) {
+  const fixture = path.join("/tmp", `cairn-eval-fixture-${safeLabel}-${process.pid}-${c.id}`);
+  setupFixture(fixture, /^R/.test(c.id), c.id);
   const args = ["exec", "--sandbox", "read-only"];
-  if (model) args.push("-m", model);
-  args.push(c.prompt);
-  const res = spawnSync("codex", args, { cwd: FIXTURE, timeout: PER_CASE_TIMEOUT_MS, encoding: "utf8", maxBuffer: 50 * 1024 * 1024 });
+  let command = "codex";
+  let commandArgs = args;
+  if (harness === "claude") {
+    command = "claude";
+    commandArgs = ["--print", "--verbose", "--include-hook-events", "--output-format", "stream-json", "--plugin-dir", PLUGIN_DIR];
+    if (model) commandArgs.push("--model", model);
+    commandArgs.push(c.prompt);
+  } else {
+    if (model) commandArgs.push("-m", model);
+    commandArgs.push(c.prompt);
+  }
+  const started = Date.now();
+  const res = await spawnCapture(command, commandArgs, { cwd: fixture, timeout: timeoutMs });
+  const durationMs = Date.now() - started;
   const log = (res.stdout || "") + "\n" + (res.stderr || "");
   let status = "ok";
   if (res.signal) status = "timeout";
@@ -208,15 +259,44 @@ function runCase(c, model) {
   const sig = detect(log);
   const fireCorrect = sig.firedStrong === c.expectFire;
   const modeCorrect = !c.expectFire ? null : c.expectMode.includes(sig.modeDetected);
-  return { ...c, status, ...sig, fireCorrect, modeCorrect, logLen: log.length };
+  fs.rmSync(fixture, { recursive: true, force: true });
+  return { ...c, harness, model: model || "default", status, durationMs, ...sig, fireCorrect, modeCorrect, logLen: log.length };
+}
+
+function parseArgs(argv) {
+  const opts = { harness: "codex", jobs: 1, timeoutMs: DEFAULT_TIMEOUT_MS };
+  const positional = [];
+  for (let i = 0; i < argv.length; i += 1) {
+    const arg = argv[i];
+    if (arg === "--harness") opts.harness = argv[++i];
+    else if (arg.startsWith("--harness=")) opts.harness = arg.split("=", 2)[1];
+    else if (arg === "--jobs") opts.jobs = Number(argv[++i]);
+    else if (arg.startsWith("--jobs=")) opts.jobs = Number(arg.split("=", 2)[1]);
+    else if (arg === "--timeout-ms") opts.timeoutMs = Number(argv[++i]);
+    else if (arg.startsWith("--timeout-ms=")) opts.timeoutMs = Number(arg.split("=", 2)[1]);
+    else positional.push(arg);
+  }
+  if (!["codex", "claude"].includes(opts.harness)) throw new Error(`invalid --harness: ${opts.harness}`);
+  if (!Number.isInteger(opts.jobs) || opts.jobs < 1) throw new Error(`invalid --jobs: ${opts.jobs}`);
+  if (!Number.isInteger(opts.timeoutMs) || opts.timeoutMs < 1000) throw new Error(`invalid --timeout-ms: ${opts.timeoutMs}`);
+  return { ...opts, subsetArg: positional[0] || "all", label: positional[1] || "run", model: positional[2] || null };
+}
+
+async function runPool(subset, opts, onResult) {
+  const queue = [...subset];
+  const workers = Array.from({ length: Math.min(opts.jobs, queue.length) }, async () => {
+    while (queue.length) {
+      const c = queue.shift();
+      const r = await runCase(c, opts);
+      onResult(r);
+    }
+  });
+  await Promise.all(workers);
 }
 
 // main
-const subsetArg = process.argv[2] || "all";
-const label = process.argv[3] || "run";
-const model = process.argv[4] || null;
+const { subsetArg, label, model, harness, jobs, timeoutMs } = parseArgs(process.argv.slice(2));
 const safeLabel = label.replace(/[^a-zA-Z0-9_.-]/g, "-");
-const FIXTURE = path.join("/tmp", `cairn-eval-fixture-${safeLabel}-${process.pid}`);
 let subset = CASES;
 if (subsetArg === "fire") subset = CASES.filter((c) => c.expectFire);
 else if (subsetArg === "nofire") subset = CASES.filter((c) => !c.expectFire);
@@ -224,6 +304,9 @@ else if (subsetArg === "realistic") subset = REALISTIC_CASES;
 else if (subsetArg !== "all") {
   const ids = subsetArg.split(",").map((s) => s.trim());
   subset = [...CASES, ...REALISTIC_CASES].filter((c) => ids.includes(c.id));
+  if (!subset.length) {
+    throw new Error(`subset selected no cases: ${subsetArg}`);
+  }
 }
 
 const outDir = path.join(ROOT, "docs/evals/results");
@@ -233,19 +316,22 @@ const outTmp = path.join(outDir, `.${label}.${process.pid}.tmp`);
 fs.writeFileSync(outTmp, ""); // fresh, promoted only after summary is written
 
 const results = [];
-for (const c of subset) {
-  setupFixture(/^R/.test(c.id), c.id);
-  const r = runCase(c, model);
+const version = harnessVersion(harness);
+await runPool(subset, { harness, model, jobs, timeoutMs, safeLabel }, (r) => {
   results.push(r);
   fs.appendFileSync(outTmp, JSON.stringify(r) + "\n");
-  console.log(`${r.id} [${r.status}] fired=${r.firedStrong} (expect ${c.expectFire}) mode=${r.modeDetected} ok=${r.fireCorrect}${c.expectFire ? ` modeOk=${r.modeCorrect}` : ""} collideAnalyze=${r.collidedAnalyze}`);
-}
+  console.log(`${r.id} [${r.status}] ${r.durationMs}ms fired=${r.firedStrong} (expect ${r.expectFire}) mode=${r.modeDetected} ok=${r.fireCorrect}${r.expectFire ? ` modeOk=${r.modeCorrect}` : ""} collideAnalyze=${r.collidedAnalyze}`);
+});
 
 const fires = results.filter((r) => r.expectFire);
 const nofires = results.filter((r) => !r.expectFire);
 const summary = {
   label,
+  harness,
+  harnessVersion: version,
   model: model || "default",
+  jobs,
+  timeoutMs,
   cases: results.length,
   mustFire: fires.length,
   mustFire_fired: fires.filter((r) => r.firedStrong).length,

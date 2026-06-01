@@ -11,6 +11,10 @@ const errors = [];
 const fail = (msg) => errors.push(msg);
 const read = (rel) => fs.readFileSync(path.join(root, rel), "utf8");
 const readJson = (rel) => JSON.parse(read(rel));
+const readJsonlSummary = (rel) => {
+  const lines = read(rel).trim().split("\n").filter(Boolean).map((line) => JSON.parse(line));
+  return lines.find((row) => row.summary)?.summary;
+};
 
 // An unquoted YAML scalar containing ": " is parsed as a mapping and breaks frontmatter
 // loading — a real failure observed on Codex. Scan top-level frontmatter values for it.
@@ -268,6 +272,64 @@ if (!missing.length) {
     fail(`state helper smoke test failed: ${e.message}`);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
+  }
+
+  // Eval docs must not claim recorded proof without matching JSONL summaries.
+  const evalExpectations = [
+    {
+      file: "docs/evals/results/cairn-realistic-codex-0.136-default.jsonl",
+      cases: 7,
+      mustFire: 7,
+      mustFire_fired: 7,
+      mustFire_routedRight: 7,
+    },
+    {
+      file: "docs/evals/results/cairn-nofire-after-scope-codex-0.136-default.jsonl",
+      cases: 6,
+      mustNot: 6,
+      mustNot_misfired: 0,
+    },
+    {
+      file: "docs/evals/results/cairn-fast-codex-0.136-default.jsonl",
+      harness: "codex",
+      cases: 2,
+      mustFire: 1,
+      mustFire_fired: 1,
+      mustFire_routedRight: 1,
+      mustNot: 1,
+      mustNot_misfired: 0,
+    },
+    {
+      file: "docs/evals/results/cairn-fast-claude-2.1.159-default.jsonl",
+      harness: "claude",
+      cases: 2,
+      mustFire: 1,
+      mustFire_fired: 1,
+      mustFire_routedRight: 1,
+      mustNot: 1,
+      mustNot_misfired: 0,
+    },
+  ];
+  for (const expected of evalExpectations) {
+    if (!fs.existsSync(path.join(root, expected.file))) {
+      fail(`missing eval result claimed by docs: ${expected.file}`);
+      continue;
+    }
+    try {
+      const summary = readJsonlSummary(expected.file);
+      if (!summary) {
+        fail(`eval result has no summary row: ${expected.file}`);
+        continue;
+      }
+      for (const [key, value] of Object.entries(expected)) {
+        if (key === "file") continue;
+        if (summary[key] !== value) {
+          fail(`eval result ${expected.file} expected ${key}=${value}, got ${summary[key]}`);
+        }
+      }
+    } catch (e) {
+      fail(`eval result is not valid JSONL: ${expected.file}: ${e.message}`);
+    }
   }
 
   // Researcher agent frontmatter.

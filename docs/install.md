@@ -29,16 +29,26 @@ Verified behavior on Codex: the `SessionStart` hook injects the routing bootstra
 `cairn` skill loads, and it auto-fires on brownfield work — e.g. it routed "there's a bug in
 calc.js" to **diagnose** mode without being named.
 
-## Claude Code
+## Claude Code (validated on v2.1.159)
 
 ```bash
 /plugin marketplace add tavaresgmg/cairn
 /plugin install cairn@cairn
 ```
 
+Local development:
+
+```bash
+claude plugin marketplace add --scope local ./
+claude plugin install --scope local cairn@cairn
+claude plugin details cairn@cairn
+```
+
 Marketplace manifest is at `.claude-plugin/marketplace.json`; hooks use the documented
-`SessionStart` / `PreToolUse` contracts. Run the eval suite (`docs/evals/auto-trigger.md`)
-to measure fire-rate on your models.
+`SessionStart` / `PreToolUse` contracts. Verified locally: marketplace add/install, component
+inventory (skill, agent, SessionStart, PreToolUse), SessionStart injection, PreToolUse allow
+inside repo, PreToolUse block outside repo, and a fast auto-trigger eval through
+`scripts/eval-autotrigger.mjs --harness claude`.
 
 ## Verify locally (no harness)
 

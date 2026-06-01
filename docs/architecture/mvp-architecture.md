@@ -28,9 +28,10 @@ failure mode #1):
 - Manifests: `.codex-plugin/plugin.json` **and** `.claude-plugin/plugin.json`, both from one
   canonical `plugin.manifest.json`. Only the manifest goes inside those dirs.
 - Marketplace: `.agents/plugins/marketplace.json` (Codex) and `.claude-plugin/marketplace.json` (Claude).
-- Root instruction: `AGENTS.md` (Codex reads it natively) + generated `CLAUDE.md` importing
-  `@AGENTS.md` (Claude does not read AGENTS.md — issue #6235). Prefer generation/import over
-  symlink (Windows). Keep it <32 KiB (Codex truncates silently).
+- Root instruction: `AGENTS.md` stays human/project guidance. Cairn's Claude Code behavior is
+  delivered by the plugin inventory (skill, agent, hooks) and SessionStart bootstrap, not a
+  generated root `CLAUDE.md`. Add a generated `CLAUDE.md` only if live usage proves Claude
+  needs repo-root instructions outside the plugin path.
 - Hooks standardized on `${CLAUDE_PLUGIN_ROOT}` (the portable var; Codex exposes it too).
 
 Public install must not depend on anything under the author's `~/.codex` or `~/.claude`.
@@ -75,7 +76,7 @@ Layered, file-based, versioned in the repo — not any harness's native memory a
 state:
 
 ```text
-AGENTS.md                      # how to work (portable, imported into CLAUDE.md)
+AGENTS.md                      # human/project guidance; plugin bootstrap carries Cairn routing
 .cairn/changes/<slug>/
   brainstorm.md
   research/<topic>.md

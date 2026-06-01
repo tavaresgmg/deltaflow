@@ -12,8 +12,8 @@ the suite both with and without it to quantify each layer.
 
 ## Harness
 
-`scripts/eval-autotrigger.mjs` runs each prompt through `codex exec --sandbox read-only` in a
-neutral fixture repo and measures honest, defensible signals (stdout+stderr merged):
+`scripts/eval-autotrigger.mjs` runs each prompt through Codex or Claude Code in a neutral
+fixture repo and measures honest, defensible signals (stdout+stderr merged):
 
 - `readCairn` — the agent actually read the Cairn SKILL.md/references (strongest "engaged" signal).
 - `modeDetected` — the mode the agent **chose** (parsed from its classification prose, not the
@@ -35,8 +35,20 @@ node scripts/eval-autotrigger.mjs realistic cairn-realistic-<model> <model>
 ```
 
 Eval result files are written atomically through a temp file and promoted only after the
-summary row is written. Fixtures are isolated per process/label so subsets can run in
+summary row is written. Fixtures are isolated per process/label/case so subsets can run in
 parallel without sharing `/tmp` state.
+
+Cross-harness and fast subset examples:
+
+```bash
+node scripts/eval-autotrigger.mjs R5,N2 cairn-fast-codex-0.136-default --jobs 2 --timeout-ms 120000
+node scripts/eval-autotrigger.mjs R5,N2 cairn-fast-claude-2.1.159-default --harness claude --jobs 2 --timeout-ms 120000
+```
+
+Each JSONL row records `harness`, `harnessVersion`, `model`, `durationMs`, status, trigger
+signals, and routing correctness. The Claude harness loads the local plugin with
+`--plugin-dir plugins/cairn`, so it can measure plugin behavior without relying on a manual
+local install in the temp fixture repo.
 
 ## Protocol
 
@@ -110,7 +122,8 @@ executed.
   - **Baseline (Cairn removed, `baseline-off.jsonl`): 0/4 must-fire showed any structure** —
     no mode, no routing, no output shape. Confirms Cairn's value is discipline/predictability,
     not raw capability.
-  - Still pending: realistic-fixture routing run; same suite on Claude Code; ≥2 models.
+  - At the time of this run, realistic-fixture routing, Claude Code, and ≥2 model coverage
+    were still pending. Later runs below close the Codex realistic subset and a Claude fast subset.
 
 - **2026-06-01 — Codex v0.136.0, default model — realistic routing subset (7).**
   `docs/evals/results/cairn-realistic-codex-0.136-default.jsonl`.
@@ -124,3 +137,17 @@ executed.
   `docs/evals/results/cairn-nofire-after-scope-codex-0.136-default.jsonl`.
   - **Misfire: 0/6 (0%).** Scope expansion to no-card/greenfield/research/cleanup did not
     trigger on pure Q&A or one-off shell prompts in this subset.
+
+- **2026-06-01 — Codex v0.136.0, default model — fast cross-harness subset (R5,N2).**
+  `docs/evals/results/cairn-fast-codex-0.136-default.jsonl`.
+  - **Trigger: 1/1 must-fire fired (100%).**
+  - **Routing: 1/1 expected mode (100%).**
+  - **Misfire: 0/1 must-not (0%).**
+  - **Speed:** with `--jobs 2`, N2 completed in 16.3s and R5 in 41.3s.
+
+- **2026-06-01 — Claude Code v2.1.159, default model — fast cross-harness subset (R5,N2).**
+  `docs/evals/results/cairn-fast-claude-2.1.159-default.jsonl`.
+  - **Trigger: 1/1 must-fire fired (100%).**
+  - **Routing: 1/1 expected mode (100%).**
+  - **Misfire: 0/1 must-not (0%).**
+  - **Speed:** with `--jobs 2`, N2 completed in 5.5s and R5 in 31.8s.

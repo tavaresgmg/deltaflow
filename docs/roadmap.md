@@ -37,8 +37,9 @@ Validated on Codex (v0.135.0, gpt-5.5):
 Still pending:
 
 - [ ] Full auto-trigger suite (12 must-fire + 6 must-not) on ≥2 models per harness; log fire-rate.
-- [ ] Same install + auto-trigger pass on Claude Code.
-- [ ] Confirm the PreToolUse guard blocks live on each harness.
+- [x] Fast install + auto-trigger pass on Claude Code v2.1.159.
+- [x] Confirm the Claude Code PreToolUse guard blocks outside-repo writes live.
+- [ ] Confirm the PreToolUse guard blocks live on Codex, not only via local smoke.
 
 Exit: the skill auto-fires on >=90% of must-fire prompts and routes to the right mode in
 >=4/5 real brownfield cards. Single-case routing confirmed on Codex; suite pending.
@@ -74,7 +75,8 @@ Exit: a task spanning 2+ repos in one workspace is coordinated without touching 
 - [x] Semantic-claim v0 analysis: explicit `## Semantic Claims` must name code/proof and
   existing code refs.
 - [ ] Real spec<->code semantic extraction beyond explicit claims.
-- [ ] Live hook proof per harness.
+- [x] Claude Code live hook proof: SessionStart and PreToolUse.
+- [ ] Codex live hook proof beyond local smoke.
 
 Exit: the gates that matter are deterministic, not advisory, with parity across harnesses.
 
@@ -93,5 +95,6 @@ Exit: brainstorm + research + docs improve quality without recreating ceremony o
 - [x] Release checklist (`docs/release-checklist.md`).
 - [ ] Worked examples on a real brownfield card.
 - [x] Realistic routing fixture subset with cards + code + tests on Codex v0.136.0 default.
-- [ ] Same realistic routing subset on >=2 models and Claude Code.
+- [x] Fast cross-harness subset on Codex v0.136.0 and Claude Code v2.1.159.
+- [ ] Same realistic routing subset on >=2 models per harness.
 - [ ] Publish patterns only after real brownfield usage validates the core assumptions.
