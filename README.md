@@ -78,10 +78,10 @@ node scripts/validate-cairn.mjs    # structural + YAML-safety + gate smoke tests
 
 ## Status
 
-Phases 0-6 built and locally validated. On Codex (v0.135.0) the plugin installs, the
-SessionStart hook injects the bootstrap, the skill loads, and Cairn auto-fires on a
-brownfield prompt and routes to the right mode. The first P0 primitives are in place:
-optional codebase maps, living spec/archive guidance, structured `cairn-analyze`, and
-read-only `cairn-next`. Remaining: realistic routing fixtures, the full auto-trigger suite
-on ≥2 models per harness, and the same pass on Claude Code (`docs/evals/auto-trigger.md`,
-`docs/roadmap.md`).
+Phases 0-6 are built and locally validated. Codex has live install, SessionStart, and
+auto-trigger proof; Claude Code v2.1.159 has live local marketplace/install, component
+inventory, SessionStart, PreToolUse allow/block, and a fast auto-trigger subset. P0
+primitives are in place: optional codebase maps, living specs/archive guidance, structured
+`cairn-analyze`, semantic-claim drift checks, faster cross-harness evals, and read-only
+`cairn-next`. Remaining: full auto-trigger/realistic suites on ≥2 models per harness
+(`docs/evals/auto-trigger.md`, `docs/roadmap.md`).

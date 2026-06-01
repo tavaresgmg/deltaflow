@@ -330,6 +330,26 @@ if (!missing.length) {
       mustNot: 1,
       mustNot_misfired: 0,
     },
+    {
+      file: "docs/evals/results/cairn-broad-codex-0.136-default.jsonl",
+      harness: "codex",
+      cases: 13,
+      mustFire: 7,
+      mustFire_fired: 7,
+      mustFire_routedRight: 7,
+      mustNot: 6,
+      mustNot_misfired: 0,
+    },
+    {
+      file: "docs/evals/results/cairn-broad-fast-claude-2.1.159-default.jsonl",
+      harness: "claude",
+      cases: 5,
+      mustFire: 2,
+      mustFire_fired: 2,
+      mustFire_routedRight: 2,
+      mustNot: 3,
+      mustNot_misfired: 0,
+    },
   ];
   for (const expected of evalExpectations) {
     if (!fs.existsSync(path.join(root, expected.file))) {
@@ -350,6 +370,17 @@ if (!missing.length) {
       }
     } catch (e) {
       fail(`eval result is not valid JSONL: ${expected.file}: ${e.message}`);
+    }
+  }
+
+  const evalScript = read("scripts/eval-autotrigger.mjs");
+  const evalDocs = read("docs/evals/auto-trigger.md");
+  for (const id of ["R8", "R9", "R10", "R11", "R12", "R13", "R14", "N7", "N8", "N9", "N10", "N11", "N12"]) {
+    if (!new RegExp(`id:\\s*["']${id}["']`).test(evalScript)) {
+      fail(`eval runner missing broad-scope case ${id}`);
+    }
+    if (!new RegExp(`\\|\\s*${id}\\s*\\|`).test(evalDocs)) {
+      fail(`eval docs missing broad-scope case ${id}`);
     }
   }
 

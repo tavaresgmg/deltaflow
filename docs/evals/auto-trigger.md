@@ -45,10 +45,11 @@ node scripts/eval-autotrigger.mjs R5,N2 cairn-fast-codex-0.136-default --jobs 2 
 node scripts/eval-autotrigger.mjs R5,N2 cairn-fast-claude-2.1.159-default --harness claude --jobs 2 --timeout-ms 120000
 ```
 
-Each JSONL row records `harness`, `harnessVersion`, `model`, `durationMs`, status, trigger
-signals, and routing correctness. The Claude harness loads the local plugin with
-`--plugin-dir plugins/cairn`, so it can measure plugin behavior without relying on a manual
-local install in the temp fixture repo.
+New JSONL runs record `harness`, `harnessVersion`, `model`, `durationMs`, status, trigger
+signals, and routing correctness. Older result files may predate those metadata fields; the
+summary row remains the durable validation contract. The Claude harness loads the local plugin
+with `--plugin-dir plugins/cairn`, so it can measure plugin behavior without relying on a
+manual local install in the temp fixture repo.
 
 ## Protocol
 
@@ -90,6 +91,41 @@ must-not-fire prompt mis-fires, on each tested model.
 | N4 | pt-BR | Qual a capital da Austrália? | unrelated Q&A |
 | N5 | pt-BR | Roda `npm test` e me mostra o resultado. | one-off shell command |
 | N6 | en | Explain how OAuth2 authorization code flow works in general. | conceptual, no repo |
+
+## Realistic Must Fire
+
+These cases run against a fixture repo with files, tests, cards, and modules.
+
+| # | Lang | Prompt focus | Expected mode |
+| --- | --- | --- | --- |
+| R1 | en | card-driven CSV export | `delta-spec` or `direct` |
+| R2 | pt-BR | tax/test bug | `diagnose` |
+| R3 | en | auth refactor with security boundary | `delta-spec` or `tracked-change` |
+| R4 | en | ORM migration planning | `discovery` or `tracked-change` |
+| R5 | pt-BR | failing local test | `diagnose` or `direct` |
+| R6 | en | greenfield webhook module | `direct`, `discovery`, or `delta-spec` |
+| R7 | en | high-risk billing subsystem | `discovery`, `tracked-change`, or `delta-spec` |
+| R8 | en | no-card CSV normalization | `direct` or `delta-spec` |
+| R9 | en | repo-grounded test-runner research | `discovery` or `delta-spec` |
+| R10 | en | duplicated CSV escaping cleanup | `direct` or `delta-spec` |
+| R11 | en | auth simplification with security boundary | `delta-spec` or `tracked-change` |
+| R12 | en | repo-pattern alignment for formatter | `direct` or `delta-spec` |
+| R13 | en | greenfield background job runner | `discovery` or `delta-spec` |
+| R14 | en | export error-handling alignment | `direct` or `delta-spec` |
+
+## Realistic Must NOT Fire
+
+These near-misses mention repo files, cards, research, tests, or cleanup words, but do not ask
+for local development work.
+
+| # | Lang | Prompt focus | Why not |
+| --- | --- | --- | --- |
+| N7 | en | explain `src/auth.js` only | read-only repo Q&A |
+| N8 | en | read `package.json` test script | one-off file read |
+| N9 | en | summarize a card only | card mention without implementation/planning |
+| N10 | en | OAuth2 PKCE in general | conceptual research, no repo work |
+| N11 | en | run tests and paste output | one-off shell command |
+| N12 | en | cleanup strategy in general | conceptual cleanup, no local task |
 
 ## Near-miss notes
 
@@ -151,3 +187,18 @@ executed.
   - **Routing: 1/1 expected mode (100%).**
   - **Misfire: 0/1 must-not (0%).**
   - **Speed:** with `--jobs 2`, N2 completed in 5.5s and R5 in 31.8s.
+
+- **2026-06-01 — Codex v0.136.0, default model — broad no-card/research/cleanup subset (13).**
+  `docs/evals/results/cairn-broad-codex-0.136-default.jsonl`.
+  - **Trigger: 7/7 must-fire fired (100%).**
+  - **Routing: 7/7 expected mode (100%).** Covered no-card implementation, repo-grounded
+    research, cleanup, simplification, repo-pattern alignment, greenfield job runner, and
+    error-handling alignment.
+  - **Misfire: 0/6 must-not (0%).** Covered read-only repo Q&A, one-off file read, card
+    summary only, conceptual research, one-off test command, and conceptual cleanup.
+
+- **2026-06-01 — Claude Code v2.1.159, default model — broad fast subset (R8,R9,N7,N9,N10).**
+  `docs/evals/results/cairn-broad-fast-claude-2.1.159-default.jsonl`.
+  - **Trigger: 2/2 must-fire fired (100%).**
+  - **Routing: 2/2 expected mode (100%).**
+  - **Misfire: 0/3 must-not (0%).**

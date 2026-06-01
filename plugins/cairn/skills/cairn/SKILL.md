@@ -1,6 +1,6 @@
 ---
 name: cairn
-description: "Routes software development work in or around a repo/workspace to the lightest safe workflow that still protects correctness. ALWAYS invoke for build, change, fix, refactor, plan, investigate, research, cleanup, reduce complexity, align with repo patterns, spec, implement, greenfield-in-repo work, or any card/issue/ticket/link/screenshot/bug/rough idea (pt-BR: implementar, criar, corrigir, refatorar, ajustar, planejar, pesquisar, investigar, limpar, reduzir complexidade, analisar). Skip pure Q&A, one-off shell commands, or tasks owned by a more specific active skill."
+description: "Routes software development work in or around a repo/workspace to the lightest safe workflow that still protects correctness. ALWAYS invoke for build, change, fix, refactor, plan, investigate, research, cleanup, reduce complexity, align with repo patterns, spec, implement, greenfield-in-repo work, or any card/issue/ticket/link/screenshot/bug/rough idea (pt-BR: implementar, criar, corrigir, refatorar, ajustar, planejar, pesquisar, investigar, limpar, reduzir complexidade, analisar). Skip pure/read-only Q&A, explain/summarize/list/open-only requests, one-off shell commands, or tasks owned by a more specific active skill."
 when_to_use: |
   Fire when the user says (en): build/change/fix/refactor/plan/research/investigate this;
   implement this card/issue/ticket; here's a bug/link/screenshot; brainstorm before
@@ -9,7 +9,8 @@ when_to_use: |
   (pt-BR): "implementa/cria/corrige/refatora/ajusta isso"; "esse card/bug/ticket";
   "investiga/analisa esse problema"; "pesquisa"; "planeja antes de codar"; "cria spec";
   "limpa/reduz complexidade"; "alinha com o padrao do repo"; "trabalha nesse repo".
-  Do NOT fire for: pure Q&A with no repo work, one-off shell commands, or work owned
+  Do NOT fire for: pure/read-only Q&A, explain/summarize/list/open-only requests,
+  card summaries with no implementation/planning, one-off shell commands, or work owned
   by a more specific active skill.
 ---
 
@@ -69,6 +70,9 @@ Read these references only when needed:
 - Not card-only: route rough ideas, no-card tasks, greenfield-in-repo, research, cleanup,
   simplification, implementation, SDD/spec work, and repo-pattern alignment through the same
   proportional mode ladder.
+- Read-only repo questions are not development work by themselves: explaining a file,
+  summarizing a card, listing a script, or opening a file without implementation, planning,
+  diagnosis, or investigation should skip Cairn.
 - Evidence first: do not invent IDs, dates, owners, card facts, API behavior, or runtime status.
 - Research first when external truth can change the plan. Brainstorm, web research, and
   official-docs grounding are first-class but intent-gated (see `references/research.md`):

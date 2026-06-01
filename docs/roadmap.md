@@ -98,5 +98,7 @@ Exit: brainstorm + research + docs improve quality without recreating ceremony o
 - [x] Worked example proving codebase maps on a realistic brownfield eval-harness card.
 - [x] Realistic routing fixture subset with cards + code + tests on Codex v0.136.0 default.
 - [x] Fast cross-harness subset on Codex v0.136.0 and Claude Code v2.1.159.
+- [x] Broad no-card/research/cleanup/pattern-alignment eval coverage on Codex, plus a
+  Claude Code broad-fast subset.
 - [ ] Same realistic routing subset on >=2 models per harness.
 - [ ] Publish patterns only after real brownfield usage validates the core assumptions.

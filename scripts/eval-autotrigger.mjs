@@ -91,6 +91,106 @@ const REALISTIC_CASES = [
     expectMode: ["discovery", "tracked-change", "delta-spec"],
     prompt: "Design a new multi-tenant billing subsystem in this repo from scratch. Do not code yet; research risks, boundaries, rollback, and proof first.",
   },
+  {
+    id: "R8",
+    lang: "pt",
+    expectFire: true,
+    expectMode: ["direct", "delta-spec"],
+    prompt: "No card: add input normalization to the CSV export path in this repo and validate the local tests.",
+  },
+  {
+    id: "R9",
+    lang: "en",
+    expectFire: true,
+    expectMode: ["discovery", "delta-spec"],
+    prompt: "Research whether this repo should adopt Vitest instead of node:test. Use current docs and the local package state; do not edit files.",
+  },
+  {
+    id: "R10",
+    lang: "en",
+    expectFire: true,
+    expectMode: ["direct", "delta-spec"],
+    prompt: "Clean up duplicated CSV escaping logic across this repo without changing behavior.",
+  },
+  {
+    id: "R11",
+    lang: "en",
+    expectFire: true,
+    expectMode: ["delta-spec", "tracked-change"],
+    prompt: "Simplify the auth permission logic without changing behavior; plan first because this is a security boundary.",
+  },
+  {
+    id: "R12",
+    lang: "en",
+    expectFire: true,
+    expectMode: ["direct", "delta-spec"],
+    prompt: "Add an invoice formatter that follows the existing formatter pattern in this repo. Do not introduce a new framework.",
+  },
+  {
+    id: "R13",
+    lang: "en",
+    expectFire: true,
+    expectMode: ["discovery", "delta-spec"],
+    prompt: "Create a new background job runner module in this repo from scratch. First inspect existing scripts and define the smallest safe scaffold.",
+  },
+  {
+    id: "R14",
+    lang: "en",
+    expectFire: true,
+    expectMode: ["direct", "delta-spec"],
+    prompt: "Align the export module with the repo's existing error-handling pattern and prove behavior did not change.",
+  },
+];
+
+const REALISTIC_MUST_NOT_CASES = [
+  {
+    id: "N7",
+    lang: "en",
+    realistic: true,
+    expectFire: false,
+    expectMode: [],
+    prompt: "Explain what `src/auth.js` does. Do not propose changes.",
+  },
+  {
+    id: "N8",
+    lang: "en",
+    realistic: true,
+    expectFire: false,
+    expectMode: [],
+    prompt: "Open package.json and tell me the test script.",
+  },
+  {
+    id: "N9",
+    lang: "en",
+    realistic: true,
+    expectFire: false,
+    expectMode: [],
+    prompt: "Summarize CARD-csv-export.md only; do not implement it.",
+  },
+  {
+    id: "N10",
+    lang: "en",
+    realistic: true,
+    expectFire: false,
+    expectMode: [],
+    prompt: "Research what OAuth2 PKCE is in general; no repo changes.",
+  },
+  {
+    id: "N11",
+    lang: "en",
+    realistic: true,
+    expectFire: false,
+    expectMode: [],
+    prompt: "Run npm test and paste the output. Do not investigate or fix failures.",
+  },
+  {
+    id: "N12",
+    lang: "en",
+    realistic: true,
+    expectFire: false,
+    expectMode: [],
+    prompt: "What cleanup strategy would you use for a messy codebase in general?",
+  },
 ];
 
 function setupFixture(fixture, realistic = false, caseId = null) {
@@ -106,16 +206,72 @@ function setupFixture(fixture, realistic = false, caseId = null) {
   const shouldSeedCalcBug = !realistic || ["R2", "R5"].includes(caseId);
   fs.writeFileSync(path.join(fixture, "src/calc.js"), `export function soma(a, b) { return ${shouldSeedCalcBug ? "a - b" : "a + b"}; }\n`);
   fs.writeFileSync(path.join(fixture, "src/payments.js"), "export function charge() { return legacyGateway(); }\n");
-  fs.writeFileSync(path.join(fixture, "src/export.js"), "export function toCsv(rows) { return rows; }\n");
+  fs.writeFileSync(path.join(fixture, "src/export.js"), [
+    "function escapeCsv(value) {",
+    "  return String(value).replaceAll('\"', '\"\"');",
+    "}",
+    "",
+    "export function toCsv(rows) {",
+    "  if (!Array.isArray(rows)) throw new TypeError('rows must be an array');",
+    "  return rows;",
+    "}",
+    "",
+  ].join("\n"));
   if (realistic) {
     fs.mkdirSync(path.join(fixture, "test"), { recursive: true });
+    fs.mkdirSync(path.join(fixture, "src/formatters"), { recursive: true });
+    fs.mkdirSync(path.join(fixture, "src/jobs"), { recursive: true });
     fs.writeFileSync(path.join(fixture, "src/auth.js"), [
-      "export function canAccess(user, resource) {",
-      "  if (!user) return false;",
-      "  return user.role === 'admin' || resource.ownerId === user.id;",
+      "export function canAccess(user, resource, action = 'read') {",
+      "  if (!user) {",
+      "    return false;",
+      "  }",
+      "  if (user.role === 'admin') {",
+      "    return true;",
+      "  }",
+      "  if (action === 'read' && resource.ownerId === user.id) {",
+      "    return true;",
+      "  }",
+      "  if (action === 'write' && resource.ownerId === user.id && !resource.locked) {",
+      "    return true;",
+      "  }",
+      "  return false;",
       "}",
       "",
     ].join("\n"));
+    fs.writeFileSync(path.join(fixture, "src/errors.js"), [
+      "export class AppError extends Error {",
+      "  constructor(code, message) {",
+      "    super(message);",
+      "    this.code = code;",
+      "  }",
+      "}",
+      "",
+    ].join("\n"));
+    fs.writeFileSync(path.join(fixture, "src/reports.js"), [
+      "function escapeCsv(value) {",
+      "  return String(value).replaceAll('\"', '\"\"');",
+      "}",
+      "",
+      "export function reportRowsToCsv(rows) {",
+      "  if (!Array.isArray(rows)) throw new TypeError('rows must be an array');",
+      "  return rows.map((row) => Object.values(row).map(escapeCsv).join(',')).join('\\n');",
+      "}",
+      "",
+    ].join("\n"));
+    fs.writeFileSync(path.join(fixture, "src/formatters/date.js"), [
+      "export function formatDate(value) {",
+      "  return new Intl.DateTimeFormat('en-US').format(new Date(value));",
+      "}",
+      "",
+    ].join("\n"));
+    fs.writeFileSync(path.join(fixture, "src/formatters/number.js"), [
+      "export function formatNumber(value) {",
+      "  return new Intl.NumberFormat('en-US').format(value);",
+      "}",
+      "",
+    ].join("\n"));
+    fs.writeFileSync(path.join(fixture, "src/jobs/README.md"), "# Jobs\n\nNo runner yet.\n");
     fs.writeFileSync(path.join(fixture, "test/calc.test.js"), [
       "import test from 'node:test';",
       "import assert from 'node:assert/strict';",
@@ -123,6 +279,27 @@ function setupFixture(fixture, realistic = false, caseId = null) {
       "",
       "test('soma adds two values', () => {",
       "  assert.equal(soma(2, 3), 5);",
+      "});",
+      "",
+    ].join("\n"));
+    fs.writeFileSync(path.join(fixture, "test/export.test.js"), [
+      "import test from 'node:test';",
+      "import assert from 'node:assert/strict';",
+      "import { toCsv } from '../src/export.js';",
+      "",
+      "test('toCsv preserves row order', () => {",
+      "  assert.deepEqual(toCsv([{ name: 'Ana' }]), [{ name: 'Ana' }]);",
+      "});",
+      "",
+    ].join("\n"));
+    fs.writeFileSync(path.join(fixture, "test/auth.test.js"), [
+      "import test from 'node:test';",
+      "import assert from 'node:assert/strict';",
+      "import { canAccess } from '../src/auth.js';",
+      "",
+      "test('admins and owners can read', () => {",
+      "  assert.equal(canAccess({ role: 'admin' }, { ownerId: 'u2' }), true);",
+      "  assert.equal(canAccess({ id: 'u1', role: 'user' }, { ownerId: 'u1' }), true);",
       "});",
       "",
     ].join("\n"));
@@ -160,7 +337,15 @@ function setupFixture(fixture, realistic = false, caseId = null) {
       "",
     ].join("\n"));
     fs.writeFileSync(path.join(fixture, "src/webhooks.js"), [
-      "// Intentionally empty placeholder for R6 greenfield-in-repo routing.",
+      "export function validateWebhook(payload) {",
+      "  return Boolean(payload && payload.type);",
+      "}",
+      "",
+    ].join("\n"));
+    fs.writeFileSync(path.join(fixture, "src/audit.js"), [
+      "export function audit(event) {",
+      "  return { ...event, recordedAt: new Date().toISOString() };",
+      "}",
       "",
     ].join("\n"));
   }
@@ -236,7 +421,7 @@ function spawnCapture(command, args, opts) {
 
 async function runCase(c, { harness, model, timeoutMs, safeLabel }) {
   const fixture = path.join("/tmp", `cairn-eval-fixture-${safeLabel}-${process.pid}-${c.id}`);
-  setupFixture(fixture, /^R/.test(c.id), c.id);
+  setupFixture(fixture, c.realistic || /^R/.test(c.id), c.id);
   const args = ["exec", "--sandbox", "read-only"];
   let command = "codex";
   let commandArgs = args;
@@ -301,9 +486,14 @@ let subset = CASES;
 if (subsetArg === "fire") subset = CASES.filter((c) => c.expectFire);
 else if (subsetArg === "nofire") subset = CASES.filter((c) => !c.expectFire);
 else if (subsetArg === "realistic") subset = REALISTIC_CASES;
+else if (subsetArg === "realistic-nofire") subset = REALISTIC_MUST_NOT_CASES;
+else if (subsetArg === "broad") subset = [
+  ...REALISTIC_CASES.filter((c) => ["R8", "R9", "R10", "R11", "R12", "R13", "R14"].includes(c.id)),
+  ...REALISTIC_MUST_NOT_CASES,
+];
 else if (subsetArg !== "all") {
   const ids = subsetArg.split(",").map((s) => s.trim());
-  subset = [...CASES, ...REALISTIC_CASES].filter((c) => ids.includes(c.id));
+  subset = [...CASES, ...REALISTIC_CASES, ...REALISTIC_MUST_NOT_CASES].filter((c) => ids.includes(c.id));
   if (!subset.length) {
     throw new Error(`subset selected no cases: ${subsetArg}`);
   }
