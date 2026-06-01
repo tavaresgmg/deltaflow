@@ -109,6 +109,39 @@ function semanticClaims(markdown) {
     });
 }
 
+function validateSemanticClaims(file, markdown, findings, { requireClaims = false, missingCodeSeverity = "HIGH" } = {}) {
+  const claims = semanticClaims(markdown);
+  if (requireClaims && claims.length === 0) {
+    findings.push(finding("MEDIUM", "SEMANTIC_CLAIMS_MISSING", "behavior text has no checkable Semantic Claims", file));
+    return;
+  }
+  for (const claim of claims) {
+    if (claim.code.length === 0) {
+      findings.push(finding(missingCodeSeverity, "SEMANTIC_CLAIM_WITHOUT_CODE", `semantic claim lacks code reference: ${claim.text}`, file));
+    }
+    if (claim.proof.length === 0) {
+      findings.push(finding("MEDIUM", "SEMANTIC_CLAIM_WITHOUT_PROOF", `semantic claim lacks proof command: ${claim.text}`, file));
+    }
+    for (const ref of claim.code) {
+      const targetPath = path.isAbsolute(ref) ? ref : path.join(root, ref);
+      if (!fs.existsSync(targetPath)) {
+        findings.push(finding(missingCodeSeverity, "SEMANTIC_REF_MISSING", `semantic claim references missing code: ${ref}`, file));
+      }
+    }
+  }
+}
+
+function markdownFiles(dir) {
+  if (!fs.existsSync(dir)) return [];
+  const out = [];
+  for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+    const abs = path.join(dir, ent.name);
+    if (ent.isDirectory()) out.push(...markdownFiles(abs));
+    else if (ent.isFile() && /\.md$/i.test(ent.name)) out.push(abs);
+  }
+  return out;
+}
+
 function analyzeOne(dir) {
   const abs = path.resolve(dir);
   const findings = [];
@@ -159,20 +192,9 @@ function analyzeOne(dir) {
       }
     }
     if (rel === "delta.md") {
-      for (const claim of semanticClaims(content)) {
-        if (claim.code.length === 0) {
-          findings.push(finding("HIGH", "SEMANTIC_CLAIM_WITHOUT_CODE", `semantic claim lacks code reference: ${claim.text}`, path.join(abs, rel)));
-        }
-        if (claim.proof.length === 0) {
-          findings.push(finding("MEDIUM", "SEMANTIC_CLAIM_WITHOUT_PROOF", `semantic claim lacks proof command: ${claim.text}`, path.join(abs, rel)));
-        }
-        for (const ref of claim.code) {
-          const targetPath = path.isAbsolute(ref) ? ref : path.join(root, ref);
-          if (!fs.existsSync(targetPath)) {
-            findings.push(finding("HIGH", "SEMANTIC_REF_MISSING", `semantic claim references missing code: ${ref}`, path.join(abs, rel)));
-          }
-        }
-      }
+      validateSemanticClaims(path.join(abs, rel), content, findings, {
+        requireClaims: textHasMeaningfulContent(section(content, "Proposed Behavior")),
+      });
     }
   }
 
@@ -191,6 +213,10 @@ function analyzeOne(dir) {
 
   if (has(abs, "delta.md") && !fs.existsSync(path.resolve(root, specRoot))) {
     findings.push(finding("LOW", "SPEC_ROOT_MISSING", `spec root does not exist: ${specRoot}`, specRoot));
+  }
+
+  for (const spec of markdownFiles(path.resolve(root, specRoot))) {
+    validateSemanticClaims(spec, read(spec), findings, { missingCodeSeverity: "HIGH" });
   }
 
   const activeAgeDays = Math.floor((Date.now() - fs.statSync(abs).mtimeMs) / 86400000);

@@ -27,6 +27,12 @@ Cairn has strong MVP routing, artifact policy, boundary guard, auto-trigger eval
 - Small direct work must still avoid `.cairn/` ceremony.
 - OpenSpec projects should delegate to OpenSpec instead of duplicating its full lifecycle.
 
+## Semantic Claims
+
+- The eval harness supports Codex and Claude Code runs with per-case timing and harness metadata; code: `scripts/eval-autotrigger.mjs`; proof: `node scripts/eval-autotrigger.mjs R5,N2 cairn-fast-claude-2.1.159-default --harness claude --jobs 2 --timeout-ms 120000`
+- The validator checks committed eval summaries and required worked-example artifacts; code: `scripts/validate-cairn.mjs`; proof: `node scripts/validate-cairn.mjs`
+- The eval harness map and worked example define the durable owner/proof path for fast cross-harness eval work; code: `.cairn/codebase/eval-harness.md`; proof: `node scripts/validate-cairn.mjs`
+
 ## Out Of Scope
 
 - Publishing a public release.

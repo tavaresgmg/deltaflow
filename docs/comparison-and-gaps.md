@@ -44,8 +44,9 @@ next — by activation, modes/workflows, artifacts, deterministic automation, me
 1. **Broader eval matrix.** Realistic routing is proven on one Codex default model, and a fast
    subset is proven on Codex + Claude Code. Phase 1 still needs the realistic/full suites on
    >=2 models per harness.
-2. **Spec↔code semantic analysis v1.** `cairn-analyze.mjs` now checks explicit `Semantic Claims`;
-   the next level is cheap extraction/coverage between delta/spec claims and code/tests.
+2. **Spec↔code semantic analysis v2.** `cairn-analyze.mjs` now checks claim-backed delta/spec
+   drift and missing claims on behavior deltas; the next level is inferred extraction from
+   arbitrary prose/code without requiring explicit claims.
 3. **Archive/retention helper.** Lifecycle guidance exists. Add a read-only reporter or small
    helper only after real changes show repeated stale-folder cleanup.
 

@@ -74,7 +74,9 @@ Exit: a task spanning 2+ repos in one workspace is coordinated without touching 
   findings and `--all` active-change scanning.
 - [x] Semantic-claim v0 analysis: explicit `## Semantic Claims` must name code/proof and
   existing code refs.
-- [ ] Real spec<->code semantic extraction beyond explicit claims.
+- [x] Claim-backed spec<->code drift check: deltas and living specs validate code refs and
+  proof commands; behavior deltas without claims are flagged.
+- [ ] Inferred semantic extraction from arbitrary prose/code beyond explicit claims.
 - [x] Claude Code live hook proof: SessionStart and PreToolUse.
 - [ ] Codex live hook proof beyond local smoke.
 

@@ -18,6 +18,7 @@
 - `node scripts/eval-autotrigger.mjs R5,N2 cairn-fast-codex-0.136-default --jobs 2 --timeout-ms 120000` — passed: Codex v0.136.0, 1/1 must-fire fired/routed, 0/1 must-not misfires.
 - `node scripts/eval-autotrigger.mjs R5,N2 cairn-fast-claude-2.1.159-default --harness claude --jobs 2 --timeout-ms 120000` — passed: Claude Code v2.1.159, 1/1 must-fire fired/routed, 0/1 must-not misfires.
 - `.cairn/codebase/eval-harness.md` + `docs/examples/brownfield-card-eval-harness.md` — added as a worked brownfield example; `validate-cairn.mjs` now requires both files.
+- `.cairn/specs/workflow-router.md` + `plugins/cairn/scripts/cairn-analyze.mjs` — semantic drift v1 added: delta/spec `Semantic Claims` validate code refs and proof commands; behavior deltas without claims are flagged; `validate-cairn.mjs` includes a bad-spec smoke.
 
 ## Runtime Smoke
 
@@ -28,8 +29,12 @@
 
 - External research was limited to current official or primary repository docs where possible.
 
+## Lifecycle Decision
+
+Lifecycle decision: sync — durable workflow-router behavior is synced into `.cairn/specs/workflow-router.md`, eval ownership into `.cairn/codebase/eval-harness.md`, and product-facing guidance into `docs/scope-and-workflows.md`, `docs/evals/auto-trigger.md`, and `docs/roadmap.md`.
+
 ## Residual Risk
 
 - Realistic routing and cross-model results are still pending.
 - Full-suite Claude Code and cross-model results are still pending.
-- `cairn-analyze.mjs` now checks explicit semantic claims, but not inferred semantic drift.
+- `cairn-analyze.mjs` now checks claim-backed spec/delta drift, but does not infer semantic intent from arbitrary prose/code without claims.

@@ -54,6 +54,7 @@ const required = [
   "plugins/cairn/scripts/cairn-next.mjs",
   "plugins/cairn/scripts/cairn-version.mjs",
   ".cairn/codebase/eval-harness.md",
+  ".cairn/specs/workflow-router.md",
   "plugins/cairn/agents/cairn-researcher.md",
   "plugins/cairn/skills/cairn/SKILL.md",
   "plugins/cairn/skills/cairn/references/modes.md",
@@ -263,6 +264,24 @@ if (!missing.length) {
     }
     if (!bad.findings.some((f) => f.code === "SEMANTIC_CLAIM_WITHOUT_PROOF")) {
       fail("cairn-analyze.mjs did not flag a semantic claim without proof");
+    }
+    const specRoot = path.join(tmp, ".cairn/specs");
+    fs.mkdirSync(specRoot, { recursive: true });
+    fs.writeFileSync(path.join(specRoot, "bad-spec.md"), [
+      "# Spec: Bad",
+      "",
+      "## Semantic Claims",
+      "",
+      "- Missing implementation reference; code: `missing/spec-code.js`; proof: `node scripts/validate-cairn.mjs`",
+      "",
+    ].join("\n"));
+    const badSpecOut = execSync(`node ${JSON.stringify(path.join(root, "plugins/cairn/scripts/cairn-analyze.mjs"))} --spec-root ${JSON.stringify(specRoot)} ${JSON.stringify(change)}`, {
+      cwd: root,
+      stdio: ["ignore", "pipe", "ignore"],
+    }).toString();
+    const badSpec = JSON.parse(badSpecOut);
+    if (!badSpec.findings.some((f) => f.code === "SEMANTIC_REF_MISSING" && /missing\/spec-code\.js/.test(f.message))) {
+      fail("cairn-analyze.mjs did not flag a missing semantic code reference in a living spec");
     }
     const nextOut = execSync(`node ${JSON.stringify(path.join(root, "plugins/cairn/scripts/cairn-next.mjs"))} ${JSON.stringify(change)}`, {
       cwd: root,

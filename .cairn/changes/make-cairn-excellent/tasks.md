@@ -14,4 +14,4 @@
 - [x] Validate Claude Code install/hooks/eval — proof: `claude plugin validate plugins/cairn`, local marketplace install, `claude plugin details cairn@cairn`, live SessionStart/PreToolUse smokes, and `node scripts/eval-autotrigger.mjs R5,N2 ... --harness claude` passed.
 - [x] Add faster cross-harness eval support — proof: `scripts/eval-autotrigger.mjs` supports `--harness codex|claude`, `--jobs`, per-case `durationMs`, `harnessVersion`, and isolated per-case fixtures.
 - [x] Add a worked brownfield example and use it to test codebase maps — proof: added `.cairn/codebase/eval-harness.md`, `docs/examples/brownfield-card-eval-harness.md`, and required them in `validate-cairn.mjs`.
-- [ ] Extend `cairn-analyze.mjs` from artifact/lifecycle checks toward semantic spec-code drift.
+- [x] Extend `cairn-analyze.mjs` from artifact/lifecycle checks toward semantic spec-code drift — proof: analyzer validates delta/spec `Semantic Claims`, flags behavior deltas without claims, scans `.cairn/specs`, and `validate-cairn.mjs` includes bad-spec smoke.
