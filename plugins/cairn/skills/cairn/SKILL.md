@@ -48,6 +48,7 @@ Read these references only when needed:
 
 - `references/modes.md` for detailed mode selection and workflow steps.
 - `references/artifacts.md` for artifact templates and retention rules.
+- `references/memory.md` for the `.cairn/` state layout and the resume protocol.
 - `references/framework-lessons.md` for what Cairn borrows and avoids.
 
 ## Required Behavior
@@ -60,6 +61,8 @@ Read these references only when needed:
 - Do not implement before discovery when the request is vague and the wrong thing could be built.
 - Do not use subagents by default. Use them only for independent research, review, or disjoint implementation slices.
 - Do not impose TDD universally. Use tests proportional to risk and local patterns.
+- Resume from state: on existing `.cairn/changes/<slug>/` work, read `tasks.md` and the
+  `decision-log.md` tail before acting; tick `tasks.md` incrementally, not at the end.
 - Before saying done, provide fresh proof.
 
 ## Output Shape

@@ -30,6 +30,7 @@ const required = [
   "plugins/cairn/skills/cairn/SKILL.md",
   "plugins/cairn/skills/cairn/references/modes.md",
   "plugins/cairn/skills/cairn/references/artifacts.md",
+  "plugins/cairn/skills/cairn/references/memory.md",
   "plugins/cairn/skills/cairn/references/framework-lessons.md",
 ];
 
