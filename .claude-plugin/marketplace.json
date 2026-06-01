@@ -1,0 +1,13 @@
+{
+  "name": "cairn",
+  "owner": {
+    "name": "Guilherme Tavares"
+  },
+  "plugins": [
+    {
+      "name": "cairn",
+      "source": "./plugins/cairn",
+      "description": "Brownfield-first, autonomous workflow router for AI coding agents (Codex + Claude Code)."
+    }
+  ]
+}

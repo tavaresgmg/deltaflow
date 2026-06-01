@@ -27,4 +27,21 @@ function writeJson(rel, obj) {
 
 writeJson(".codex-plugin/plugin.json", codex);
 writeJson(".claude-plugin/plugin.json", claude);
-console.log("manifests built from plugins/cairn/plugin.manifest.json");
+
+// Marketplace manifests (verified live: Claude reads .claude-plugin/marketplace.json at repo
+// root; Codex reads .agents/plugins/marketplace.json). Both written from one shape.
+const marketplace = {
+  name,
+  owner: author,
+  plugins: [{ name, source: "./plugins/cairn", description }],
+};
+function writeRepoJson(rel, obj) {
+  const file = path.join(root, rel);
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, JSON.stringify(obj, null, 2) + "\n");
+  console.log(`wrote ${rel}`);
+}
+writeRepoJson(".claude-plugin/marketplace.json", marketplace);
+writeRepoJson(".agents/plugins/marketplace.json", marketplace);
+
+console.log("manifests + marketplaces built from plugins/cairn/plugin.manifest.json");

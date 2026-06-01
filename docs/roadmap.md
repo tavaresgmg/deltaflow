@@ -24,14 +24,22 @@ Built and locally validated:
 - [x] Auto-trigger eval fixture: 12 must-fire (pt-BR/en) + 6 must-not-fire + protocol
   (`docs/evals/auto-trigger.md`).
 
-Pending (needs a live harness — Codex first):
+Validated on Codex (v0.135.0, gpt-5.5):
 
-- [ ] Install on Codex, then Claude Code; confirm the bootstrap injects and the skill loads.
-- [ ] Run the auto-trigger suite on >=2 models per harness; log fire-rate.
-- [ ] Confirm per-harness SessionStart stdout contract (the I/O mapping is current best guess).
+- [x] Installs from a marketplace (`.agents/plugins/marketplace.json`, discovered live);
+  `installed, enabled`.
+- [x] SessionStart hook injects the bootstrap (plain-text branch).
+- [x] Skill loads (after fixing an unquoted-colon YAML bug now guarded by validate).
+- [x] Auto-fires on a brownfield prompt without being named, routing to `diagnose`.
+
+Still pending:
+
+- [ ] Full auto-trigger suite (12 must-fire + 6 must-not) on ≥2 models per harness; log fire-rate.
+- [ ] Same install + auto-trigger pass on Claude Code.
+- [ ] Confirm the PreToolUse guard blocks live on each harness.
 
 Exit: the skill auto-fires on >=90% of must-fire prompts and routes to the right mode in
->=4/5 real brownfield cards, validated on Codex first.
+>=4/5 real brownfield cards. Single-case routing confirmed on Codex; suite pending.
 
 ## Phase 2: File-based layered memory (ADR-0004)
 
@@ -68,5 +76,8 @@ Exit: brainstorm + research + docs improve quality without recreating ceremony o
 
 ## Phase 6: Public readiness
 
-- Examples, install guide, prompt eval cases, release checklist.
-- Publish patterns only after real brownfield usage validates the core assumptions.
+- [x] Install guide for both harnesses (`docs/install.md`), with verified Codex commands.
+- [x] Prompt eval fixture (`docs/evals/auto-trigger.md`) with a first logged Codex run.
+- [x] Release checklist (`docs/release-checklist.md`).
+- [ ] Worked examples on a real brownfield card.
+- [ ] Publish patterns only after real brownfield usage validates the core assumptions.

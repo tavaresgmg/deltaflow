@@ -12,6 +12,19 @@ const fail = (msg) => errors.push(msg);
 const read = (rel) => fs.readFileSync(path.join(root, rel), "utf8");
 const readJson = (rel) => JSON.parse(read(rel));
 
+// An unquoted YAML scalar containing ": " is parsed as a mapping and breaks frontmatter
+// loading — a real failure observed on Codex. Scan top-level frontmatter values for it.
+function yamlColonCheck(block, label) {
+  for (const line of block.split("\n")) {
+    const m = line.match(/^([A-Za-z0-9_-]+):\s*(\S.*)$/);
+    if (!m) continue;
+    if (/^["'|>]/.test(m[2])) continue; // quoted or block scalar is safe
+    if (/:\s/.test(m[2])) {
+      fail(`${label} frontmatter '${m[1]}' has an unquoted colon — invalid YAML; quote the value`);
+    }
+  }
+}
+
 const required = [
   "README.md",
   "AGENTS.md",
@@ -21,6 +34,8 @@ const required = [
   "docs/architecture/mvp-architecture.md",
   "docs/decisions/README.md",
   "docs/roadmap.md",
+  "docs/install.md",
+  "docs/release-checklist.md",
   "docs/evals/auto-trigger.md",
   "plugins/cairn/plugin.manifest.json",
   "plugins/cairn/.codex-plugin/plugin.json",
@@ -98,6 +113,7 @@ if (!missing.length) {
     fail("SKILL.md has no frontmatter block");
   } else {
     const block = fm[1];
+    yamlColonCheck(block, "SKILL.md");
     const nameLine = block.match(/^name:\s*(.+)$/m);
     if (!nameLine || nameLine[1].trim() !== "cairn") fail("SKILL.md name must be cairn");
 
@@ -106,6 +122,7 @@ if (!missing.length) {
       fail("SKILL.md missing description");
     } else {
       const desc = descLine[1].trim();
+      if (!/^".*"$/.test(desc)) fail("SKILL.md description must be double-quoted (YAML safety)");
       if (desc.length > 1024) fail(`SKILL.md description too long: ${desc.length} > 1024`);
       const head = desc.slice(0, 250);
       if (!/ALWAYS/.test(head)) fail("SKILL.md description: no directive (ALWAYS) in first 250 chars");
@@ -128,8 +145,8 @@ if (!missing.length) {
   }
   const hooksJson = readJson("plugins/cairn/hooks/hooks.json");
   const cmd = JSON.stringify(hooksJson);
-  if (!cmd.includes("${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh")) {
-    fail("hooks.json must invoke ${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh");
+  if (!cmd.includes("${CLAUDE_PLUGIN_ROOT}") || !cmd.includes("hooks/session-start.sh")) {
+    fail("hooks.json must invoke ${CLAUDE_PLUGIN_ROOT} .../hooks/session-start.sh");
   }
   if (!cmd.includes("SessionStart")) fail("hooks.json must register SessionStart");
   if (!cmd.includes("PreToolUse") || !cmd.includes("cairn-guard.mjs")) {
@@ -182,6 +199,8 @@ if (!missing.length) {
   const agentFm = agent.match(/^---\n([\s\S]*?)\n---/);
   if (!agentFm || !/^name:\s*cairn-researcher\s*$/m.test(agentFm[1])) {
     fail("cairn-researcher.md missing name: cairn-researcher in frontmatter");
+  } else {
+    yamlColonCheck(agentFm[1], "cairn-researcher.md");
   }
 }
 

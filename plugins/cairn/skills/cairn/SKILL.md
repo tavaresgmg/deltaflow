@@ -1,6 +1,6 @@
 ---
 name: cairn
-description: Routes brownfield software work to the lightest safe workflow that still protects correctness. ALWAYS invoke when the user wants to build, change, fix, refactor, plan, investigate, spec, or implement in an existing repo, or starts from a card, issue, ticket, link, screenshot, bug report, or rough idea (pt-BR: implementar, criar, corrigir, refatorar, ajustar, planejar, investigar, analisar; card, bug, tarefa). Do not start coding, planning, or speccing brownfield work directly without routing through Cairn first. Skip only for pure Q&A with no repo work, one-off shell commands, or tasks owned by a more specific active skill.
+description: "Routes brownfield software work to the lightest safe workflow that still protects correctness. ALWAYS invoke when the user wants to build, change, fix, refactor, plan, investigate, spec, or implement in an existing repo, or starts from a card, issue, ticket, link, screenshot, bug report, or rough idea (pt-BR — implementar, criar, corrigir, refatorar, ajustar, planejar, investigar, analisar; card, bug, tarefa). Do not start coding, planning, or speccing brownfield work directly without routing through Cairn first. Skip only for pure Q&A with no repo work, one-off shell commands, or tasks owned by a more specific active skill."
 when_to_use: |
   Fire when the user says (en): build/change/fix/refactor/plan/investigate this;
   implement this card/issue/ticket; here's a bug/link/screenshot; brainstorm before

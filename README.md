@@ -55,16 +55,26 @@ docs/
 5. Implement with fresh proof.
 6. Review and archive or clean up.
 
+## Install
+
+See `docs/install.md`. On Codex (validated):
+
+```bash
+codex plugin marketplace add tavaresgmg/cairn
+codex plugin add cairn@cairn
+```
+
 ## Local Validation
 
 ```bash
-node scripts/build-manifests.mjs   # regenerate both manifests from the canonical source
-node scripts/validate-cairn.mjs    # structural checks (files, parity, drift, SKILL, hooks)
+node scripts/build-manifests.mjs   # regenerate manifests + marketplaces from the canonical source
+node scripts/validate-cairn.mjs    # structural + YAML-safety + gate smoke tests
 ```
-
-Auto-trigger and per-harness hook I/O need a live harness — see `docs/evals/auto-trigger.md`.
 
 ## Status
 
-Phase 1 MVP: autonomous portable skill. The workflow is intentionally narrow until
-validated against real brownfield cards on a live harness.
+Phases 0-6 built and locally validated. On Codex (v0.135.0) the plugin installs, the
+SessionStart hook injects the bootstrap, the skill loads, and Cairn auto-fires on a
+brownfield prompt and routes to the right mode. Remaining: the full auto-trigger suite on
+≥2 models per harness, and the same pass on Claude Code (`docs/evals/auto-trigger.md`,
+`docs/roadmap.md`).

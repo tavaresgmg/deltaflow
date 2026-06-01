@@ -63,4 +63,13 @@ Borderline by design — watch these when tuning the `description`:
 ## Results log
 
 Record runs here (date, harness, model, fire-rate, mis-fires, notes) as the suite is
-executed. Empty until the plugin runs on a live harness.
+executed.
+
+- **2026-06-01 — Codex v0.135.0, gpt-5.5** — smoke (not full suite). Plugin installed from
+  local marketplace (`installed, enabled`). SessionStart hook injected the bootstrap. A
+  brownfield prompt ("there's a bug in calc.js: soma() subtracts; investigate and give the
+  fix plan") auto-fired Cairn without naming it — the model stated it would "use Cairn to
+  route the investigation" and selected **diagnose** mode, returning a repro + fix plan with
+  no edits. Caught and fixed first: the unquoted `:` in the `description` made the SKILL.md
+  fail YAML parsing and be skipped — now guarded by `validate-cairn.mjs`. Full 12+6 suite on
+  ≥2 models still pending.
