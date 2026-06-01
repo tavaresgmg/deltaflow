@@ -23,7 +23,8 @@ be invoked by name. Manual override: invoke the `cairn` skill / `/cairn`.
 ## Quick Start
 
 1. **Observe.** Identify cwd, repo root, owner boundary, relevant instructions,
-   existing docs/specs, code paths, and available proof commands.
+   existing docs/specs, code paths, and available proof commands. Before any mutation in
+   a multi-repo workspace, run the boundary detector (see `references/workspace.md`).
 2. **Classify.** Pick exactly one mode from the table below.
 3. **Act.** Produce only the artifacts justified by that mode.
 4. **Verify.** Run proof proportional to risk.
@@ -49,6 +50,7 @@ Read these references only when needed:
 - `references/modes.md` for detailed mode selection and workflow steps.
 - `references/artifacts.md` for artifact templates and retention rules.
 - `references/memory.md` for the `.cairn/` state layout and the resume protocol.
+- `references/workspace.md` for the umbrella model and boundary detection.
 - `references/framework-lessons.md` for what Cairn borrows and avoids.
 
 ## Required Behavior

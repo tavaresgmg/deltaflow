@@ -4,6 +4,7 @@
 // are validated empirically per docs/evals/auto-trigger.md (Phase 1 exit).
 import fs from "node:fs";
 import path from "node:path";
+import { execSync } from "node:child_process";
 
 const root = process.cwd();
 const errors = [];
@@ -27,10 +28,12 @@ const required = [
   "plugins/cairn/hooks/bootstrap.md",
   "plugins/cairn/hooks/session-start.sh",
   "plugins/cairn/hooks/hooks.json",
+  "plugins/cairn/scripts/cairn-boundary.mjs",
   "plugins/cairn/skills/cairn/SKILL.md",
   "plugins/cairn/skills/cairn/references/modes.md",
   "plugins/cairn/skills/cairn/references/artifacts.md",
   "plugins/cairn/skills/cairn/references/memory.md",
+  "plugins/cairn/skills/cairn/references/workspace.md",
   "plugins/cairn/skills/cairn/references/framework-lessons.md",
 ];
 
@@ -123,6 +126,18 @@ if (!missing.length) {
     fail("hooks.json must invoke ${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh");
   }
   if (!cmd.includes("SessionStart")) fail("hooks.json must register SessionStart");
+
+  // Boundary detector smoke test: must emit valid JSON resolving this repo.
+  try {
+    const out = execSync("node plugins/cairn/scripts/cairn-boundary.mjs", {
+      cwd: root,
+      stdio: ["ignore", "pipe", "ignore"],
+    }).toString();
+    const b = JSON.parse(out);
+    if (!b.isRepo || !b.repoRoot) fail("cairn-boundary.mjs did not resolve repoRoot here");
+  } catch (e) {
+    fail(`cairn-boundary.mjs failed to run: ${e.message}`);
+  }
 }
 
 if (errors.length) {
