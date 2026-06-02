@@ -218,6 +218,9 @@ if (!missing.length) {
     }).toString();
     const b = JSON.parse(out);
     if (!b.isRepo || !b.repoRoot) fail("cairn-boundary.mjs did not resolve repoRoot here");
+    if (!b.context || !["thin", "partial", "strong"].includes(b.context.readiness)) {
+      fail("cairn-boundary.mjs did not emit a valid context.readiness label");
+    }
   } catch (e) {
     fail(`cairn-boundary.mjs failed to run: ${e.message}`);
   }

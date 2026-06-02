@@ -1,5 +1,15 @@
 # Cairn Modes
 
+## Context readiness
+
+`context.readiness` (boundary detector: `thin|partial|strong`) grades repo docs (`AGENTS.md`,
+tests, `.cairn` maps/specs). Calibrate autonomy — thin context + full autonomy ships subtle
+bugs (METR 2025):
+
+- **thin** — no `direct` for non-trivial work. Inspect first, name the missing context,
+  declare the gap before mutating; at close write the map you wished existed (Principle 9).
+- **partial/strong** — proceed; on `partial`, ground claims on code.
+
 ## Direct
 
 Use when the request is scoped, local, reversible, and the target files or

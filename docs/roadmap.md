@@ -295,15 +295,19 @@ Shipped (one genuine convergent gap, minimal wiring):
   *why*; this records *what the system now knows*. Wired in PRINCIPLES.md + memory.md close
   hygiene + a framework-lessons red flag. No SKILL/gates/modes inflation (anti-bloat).
 - [x] Named the theoretical lineage in PRINCIPLES.md — grounding, zero behavior change.
+- [x] Context-quality → autonomy calibration (METR/DORA: full autonomy on a thin-context repo
+  ships subtle bugs). Extended `cairn-boundary.mjs` (reused the owner — no new script) with a
+  deterministic `context` block (`agents/readme/tests/codebaseMaps/specs` + `readiness:
+  thin|partial|strong`); `modes.md` calibration rule turns a thin signal into "no `direct` for
+  non-trivial work, declare the missing context, write the map at close" (OODA Orient / DoR +
+  Principle 9). Honest-determinism: the script reports facts, the prose decides. validate smoke
+  test asserts the readiness label.
 
 Rejected / deferred:
 
 - [~] DORA/SPACE metrics surface — Cairn is a router, not a metrics product; the eval
   scoreboard already tracks regression.
 - [~] Cynefin "complex" probe mode — `discovery` already covers exploratory probing.
-- [~] Context-quality → autonomy scaling (brownfield: autonomy should track context-doc
-  quality, per METR) — a roadmap thought, not a behavior change yet; revisit if autonomy
-  misfires on under-documented repos.
 
 Exit: Cairn's pragmatic principles now have a named theoretical spine; the one missing loop
 (learn from failure) is codified.

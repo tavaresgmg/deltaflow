@@ -21,10 +21,11 @@ first:
 node ${CLAUDE_PLUGIN_ROOT}/scripts/cairn-boundary.mjs
 ```
 
-It reports `repoRoot`, `isWorktree`, `mainWorktree`, `umbrellaRoot`, and `siblingRepos` as
-JSON. Confirm `repoRoot` is the intended target before editing, committing, or running build
-or test commands. If `umbrellaRoot` is set, you are in a multi-repo workspace — be explicit
-about which child you're touching.
+It reports `repoRoot`, `isWorktree`, `mainWorktree`, `umbrellaRoot`, `siblingRepos`, and a
+`context` block (readiness signals — see `modes.md`) as JSON. Confirm `repoRoot` is the
+intended target before editing, committing, or running build or test commands. If
+`umbrellaRoot` is set, you are in a multi-repo workspace — be explicit about which child
+you're touching.
 
 ## Worktrees
 
