@@ -46,8 +46,10 @@ reinforced in three layers:
 2. **Discovery** — a directive `description`: `[domain] + [ALWAYS directive] + [real trigger
    phrases] + [negative boundary]`, front-loaded, third person; `when_to_use` carries pt-BR+en
    trigger phrases with the same keywords duplicated in `description`.
-3. **Enforcement** — correctness gates (don't skip brainstorm, fresh proof before "done") via
-   PreToolUse hook (Claude) / command hook `exit 2` (Codex). Prose in AGENTS.md is advisory.
+3. **Enforcement** — mutation-boundary gates via PreToolUse hook (Claude) / command hook
+   `exit 2` (Codex once live delivery is proven). Brainstorm and proof-before-done remain
+   advisory unless promoted to a deterministic Stop/UserPromptSubmit heuristic. Prose in
+   AGENTS.md is advisory.
 
 ## Core flow
 

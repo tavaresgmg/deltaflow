@@ -6,8 +6,8 @@ advisory; only hooks and scripts enforce. This file is explicit about which is w
 ## Deterministic (enforced by hooks/scripts)
 
 - **Mutation boundary guard** — `scripts/cairn-guard.mjs`, wired as a PreToolUse hook on
-  `Edit|Write|MultiEdit|NotebookEdit`. Blocks (exit 2) any file mutation whose target is
-  outside the active repo root — the main multi-repo footgun. Override:
+  `Edit|Write|MultiEdit|NotebookEdit|apply_patch`. Blocks (exit 2) any file mutation
+  event whose target is outside the active repo root — the main multi-repo footgun. Override:
   `CAIRN_ALLOW_CROSS_REPO=1`.
 - **Consistency check** — `scripts/cairn-analyze.mjs .cairn/changes/<slug>` reports internal
   drift in a change folder with severity-bearing findings. It can also scan active changes with
@@ -44,6 +44,8 @@ explicitly. When a `delta.md` exists and code has moved:
 
 ## Cross-harness parity & validation status
 
-The guard *logic* is harness-neutral and unit-tested. The PreToolUse wiring uses Claude's
-hook contract; the Codex command-hook contract (stdin shape, `exit 2` semantics) is mapped in
-`hooks/README.md` and confirmed empirically on a live harness (same caveat as SessionStart).
+The guard *logic* is harness-neutral and unit-tested, including `apply_patch` patch-header
+paths. Claude Code live wiring is confirmed. Codex hook docs support plugin-bundled hooks,
+`apply_patch` matchers, trust review, and `exit 2` blocking, but local Codex CLI v0.136.0
+`exec` smoke did not deliver a captured `PreToolUse` event for file changes. Treat Codex
+mutation guard parity as pending, not proven.

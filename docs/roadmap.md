@@ -46,6 +46,9 @@ Still pending:
   emit parseable expected modes.
 - [x] Confirm the Claude Code PreToolUse guard blocks outside-repo writes live.
 - [ ] Confirm the PreToolUse guard blocks live on Codex, not only via local smoke.
+  Latest v0.136.0 `exec` smoke proved the gap: `apply_patch` outside the repo was blocked by
+  sandbox in `workspace-write`, but succeeded under sandbox bypass without a captured
+  `PreToolUse` event.
 
 Exit: the skill auto-fires on >=90% of must-fire prompts and routes to the right mode in
 >=4/5 real brownfield cards. Codex default suites are strong; Claude realistic default now
@@ -74,8 +77,9 @@ Exit: a task spanning 2+ repos in one workspace is coordinated without touching 
 
 ## Phase 4: Deterministic gates + reconciliation
 
-- Correctness gates via PreToolUse hook (Claude) / command hook `exit 2` (Codex): no skipping
-  brainstorm, fresh proof before `done`, boundary enforcement.
+- Deterministic mutation-boundary enforcement via PreToolUse hook (Claude) / command hook
+  `exit 2` (Codex when live delivery is proven). Brainstorm and fresh-proof discipline remain
+  advisory until a deterministic Stop/UserPromptSubmit heuristic exists.
 - [x] Spec<->code reconciliation closeout guidance: sync living spec, delegate to OpenSpec,
   archive, or delete transient planning.
 - [x] Spec Kit-style cheap read-only `/analyze` consistency check with severity-bearing
@@ -88,7 +92,9 @@ Exit: a task spanning 2+ repos in one workspace is coordinated without touching 
 - [x] Inferred semantic extraction from behavior prose beyond explicit claims: code/proof
   candidates are accepted as coverage, and missing code/proof/refs become findings.
 - [x] Claude Code live hook proof: SessionStart and PreToolUse.
-- [ ] Codex live hook proof beyond local smoke.
+- [ ] Codex live hook proof beyond local smoke. Current result: plugin is installed/enabled,
+  Codex docs support plugin-bundled hooks and trust review, but local v0.136.0 `exec` file
+  changes did not trigger captured `PreToolUse` events.
 
 Exit: the gates that matter are deterministic, not advisory, with parity across harnesses.
 

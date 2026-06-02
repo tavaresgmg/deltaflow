@@ -233,8 +233,14 @@ if (!missing.length) {
   };
   const inside = runGuard({ tool_name: "Edit", tool_input: { file_path: path.join(root, "README.md") }, cwd: root });
   const outside = runGuard({ tool_name: "Edit", tool_input: { file_path: "/tmp/cairn-outside.txt" }, cwd: root });
+  const outsidePatch = runGuard({
+    tool_name: "apply_patch",
+    tool_input: { patch: "*** Begin Patch\n*** Add File: ../cairn-outside.txt\n+blocked\n*** End Patch\n" },
+    cwd: root,
+  });
   if (inside !== 0) fail(`cairn-guard.mjs blocked an in-repo write (exit ${inside})`);
   if (outside !== 2) fail(`cairn-guard.mjs did not block an out-of-repo write (exit ${outside})`);
+  if (outsidePatch !== 2) fail(`cairn-guard.mjs did not block an out-of-repo apply_patch (exit ${outsidePatch})`);
 
   // Version resolver smoke test: must emit valid JSON with a found[] array.
   try {

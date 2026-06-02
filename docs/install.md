@@ -2,13 +2,17 @@
 
 Cairn ships one plugin from this repo, for both Codex and Claude Code, from one source.
 
-## Codex (validated on v0.135.0)
+## Codex (validated on v0.136.0)
 
 ```bash
 codex plugin marketplace add tavaresgmg/cairn   # owner/repo, HTTPS git URL, or a local path
 codex plugin add cairn@cairn
 codex plugin list -m cairn                       # expect: installed, enabled
 ```
+
+Open `/hooks` in the Codex CLI/app, review the Cairn hooks, and trust them before relying on
+hook behavior. Codex requires trust for non-managed command hooks; `--dangerously-bypass-hook-trust`
+is only for vetted automation.
 
 Local development (point at a clone):
 
@@ -27,7 +31,9 @@ codex plugin marketplace add . && codex plugin add cairn@cairn
 
 Verified behavior on Codex: the `SessionStart` hook injects the routing bootstrap, the
 `cairn` skill loads, and it auto-fires on brownfield work — e.g. it routed "there's a bug in
-calc.js" to **diagnose** mode without being named.
+calc.js" to **diagnose** mode without being named. Not yet verified on Codex: live
+`PreToolUse` mutation-guard blocking; Codex CLI v0.136.0 `exec` file-change smoke did not
+produce a captured `PreToolUse` event.
 
 ## Claude Code (validated on v2.1.159)
 

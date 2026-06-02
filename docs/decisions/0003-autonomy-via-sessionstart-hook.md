@@ -23,9 +23,10 @@ harness (`${CLAUDE_PLUGIN_ROOT}` vs Codex) e injeta um bootstrap enxuto que orde
 pelo Cairn antes de responder. Camada de **descoberta**: `description` reescrita —
 `[domínio] + [diretiva ALWAYS] + [trigger phrases reais] + [fronteira negativa]`,
 front-loaded, 3ª pessoa, `when_to_use` pt-BR+en com keywords duplicadas na description.
-Camada de **enforcement**: gates de correção que importam (não pular brainstorm, prova
-fresca antes de "done") via PreToolUse hook (Claude) / command hook `exit 2` (Codex) —
-prosa em AGENTS.md é advisory, não garante compliance.
+Camada de **enforcement**: o gate duro inicial é limite de mutação fora do repo via
+PreToolUse hook (Claude) / command hook `exit 2` (Codex quando entrega live estiver
+provada). Brainstorm e prova fresca antes de "done" seguem obrigatórios no workflow, mas
+não são determinísticos até existirem sinais de Stop/UserPromptSubmit confiáveis.
 
 ## Tradeoff
 
