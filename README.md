@@ -1,85 +1,91 @@
 # Cairn
 
-Development workflow router for AI coding agents. Brownfield-first, but not card-only.
+> Route any coding task — a card, a bug, a rough idea — to the lightest workflow that still protects correctness.
 
-Cairn is an experimental plugin/skill set for turning rough ideas, no-card tasks, cards,
-links, bug reports, research questions, greenfield-in-repo work, cleanup, implementation,
-and SDD-style changes into the lightest safe workflow with proof. It avoids forcing a
-heavyweight spec framework on every task. It runs on **both OpenAI Codex and Claude Code**
-from one portable source, and auto-routes work via a SessionStart bootstrap so you don't
-have to invoke it by name.
+![Runs on](https://img.shields.io/badge/runs%20on-Codex%20%2B%20Claude%20Code-2b6cb0)
+![License](https://img.shields.io/badge/license-MIT-2f855a)
+![Status](https://img.shields.io/badge/status-experimental-dd6b20)
 
-## Thesis
+Cairn is a workflow router for AI coding agents. Instead of forcing every task through one
+heavyweight process, it picks **one of five proportional modes** — from a one-line fix to a
+tracked multi-repo change — and produces only the artifacts that mode justifies. It auto-activates
+from a SessionStart bootstrap (no need to invoke it by name) and runs on **OpenAI Codex and Claude
+Code from a single source**.
 
-Most coding-agent workflow frameworks overfit one of two extremes:
+## Why
 
-- too little structure: chat-only plans rot across sessions and reviewers cannot see intent;
-- too much structure: every card becomes a mini product program with excess artifacts.
+Most agent workflow frameworks overfit one extreme:
 
-Cairn's answer is proportional depth: tiny tasks stay tiny; research, SDD, greenfield, cleanup,
-and high-risk implementation get only the structure their risk justifies. Full principles:
-`docs/PRINCIPLES.md`.
+- **Too little structure** — chat-only plans rot across sessions; reviewers can't see intent.
+- **Too much structure** — every card becomes a mini product program drowning in artifacts.
 
-Cairn keeps the useful parts:
+Cairn's answer is **proportional depth**: tiny tasks stay tiny; research, specs, greenfield, and
+high-risk work get only the structure their risk justifies. Brownfield is the default posture —
+inspect the existing system before proposing architecture.
 
-- BMAD-style discovery, brainstorming, research, and PRD sharpening;
-- OpenSpec-style brownfield deltas and living specs;
-- Spec Kit-style phase separation and artifact consistency checks;
-- Superpowers/GSD-style execution discipline, review, verification, and durable state.
+## The five modes
 
-Cairn is validated on Codex first, then Claude Code; both ship from the same source.
+| Mode | Use when | Artifacts |
+| --- | --- | --- |
+| `direct` | small, clear, reversible change | none |
+| `diagnose` | a concrete bug, flake, or slowness | repro notes + proof |
+| `discovery` | an ambiguous idea, research, greenfield, or scaffold | brief or decision note |
+| `delta-spec` | a medium brownfield behavior change | brief, delta, plan, proof |
+| `tracked-change` | multi-phase, high-risk, cross-boundary, customer-visible | durable change folder |
 
-## Current MVP
+The loop is the same every time: **Observe → Classify → Act → Verify → Close**. Proof scales with
+risk, and artifacts are deleted, archived, or synced — never left as clutter.
 
-```text
-plugins/cairn/
-  plugin.manifest.json        # canonical metadata — edit here, then rebuild
-  .codex-plugin/plugin.json   # generated (Codex)
-  .claude-plugin/plugin.json  # generated (Claude Code)
-  hooks/                      # SessionStart bootstrap (autonomy layer 1)
-  scripts/                    # deterministic read-only helpers used by the skill
-  skills/cairn/SKILL.md
-  skills/cairn/references/
-scripts/
-  build-manifests.mjs         # one source -> both manifests
-  validate-cairn.mjs          # structural validation
-docs/
-  research/ architecture/ decisions/ evals/ roadmap.md
-```
+## Principles
 
-## Working Loop
+Ten principles drive every decision (full text in [`docs/PRINCIPLES.md`](docs/PRINCIPLES.md)):
 
-1. Intake an idea, ticket, link, or card.
-2. Detect complexity and risk.
-3. Choose one mode:
-   - direct patch
-   - diagnose
-   - discovery
-   - delta spec
-   - full tracked change
-4. Create only the artifacts justified by the mode.
-5. Implement with fresh proof.
-6. Review and archive or clean up.
+1. Proportional depth
+2. Brownfield first
+3. Evidence first
+4. Reuse before invent
+5. One source → both harnesses
+6. Honest determinism boundary
+7. No stale artifacts
+8. Token economy / concise comms
+9. Compounding context
+10. Adversarial by default
+
+## One source, both harnesses
+
+Cairn ships a single canonical manifest that generates the Codex and Claude Code plugins, so the
+two never drift. A deterministic PreToolUse guard blocks writes outside the active repo — the main
+multi-repo footgun — and read-only helper scripts report facts (boundary, context readiness, drift)
+while the prose decides. What's enforced vs advisory is stated plainly, never overclaimed.
 
 ## Install
 
-See `docs/install.md`. On Codex (validated):
+**Codex**
 
 ```bash
 codex plugin marketplace add tavaresgmg/cairn
 codex plugin add cairn@cairn
 ```
 
-## Local Validation
+**Claude Code**
 
 ```bash
-node scripts/build-manifests.mjs   # regenerate manifests + marketplaces from the canonical source
-node scripts/validate-cairn.mjs    # structural + YAML-safety + gate smoke tests
+/plugin marketplace add tavaresgmg/cairn
+/plugin install cairn@cairn
 ```
+
+Full setup, memory-policy presets, and local development: [`docs/install.md`](docs/install.md).
 
 ## Status
 
-Phases 0-12 built and locally validated. Local versions: Codex CLI `0.136.0`, Claude Code
-`2.1.159`. Remaining open items (real-model eval runs, Codex live PreToolUse) are tracked in
-`docs/roadmap.md`. Live proof, the capability matrix, and eval gaps: `docs/roadmap.md` and
-`docs/evals/auto-trigger.md`. Principles: `docs/PRINCIPLES.md`.
+**Experimental.** Phases 0–14 built and locally validated (`node scripts/validate-cairn.mjs` —
+38 files green). Verified live on Codex CLI `0.136.0` and Claude Code `2.1.159`. Open items —
+real-model eval runs and Codex live PreToolUse enforcement — are tracked in the roadmap.
+
+- Roadmap & live proof: [`docs/roadmap.md`](docs/roadmap.md)
+- Activation evals: [`docs/evals/auto-trigger.md`](docs/evals/auto-trigger.md)
+- Principles: [`docs/PRINCIPLES.md`](docs/PRINCIPLES.md)
+
+## License
+
+MIT — see [`LICENSE`](LICENSE).
