@@ -369,6 +369,42 @@ ceremony Cairn avoids).
 Exit: the safety gate ships, git guidance is host-neutral, Codex resume is honestly stated, and
 the precedence chain is written down once.
 
+## Phase 14: Principle 10 (adversarial by default) + enforcement decision
+
+Two converging threads (2026-06-02): the user asked to elevate adversarial critique + tradeoff
+naming to a first-class principle, and an adversarial panel reviewed whether to add routing
+enforcement. The panel's own output became the proof case for the principle.
+
+- [x] **Principle 10 "Adversarial by default"** — load-bearing decisions survive the opposite
+  case + a named downside; high-risk work gets an independent check (writer ≠ reviewer); the
+  counter-argument is itself verified against primary evidence (a refutation is a hypothesis,
+  not a verdict). Governed by Principle 1 (proportional — a typo needs none). Wired in
+  PRINCIPLES.md, theoretical lineage (Popper/red-team), and two framework-lessons red flags.
+  No tooling — the mechanisms (brainstorm tradeoffs, `review.md`, decision-log downside) already
+  exist.
+
+- **Enforcement decision (triple-verified, Principle 10 in action):** an adversarial panel
+  argued to REVERSE the "build no routing enforcement" recommendation, citing R5/gpt-5.4-mini
+  going `modeDetected: null → diagnose` on a "route-contract retest" as proof the gap is
+  promptable. Primary-evidence check refuted the panel: there is **no `route-contract` subset**
+  in `eval-autotrigger.mjs` (subsets are `all|fire|nofire|realistic|realistic-nofire|broad|
+  p0-matrix|<ids>`) — the "retest" is the same ids, same prompt, same bootstrap/SKILL, rerun
+  under a different file label. So the `null → diagnose` flip is **execution variance, not a
+  promptable fix**. Conclusions:
+  - Do **not** build a routing-enforcement hook. `UserPromptSubmit` augments input, it cannot
+    force an assistant `Mode:` prefill (panel's mechanism was technically wrong); a prose-parsing
+    WARN is theater (Principle 6).
+  - The small-model gap is **inconsistent adherence (variance), not a capacity limit and not a
+    proven promptable fix** — corrects the earlier "model limit" phrasing. Beating variance needs
+    repeated real-model runs (n>1), which is *more* cost-gated, not less.
+  - One honest survivor from the panel: a **file-state** PreToolUse gate (e.g. warn if
+    `tracked-change` has no `brainstorm.md`) is deterministic (filesystem fact, not prose), unlike
+    a prose WARN. Tracked as a P1 candidate with a named tradeoff (narrow coverage — only bites once
+    `.cairn/changes/<slug>/` exists; false positives on legitimately inline-brainstormed work).
+
+Exit: adversarial+tradeoff is a named principle with the verify-the-refutation clause that this
+very decision exercised; the enforcement question is closed with evidence, not opinion.
+
 ## Sequencing (next cycle)
 
 Each behind the default-light intent gate:
