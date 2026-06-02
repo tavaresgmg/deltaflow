@@ -30,6 +30,10 @@ Workflow:
 4. Patch the minimal owner.
 5. Re-run the failing proof and a regression check.
 
+Grade each finding: **Confirmed** (seen in code/log/runtime), **Deduced** (inferred from a
+pattern), **Hypothesized** (unverified). Fix the confirmed root cause; never present a
+hypothesis as fact (Principle 3).
+
 Escalate to `delta-spec` only if the fix changes intended behavior.
 
 ## Discovery
@@ -60,7 +64,7 @@ Use for medium brownfield changes where reviewers need durable intent.
 
 Workflow:
 
-1. Identify current behavior from code/docs/runtime.
+1. Identify current behavior from code/docs/runtime and repo constraints (`AGENTS.md`, lockfile).
 2. Write the proposed behavior delta.
 3. Name affected capabilities and contracts.
 4. Name the existing owner or pattern to reuse/adapt, or explain why a new one is needed.
@@ -82,12 +86,15 @@ Use when work crosses boundaries:
 
 Workflow:
 
-1. Create durable change folder.
-2. Capture evidence, scope, gates, rollback, and proof strategy.
-3. Record reuse/adapt/new decisions before implementation phases that add owners.
-4. Implement in phases.
-5. Verify each boundary.
-6. Archive/sync after completion.
+1. Ground on repo constraints first (`AGENTS.md`, lockfile, conventions, existing specs).
+2. Create durable change folder.
+3. Capture evidence, scope, gates, rollback, and proof strategy.
+4. Record reuse/adapt/new decisions before implementation phases that add owners.
+5. Implement in phases.
+6. Verify each boundary.
+7. Adversarial review: have a separate isolated subagent check the diff against `delta.md`
+   and the boundaries (writer ≠ reviewer). Review only — never parallelize the coding itself.
+8. Archive/sync after completion.
 
 This mode can later delegate to OpenSpec or another formal framework if the
 repo already uses one.

@@ -237,13 +237,49 @@ has / how it wins". Drift risk across three surfaces.
 Exit (met): each principle fact lives once in `PRINCIPLES.md`; `cairn-budget.mjs` green;
 validate passes (37 files).
 
+## Phase 10: Methodology depth
+
+Audited Cairn against BMAD v6.8, OpenSpec, Spec Kit v0.9.1, Superpowers v5, GSD (2026-06-02).
+Verdict: Cairn already has its OWN methodology (proportional modes + brownfield-first +
+umbrella multi-repo, which no surveyed tool has). Pesquisa, templates, retention, concise
+output, archiving are covered. Real capability gaps were narrow.
+
+Shipped (cheap, aligned with existing principles, not ceremony):
+
+- [x] Evidence grading in `diagnose` — Confirmed/Deduced/Hypothesized (BMAD `bmad-investigate`
+  idea, but it's just Principle 3 made explicit; no new artifact).
+- [x] Adversarial review step in `tracked-change` — separate isolated subagent reviews the diff
+  vs `delta.md` (writer ≠ reviewer); reuses the existing research/review subagent boundary.
+- [x] Ground-on-constraints first in `delta-spec`/`tracked-change` — read `AGENTS.md`/lockfile/
+  conventions before proposing (Spec Kit constitution idea, but AGENTS.md already is ours).
+
+Next (real value, needs care — not yet built):
+
+- [ ] Verify loop spec→code: extend `cairn-analyze.mjs` (reuse, not a new script) to check that
+  `tasks.md` items are ticked with proof and that `delta.md` claims match current code — closes
+  the gap `cairn-analyze` leaves between internal drift and implementation conformance
+  (OpenSpec `/opsx:verify`).
+- [ ] Long-context survival: anchored pre-compaction summary (files/tools/decisions/in-progress/
+  constraints) — pairs with the Phase 8 `PreCompact` lever and the post-compaction `SessionStart`.
+
+Deferred by the anti-bloat principle (AGENTS.md) until real usage demands it:
+
+- [~] Auto-sync archived deltas into `specs/` (OpenSpec `/opsx:sync`) — manual sync is fine
+  until `tracked-change` volume makes drift real.
+- [~] Separate `.cairn/constitution.md` — `AGENTS.md` already carries project constraints;
+  a second file would duplicate the owner (Principle 4).
+- [~] CI lifecycle hooks, multi-agent wave parallelism, 12+ personas — ceremony Cairn rejects.
+
+Exit: methodology gaps that fit a proportional brownfield router are closed; the rest are
+documented as deliberate omissions, not oversights.
+
 ## Sequencing (next cycle)
 
-All four selected. Order by cost/impact, each behind the default-light intent gate:
+Each behind the default-light intent gate:
 
-1. **Phase 7** first — cheapest, every turn benefits, low risk, measurable.
-2. **Phase 9 (partial)** alongside — fold principles into `PRINCIPLES.md` while editing those
-   files anyway; avoids touching them twice.
-3. **Phase 8** after `[confirm]` pass — gated on verifying the feature claims are real.
-4. **Phase 6 eval gaps** continuous — re-run after any `description`/mode/Output-Style change to
-   catch regressions; close the >=2-models-per-harness and Claude second-model P0 debt.
+1. **Phase 7** — done (concise output, every turn benefits).
+2. **Phase 9** — done (consolidation, principles deduped).
+3. **Phase 8** — verified; `skillOverrides` + Codex fallback shipped; runtime hooks deferred.
+4. **Phase 10** — methodology gaps: 3 shipped; verify-loop + long-context survival are next.
+5. **Phase 6 eval gaps** continuous — re-run after any `description`/mode/Output-Style change;
+   codex realistic closed (14/14), small-model `Mode:` contract is the open design question.
