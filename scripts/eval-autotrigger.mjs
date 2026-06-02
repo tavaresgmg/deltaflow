@@ -4,7 +4,7 @@
 // right mode, and did the native Codex `analyze` skill collide. Writes JSONL + a summary.
 //
 //   node scripts/eval-autotrigger.mjs <subset> <label> [model] [--harness codex|claude] [--jobs N]
-//     subset: "all" | "fire" | "nofire" | "realistic" | comma-separated ids (F1,N2,R1,...)
+//     subset: "all" | "fire" | "nofire" | "realistic" | "p0-matrix" | comma-separated ids
 //     label:  output file name under docs/evals/results/<label>.jsonl
 //     model:  optional, passed to codex exec -m or claude --model
 //
@@ -192,6 +192,13 @@ const REALISTIC_MUST_NOT_CASES = [
     prompt: "What cleanup strategy would you use for a messy codebase in general?",
   },
 ];
+
+const ALL_CASES = [...CASES, ...REALISTIC_CASES, ...REALISTIC_MUST_NOT_CASES];
+const P0_MATRIX_IDS = ["R5", "R10", "R11", "N2", "N7", "N11"];
+
+function selectCases(ids) {
+  return ALL_CASES.filter((c) => ids.includes(c.id));
+}
 
 function setupFixture(fixture, realistic = false, caseId = null) {
   fs.rmSync(fixture, { recursive: true, force: true });
@@ -487,13 +494,14 @@ if (subsetArg === "fire") subset = CASES.filter((c) => c.expectFire);
 else if (subsetArg === "nofire") subset = CASES.filter((c) => !c.expectFire);
 else if (subsetArg === "realistic") subset = REALISTIC_CASES;
 else if (subsetArg === "realistic-nofire") subset = REALISTIC_MUST_NOT_CASES;
+else if (subsetArg === "p0-matrix") subset = selectCases(P0_MATRIX_IDS);
 else if (subsetArg === "broad") subset = [
   ...REALISTIC_CASES.filter((c) => ["R8", "R9", "R10", "R11", "R12", "R13", "R14"].includes(c.id)),
   ...REALISTIC_MUST_NOT_CASES,
 ];
 else if (subsetArg !== "all") {
   const ids = subsetArg.split(",").map((s) => s.trim());
-  subset = [...CASES, ...REALISTIC_CASES, ...REALISTIC_MUST_NOT_CASES].filter((c) => ids.includes(c.id));
+  subset = selectCases(ids);
   if (!subset.length) {
     throw new Error(`subset selected no cases: ${subsetArg}`);
   }
@@ -515,6 +523,8 @@ await runPool(subset, { harness, model, jobs, timeoutMs, safeLabel }, (r) => {
 
 const fires = results.filter((r) => r.expectFire);
 const nofires = results.filter((r) => !r.expectFire);
+const durations = results.map((r) => r.durationMs);
+const sortedSlow = [...results].sort((a, b) => b.durationMs - a.durationMs).slice(0, 3);
 const summary = {
   label,
   harness,
@@ -530,6 +540,10 @@ const summary = {
   mustNot_misfired: nofires.filter((r) => r.firedStrong).length,
   collidedAnalyze: results.filter((r) => r.collidedAnalyze).length,
   errors: results.filter((r) => r.status !== "ok").length,
+  totalDurationMs: durations.reduce((sum, value) => sum + value, 0),
+  maxDurationMs: durations.length ? Math.max(...durations) : 0,
+  slowCases: sortedSlow.map((r) => ({ id: r.id, durationMs: r.durationMs })),
+  timeoutIds: results.filter((r) => r.status === "timeout").map((r) => r.id),
 };
 fs.appendFileSync(outTmp, JSON.stringify({ summary }) + "\n");
 fs.renameSync(outTmp, outFile);

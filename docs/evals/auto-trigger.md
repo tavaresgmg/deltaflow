@@ -34,6 +34,20 @@ the temp repo so prompts can point at real brownfield context:
 node scripts/eval-autotrigger.mjs realistic cairn-realistic-<model> <model>
 ```
 
+`subset=all` is the original classic trigger suite (`F*` + `N1-N6`), not every realistic
+case. Use these named subsets for broader coverage:
+
+```bash
+node scripts/eval-autotrigger.mjs realistic cairn-realistic-<harness>-<model>
+node scripts/eval-autotrigger.mjs realistic-nofire cairn-realistic-nofire-<harness>-<model>
+node scripts/eval-autotrigger.mjs broad cairn-broad-<harness>-<model>
+node scripts/eval-autotrigger.mjs p0-matrix cairn-p0-matrix-<harness>-<model>
+```
+
+`p0-matrix` is the cheap recurring regression matrix: `R5,R10,R11,N2,N7,N11`. It covers
+diagnosis, cleanup, security-boundary simplification, shell-command near-miss, read-only
+repo Q&A, and test-output near-miss without running the slower research/greenfield cases.
+
 Eval result files are written atomically through a temp file and promoted only after the
 summary row is written. Fixtures are isolated per process/label/case so subsets can run in
 parallel without sharing `/tmp` state.
@@ -46,10 +60,11 @@ node scripts/eval-autotrigger.mjs R5,N2 cairn-fast-claude-2.1.159-default --harn
 ```
 
 New JSONL runs record `harness`, `harnessVersion`, `model`, `durationMs`, status, trigger
-signals, and routing correctness. Older result files may predate those metadata fields; the
-summary row remains the durable validation contract. The Claude harness loads the local plugin
-with `--plugin-dir plugins/cairn`, so it can measure plugin behavior without relying on a
-manual local install in the temp fixture repo.
+signals, routing correctness, `totalDurationMs`, `maxDurationMs`, `slowCases`, and
+`timeoutIds`. Older result files may predate those metadata fields; the summary row remains the
+durable validation contract. The Claude harness loads the local plugin with
+`--plugin-dir plugins/cairn`, so it can measure plugin behavior without relying on a manual
+local install in the temp fixture repo.
 
 ## Protocol
 
@@ -202,3 +217,42 @@ executed.
   - **Trigger: 2/2 must-fire fired (100%).**
   - **Routing: 2/2 expected mode (100%).**
   - **Misfire: 0/3 must-not (0%).**
+
+- **2026-06-02 — Claude Code v2.1.159, default model — realistic must-not subset (6).**
+  `docs/evals/results/cairn-realistic-nofire-claude-2.1.159-default.jsonl`.
+  - **Misfire: 0/6 (0%).** Read-only repo Q&A, one-off file/test reads, card summary only,
+    conceptual research, and conceptual cleanup did not trigger Cairn.
+
+- **2026-06-02 — Claude Code v2.1.159, default model — realistic must-fire suite (14).**
+  `docs/evals/results/cairn-realistic-claude-2.1.159-default.jsonl`.
+  - **Trigger: 14/14 must-fire fired (100%).**
+  - **Routing: 12/14 expected mode (86%).**
+  - **Errors/timeouts: 3/14.** R3/R6/R7 hit the 180s timeout; R14 completed but did not emit
+    a parseable mode. Treat this as diagnostic evidence, not a passing gate.
+
+- **2026-06-02 — Codex v0.136.0, default model — P0 matrix (R5,R10,R11,N2,N7,N11).**
+  `docs/evals/results/cairn-p0-matrix-codex-0.136-default.jsonl`.
+  - **Trigger: 3/3 must-fire fired (100%).**
+  - **Routing: 3/3 expected mode (100%).**
+  - **Misfire: 0/3 must-not (0%).**
+  - **Slowest:** R5 54.1s, R10 53.1s, R11 37.5s.
+
+- **2026-06-02 — Claude Code v2.1.159, default model — P0 matrix (R5,R10,R11,N2,N7,N11).**
+  `docs/evals/results/cairn-p0-matrix-claude-2.1.159-default.jsonl`.
+  - **Trigger: 3/3 must-fire fired (100%).**
+  - **Routing: 2/3 expected mode (67%).** R11 fired but did not emit a parseable mode.
+  - **Misfire: 0/3 must-not (0%).**
+  - **Slowest:** R11 148.2s and R10 132.7s. This confirms `p0-matrix` is useful but still
+    near the default timeout on Claude for security-boundary simplification.
+
+- **2026-06-02 — Claude Code v2.1.159, `haiku` — fast subset (R5,N2).**
+  `docs/evals/results/cairn-fast-claude-2.1.159-haiku.jsonl`.
+  - **Trigger: 1/1 must-fire fired and routed (100%).**
+  - **Misfire: 0/1 must-not (0%).**
+
+- **2026-06-02 — Codex v0.136.0, `gpt-5.4-mini` — fast subset (R5,N2).**
+  `docs/evals/results/cairn-fast-codex-0.136-gpt-5.4-mini.jsonl`.
+  - **Trigger: 1/1 must-fire fired (100%).**
+  - **Routing: 0/1 expected mode (0%).** R5 fired but did not emit a parseable mode.
+  - **Misfire: 0/1 must-not (0%).** Treat as second-model activation proof plus a routing
+    output gap for mini, not a passing route gate.

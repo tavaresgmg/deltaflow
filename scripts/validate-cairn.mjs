@@ -404,6 +404,73 @@ if (!missing.length) {
       mustNot: 3,
       mustNot_misfired: 0,
     },
+    {
+      file: "docs/evals/results/cairn-realistic-nofire-claude-2.1.159-default.jsonl",
+      harness: "claude",
+      cases: 6,
+      mustNot: 6,
+      mustNot_misfired: 0,
+      errors: 0,
+    },
+    {
+      file: "docs/evals/results/cairn-realistic-claude-2.1.159-default.jsonl",
+      harness: "claude",
+      cases: 14,
+      mustFire: 14,
+      mustFire_fired: 14,
+      mustFire_routedRight: 12,
+      errors: 3,
+    },
+    {
+      file: "docs/evals/results/cairn-p0-matrix-codex-0.136-default.jsonl",
+      harness: "codex",
+      cases: 6,
+      mustFire: 3,
+      mustFire_fired: 3,
+      mustFire_routedRight: 3,
+      mustNot: 3,
+      mustNot_misfired: 0,
+      errors: 0,
+      requiredKeys: ["totalDurationMs", "maxDurationMs", "slowCases", "timeoutIds"],
+    },
+    {
+      file: "docs/evals/results/cairn-p0-matrix-claude-2.1.159-default.jsonl",
+      harness: "claude",
+      cases: 6,
+      mustFire: 3,
+      mustFire_fired: 3,
+      mustFire_routedRight: 2,
+      mustNot: 3,
+      mustNot_misfired: 0,
+      errors: 0,
+      requiredKeys: ["totalDurationMs", "maxDurationMs", "slowCases", "timeoutIds"],
+    },
+    {
+      file: "docs/evals/results/cairn-fast-claude-2.1.159-haiku.jsonl",
+      harness: "claude",
+      model: "haiku",
+      cases: 2,
+      mustFire: 1,
+      mustFire_fired: 1,
+      mustFire_routedRight: 1,
+      mustNot: 1,
+      mustNot_misfired: 0,
+      errors: 0,
+      requiredKeys: ["totalDurationMs", "maxDurationMs", "slowCases", "timeoutIds"],
+    },
+    {
+      file: "docs/evals/results/cairn-fast-codex-0.136-gpt-5.4-mini.jsonl",
+      harness: "codex",
+      model: "gpt-5.4-mini",
+      cases: 2,
+      mustFire: 1,
+      mustFire_fired: 1,
+      mustFire_routedRight: 0,
+      mustNot: 1,
+      mustNot_misfired: 0,
+      errors: 0,
+      requiredKeys: ["totalDurationMs", "maxDurationMs", "slowCases", "timeoutIds"],
+    },
   ];
   for (const expected of evalExpectations) {
     if (!fs.existsSync(path.join(root, expected.file))) {
@@ -416,8 +483,13 @@ if (!missing.length) {
         fail(`eval result has no summary row: ${expected.file}`);
         continue;
       }
+      for (const key of expected.requiredKeys || []) {
+        if (!(key in summary)) {
+          fail(`eval result ${expected.file} missing summary key: ${key}`);
+        }
+      }
       for (const [key, value] of Object.entries(expected)) {
-        if (key === "file") continue;
+        if (["file", "requiredKeys"].includes(key)) continue;
         if (summary[key] !== value) {
           fail(`eval result ${expected.file} expected ${key}=${value}, got ${summary[key]}`);
         }
@@ -429,6 +501,14 @@ if (!missing.length) {
 
   const evalScript = read("scripts/eval-autotrigger.mjs");
   const evalDocs = read("docs/evals/auto-trigger.md");
+  for (const needle of ["p0-matrix", "totalDurationMs", "slowCases", "timeoutIds"]) {
+    if (!evalScript.includes(needle)) {
+      fail(`eval runner missing expected matrix support: ${needle}`);
+    }
+    if (!evalDocs.includes(needle)) {
+      fail(`eval docs missing expected matrix support: ${needle}`);
+    }
+  }
   for (const id of ["R8", "R9", "R10", "R11", "R12", "R13", "R14", "N7", "N8", "N9", "N10", "N11", "N12"]) {
     if (!new RegExp(`id:\\s*["']${id}["']`).test(evalScript)) {
       fail(`eval runner missing broad-scope case ${id}`);

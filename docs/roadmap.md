@@ -38,11 +38,16 @@ Still pending:
 
 - [ ] Full auto-trigger suite (12 must-fire + 6 must-not) on ≥2 models per harness; log fire-rate.
 - [x] Fast install + auto-trigger pass on Claude Code v2.1.159.
+- [x] Incremental P0 matrix runner/result contract with duration metrics.
+- [x] Claude Code realistic no-fire subset on v2.1.159 default: 0/6 misfires.
+- [x] Second-model fast activation smoke: Claude `haiku` passed; Codex `gpt-5.4-mini`
+  fired but did not emit a parseable route mode.
 - [x] Confirm the Claude Code PreToolUse guard blocks outside-repo writes live.
 - [ ] Confirm the PreToolUse guard blocks live on Codex, not only via local smoke.
 
 Exit: the skill auto-fires on >=90% of must-fire prompts and routes to the right mode in
->=4/5 real brownfield cards. Single-case routing confirmed on Codex; suite pending.
+>=4/5 real brownfield cards. Codex default suites are strong; Claude realistic default now
+shows 14/14 activation, 12/14 routed, and 3 timeouts, so full cross-model exit remains pending.
 
 ## Phase 2: File-based layered memory (ADR-0004)
 
@@ -102,5 +107,8 @@ Exit: brainstorm + research + docs improve quality without recreating ceremony o
 - [x] Fast cross-harness subset on Codex v0.136.0 and Claude Code v2.1.159.
 - [x] Broad no-card/research/cleanup/pattern-alignment eval coverage on Codex, plus a
   Claude Code broad-fast subset.
+- [x] P0 matrix subset with duration metrics on Codex default and Claude default.
+- [x] Fast second-model subset on Claude `haiku`; Codex `gpt-5.4-mini` activation passed but
+  routing output needs work.
 - [ ] Same realistic routing subset on >=2 models per harness.
 - [ ] Publish patterns only after real brownfield usage validates the core assumptions.
