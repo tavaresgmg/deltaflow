@@ -164,6 +164,9 @@ load-bearing decision; never rewritten.
   spec system such as OpenSpec, archive the change folder, or delete transient planning.
 - Archive retained completed changes under `.cairn/changes/archive/<YYYY-MM-DD>-<slug>/`.
 - Delete transient plans after completion when code/tests/docs already carry the truth.
+- Rotate `decision-log.md` past ~200 lines: move older entries to
+  `.cairn/changes/archive/decision-log-<YYYY-MM>.md`, keep the recent tail. The anchor reads
+  only the last entries, so the live log stays small.
 - Do not keep execution logs as durable docs.
 - Prefer code, tests, and concise specs over narrative history.
 - Use `node plugins/cairn/scripts/cairn-retention.mjs .cairn/changes` to report completed

@@ -3,6 +3,7 @@ node_modules/
 .deltaflow/
 .codex-log/
 .work/
+.worktrees/
 dist/
 coverage/
 *.log

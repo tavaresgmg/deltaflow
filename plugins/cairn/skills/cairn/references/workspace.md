@@ -27,10 +27,20 @@ intended target before editing, committing, or running build or test commands. I
 `umbrellaRoot` is set, you are in a multi-repo workspace — be explicit about which child
 you're touching.
 
-## Worktrees
+## Branches & worktrees
 
-Anchor worktrees per child repo (the detector flags `isWorktree` and resolves `mainWorktree`
-so state lands in the right place). Do not create a worktree of the umbrella parent.
+One change ↔ one branch. `delta-spec` and `tracked-change` run on `cairn/<slug>` (same slug as
+`.cairn/changes/<slug>/`), branched from the default; `direct`/`diagnose` may stay on the current
+branch when the fix is trivial and reversible.
+
+Use a worktree only to isolate a risky long change or to run independent tasks that must not
+share one working tree. Anchor it under `<workspace>/.worktrees/<repo>.<slug>` — not as a repo
+sibling, which the umbrella detector would miscount as another repo. The detector resolves
+`mainWorktree`, so `.cairn/` state lands in the real repo. Never make a worktree of the umbrella
+parent.
+
+Close: PR from `cairn/<slug>`, then `git worktree remove` and prune the branch. The worktree is
+disposable; the memory it produced is not.
 
 ## Multi-repo tasks
 

@@ -61,7 +61,7 @@ Read these references only when needed:
 - `references/research.md` for the brainstorm / web-research / docs-grounding stages.
 - `references/review.md` for the proportional review ladder (self-review to adversarial).
 - `references/memory.md` for the `.cairn/` state layout and the resume protocol.
-- `references/workspace.md` for the umbrella model and boundary detection.
+- `references/workspace.md` for the umbrella model, boundary detection, branches & worktrees.
 - `references/gates.md` for what is deterministically enforced vs advisory, and reconciliation.
 - `references/framework-lessons.md` for what Cairn borrows and avoids.
 
