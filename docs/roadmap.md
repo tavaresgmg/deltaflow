@@ -25,6 +25,8 @@ Built and locally validated:
   <=1024 + directive + negative boundary, no dirs in manifest dirs, hook portability.
 - [x] Auto-trigger eval fixture: 12 must-fire (pt-BR/en) + 6 must-not-fire + protocol
   (`docs/evals/auto-trigger.md`).
+- [x] Eval scoreboard over JSONL results: current gaps, historical failures, route-contract
+  clears, slow cases, and next cheap command (`scripts/eval-scoreboard.mjs`).
 
 Validated on Codex (v0.135.0, gpt-5.5):
 
@@ -117,6 +119,7 @@ Exit: brainstorm + research + docs improve quality without recreating ceremony o
 - [x] Broad no-card/research/cleanup/pattern-alignment eval coverage on Codex, plus a
   Claude Code broad-fast subset.
 - [x] P0 matrix subset with duration metrics on Codex default and Claude default.
+- [x] Read-only eval scoreboard for choosing the next cheapest useful run.
 - [x] Fast second-model subset on Claude `haiku`; Codex `gpt-5.4-mini` activation passed but
   routing output needs work.
 - [ ] Same realistic routing subset on >=2 models per harness.

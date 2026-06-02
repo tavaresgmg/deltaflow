@@ -46,6 +46,7 @@ const required = [
   "docs/release-checklist.md",
   "docs/evals/auto-trigger.md",
   "docs/examples/brownfield-card-eval-harness.md",
+  "scripts/eval-scoreboard.mjs",
   "plugins/cairn/plugin.manifest.json",
   "plugins/cairn/.codex-plugin/plugin.json",
   "plugins/cairn/.claude-plugin/plugin.json",
@@ -646,6 +647,44 @@ if (!missing.length) {
     } catch (e) {
       fail(`eval result is not valid JSONL: ${expected.file}: ${e.message}`);
     }
+  }
+
+  // Eval scoreboard smoke test: must summarize historical/current state without hand-reading JSONL.
+  try {
+    const out = execSync("node scripts/eval-scoreboard.mjs --json", {
+      cwd: root,
+      stdio: ["ignore", "pipe", "ignore"],
+    }).toString();
+    const scoreboard = JSON.parse(out);
+    if (!Array.isArray(scoreboard.rows) || scoreboard.rows.length < 10) {
+      fail("eval-scoreboard.mjs emitted too few rows");
+    }
+    if (!Array.isArray(scoreboard.p0Ids) || scoreboard.p0Ids.join(",") !== "R5,R10,R11,N2,N7,N11") {
+      fail("eval-scoreboard.mjs has the wrong p0Ids contract");
+    }
+    if (!Array.isArray(scoreboard.missingCoverage) || !scoreboard.missingCoverage.some((gap) => gap.includes("fewer than two"))) {
+      fail("eval-scoreboard.mjs did not report second-model coverage gaps");
+    }
+    if (!Array.isArray(scoreboard.slowCases) || !scoreboard.slowCases.some((row) => row.nearTimeout)) {
+      fail("eval-scoreboard.mjs did not surface near-timeout slow cases");
+    }
+    if (!scoreboard.nextCommand?.command?.includes("eval-autotrigger.mjs p0-matrix")) {
+      fail("eval-scoreboard.mjs did not emit a p0-matrix next command");
+    }
+    const claudeP0 = scoreboard.rows.find((row) => row.label === "cairn-p0-matrix-claude-2.1.159-default");
+    if (!claudeP0?.clearedRoutingMissIds?.includes("R11")) {
+      fail("eval-scoreboard.mjs did not mark Claude R11 as cleared by route-contract retest");
+    }
+    const codexMiniFast = scoreboard.rows.find((row) => row.label === "cairn-fast-codex-0.136-gpt-5.4-mini");
+    if (!codexMiniFast?.clearedRoutingMissIds?.includes("R5")) {
+      fail("eval-scoreboard.mjs did not mark Codex mini R5 as cleared by route-contract retest");
+    }
+    const realisticClaude = scoreboard.rows.find((row) => row.label === "cairn-realistic-claude-2.1.159-default");
+    if (!realisticClaude?.timeoutIds?.includes("R3") || !realisticClaude?.timeoutIds?.includes("R6") || !realisticClaude?.timeoutIds?.includes("R7")) {
+      fail("eval-scoreboard.mjs did not recompute Claude realistic timeout ids");
+    }
+  } catch (e) {
+    fail(`eval-scoreboard.mjs failed to run: ${e.message}`);
   }
 
   const evalScript = read("scripts/eval-autotrigger.mjs");

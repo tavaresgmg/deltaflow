@@ -21,6 +21,7 @@ next — by activation, modes/workflows, artifacts, deterministic automation, me
 | Research stages | `cairn-version.mjs`, `agents/cairn-researcher.md`, `references/research.md` | lockfile grounding, isolated subagent |
 | Reuse + anti-rationalization guardrails | `SKILL.md`, `framework-lessons.md`, `gates.md` | explicit advisory behavior, validator-guarded |
 | Context budget guard | `cairn-budget.mjs`, `validate-cairn.mjs` | always-on bootstrap + progressive references budgeted |
+| Eval scoreboard | `scripts/eval-scoreboard.mjs`, `validate-cairn.mjs` | read-only coverage/failure/slow-case/next-command surface |
 | Dual-harness from one source | `build-manifests.mjs`, both marketplaces | install verified on Codex |
 
 ## By dimension
@@ -45,9 +46,10 @@ next — by activation, modes/workflows, artifacts, deterministic automation, me
 
 1. **Broader eval matrix.** Realistic/broad routing is strong on Codex default, and Claude now
    has realistic no-fire proof plus a full realistic diagnostic run. `p0-matrix` gives a cheap
-   recurring regression subset with duration metrics. Route-output contract retests fixed the
-   Codex `gpt-5.4-mini` R5 and Claude R11/R14 gaps. Still missing: full passing realistic/full
-   suites on >=2 models per harness.
+   recurring regression subset with duration metrics. `eval-scoreboard.mjs` now converts JSONL
+   history into current gaps, historical failures, slow-case diagnostics, route-contract clears,
+   and the next cheap command. Still missing: full passing realistic/full suites on >=2 models
+   per harness.
 2. **Spec↔code semantic analysis v2.** `cairn-analyze.mjs` now checks claim-backed delta/spec
    drift and infers coverage from ordinary behavior prose with code/proof candidates, without
    trying to become a full NLP/spec engine.

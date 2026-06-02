@@ -78,6 +78,18 @@ result files may predate those metadata fields; the summary row remains the dura
 contract. The Claude harness loads the local plugin with `--plugin-dir plugins/cairn`, so it
 can measure plugin behavior without relying on a manual local install in the temp fixture repo.
 
+Use the scoreboard before choosing the next run:
+
+```bash
+node scripts/eval-scoreboard.mjs
+node scripts/eval-scoreboard.mjs --json
+```
+
+The scoreboard reads the JSONL case rows plus summary rows, separates historical failures
+from active failures, marks focused `route-contract` retests as cleared diagnostics without
+hiding the original run, recomputes timeout IDs for older summaries, validates the `p0-matrix`
+case set (`R5,R10,R11,N2,N7,N11`), and emits the next cheap command to run.
+
 ## Protocol
 
 1. Install the plugin on the target harness (Codex first, then Claude Code).
