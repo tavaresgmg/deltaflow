@@ -45,11 +45,12 @@ next — by activation, modes/workflows, artifacts, deterministic automation, me
 ### P0 — high value, fills a real hole
 
 1. **Broader eval matrix.** Realistic/broad routing is strong on Codex default, and Claude now
-   has realistic no-fire proof plus a full realistic diagnostic run. `p0-matrix` gives a cheap
-   recurring regression subset with duration metrics. `eval-scoreboard.mjs` now converts JSONL
-   history into current gaps, historical failures, slow-case diagnostics, route-contract clears,
-   and the next cheap command. Still missing: full passing realistic/full suites on >=2 models
-   per harness.
+   has realistic no-fire proof plus a full realistic diagnostic run. Codex default and
+   `gpt-5.4-mini` both pass the `p0-matrix`; the mini realistic run produced focused R9/R14
+   debt that passed a route-contract retest, but the full mini realistic rerun remains pending.
+   `eval-scoreboard.mjs` converts JSONL history into current gaps, historical failures,
+   slow-case diagnostics, route-contract clears, and the next cheap command. Still missing:
+   full passing realistic/full suites on >=2 models per harness and Claude second-model P0.
 2. **Spec↔code semantic analysis v2.** `cairn-analyze.mjs` now checks claim-backed delta/spec
    drift and infers coverage from ordinary behavior prose with code/proof candidates, without
    trying to become a full NLP/spec engine.
@@ -62,8 +63,9 @@ next — by activation, modes/workflows, artifacts, deterministic automation, me
 4. **Brainstorm gate that bites for `tracked-change`** (from Superpowers/BMAD). Still advisory.
    A heuristic UserPromptSubmit/PreToolUse check: if mode is tracked-change and no
    `brainstorm.md` exists, warn (not hard-block — false positives). Honest middle ground.
-5. **Run the full eval suite on Claude Code** too, and on ≥2 models per harness — the fast
-   subset already closes the first activation-validation loop.
+5. **Run the full eval suite on Claude Code** too, and on >=2 models per harness. Claude
+   default has no-fire proof and a diagnostic realistic run; second-model P0/realistic proof
+   is still missing.
 
 ### P2 — automation polish
 
@@ -84,7 +86,7 @@ next — by activation, modes/workflows, artifacts, deterministic automation, me
 
 ## Sequencing
 
-Validate first (eval suite + baseline running now), then implement P0 in order 1→2→3, each
-behind the same default-light intent gate so small cards stay cheap. P1 items are mostly
-cheap prose/heuristics — fold them in alongside. P2 only once the change-folder lifecycle has
-real usage. Re-run the eval suite after any `description`/mode change to catch regressions.
+Validate first with the scoreboard, then implement P0 in order 1->2->3, each behind the same
+default-light intent gate so small cards stay cheap. Fold P1 prose/heuristics alongside when
+they are cheap. P2 only once the change-folder lifecycle has real usage. Re-run the eval suite
+after any `description`/mode change to catch regressions.

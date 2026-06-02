@@ -6,6 +6,9 @@ the core assumptions (roadmap Phase 6).
 - [ ] `node scripts/build-manifests.mjs` — regenerate; commit any manifest/marketplace diff.
 - [ ] `node scripts/validate-cairn.mjs` passes (files, parity, marketplace drift, YAML safety,
       gate/helper smoke).
+- [ ] Confirm local harness versions against npm `latest`: `codex --version`,
+      `claude --version`, `npm view @openai/codex version`,
+      `npm view @anthropic-ai/claude-code version`.
 - [ ] `node plugins/cairn/scripts/cairn-analyze.mjs --all .cairn/changes` reports no HIGH
       findings for active release work.
 - [ ] Bump `version` in `plugins/cairn/plugin.manifest.json` and rebuild.
