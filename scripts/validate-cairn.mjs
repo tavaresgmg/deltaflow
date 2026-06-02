@@ -460,6 +460,31 @@ if (!missing.length) {
       mustFire_routedRight: 7,
     },
     {
+      // Strongest realistic proof: full 14-case suite, all fired and routed (2026-06-02).
+      file: "docs/evals/results/cairn-realistic-codex-0.136-default-full.jsonl",
+      harness: "codex",
+      cases: 14,
+      mustFire: 14,
+      mustFire_fired: 14,
+      mustFire_routedRight: 14,
+      mustNot: 0,
+      mustNot_misfired: 0,
+      errors: 0,
+    },
+    {
+      // Small-model floor: haiku does the work but skips the Mode: contract on R5/R11.
+      file: "docs/evals/results/cairn-p0-matrix-claude-2.1.160-haiku.jsonl",
+      harness: "claude",
+      model: "haiku",
+      cases: 6,
+      mustFire: 3,
+      mustFire_fired: 1,
+      mustFire_routedRight: 1,
+      mustNot: 3,
+      mustNot_misfired: 0,
+      errors: 0,
+    },
+    {
       file: "docs/evals/results/cairn-nofire-after-scope-codex-0.136-default.jsonl",
       cases: 6,
       mustNot: 6,
