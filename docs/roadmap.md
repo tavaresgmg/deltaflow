@@ -275,6 +275,39 @@ Deferred by the anti-bloat principle (AGENTS.md) until real usage demands it:
 Exit: methodology gaps that fit a proportional brownfield router are closed; the rest are
 documented as deliberate omissions, not oversights.
 
+## Phase 11: Software-engineering foundations
+
+Two convergent primary-source research passes (2026-06-02): current agile/AI practice (DORA
+2025, METR RCT, SDD, brownfield) + timeless principles (Cynefin, OODA, Lean, XP, Conway,
+comm theory, cognitive load, ADRs). Both independently concluded Cairn already embodies the
+durable principles and shares one real gap.
+
+Already embodied (validated, not changed): proportional modes ≈ Cynefin; observe→act→verify
+≈ OODA; gates ≈ Lean jidoka/poka-yoke; smallest change ≈ XP YAGNI; decision-log ≈ ADRs;
+concision + context budget ≈ cognitive load; single-threaded coding + adversarial review ≈
+Theory of Constraints — human review, not code generation, is the real bottleneck (METR -19%
+in mature repos; DORA 2025 AI productivity paradox: +98% PRs merged, delivery flat).
+
+Shipped (one genuine convergent gap, minimal wiring):
+
+- [x] Principle 9 "Compounding context" — kaizen + blameless postmortem: when work reveals
+  context was missing/wrong/stale, fix the context doc, not just the code. Decision-log records
+  *why*; this records *what the system now knows*. Wired in PRINCIPLES.md + memory.md close
+  hygiene + a framework-lessons red flag. No SKILL/gates/modes inflation (anti-bloat).
+- [x] Named the theoretical lineage in PRINCIPLES.md — grounding, zero behavior change.
+
+Rejected / deferred:
+
+- [~] DORA/SPACE metrics surface — Cairn is a router, not a metrics product; the eval
+  scoreboard already tracks regression.
+- [~] Cynefin "complex" probe mode — `discovery` already covers exploratory probing.
+- [~] Context-quality → autonomy scaling (brownfield: autonomy should track context-doc
+  quality, per METR) — a roadmap thought, not a behavior change yet; revisit if autonomy
+  misfires on under-documented repos.
+
+Exit: Cairn's pragmatic principles now have a named theoretical spine; the one missing loop
+(learn from failure) is codified.
+
 ## Sequencing (next cycle)
 
 Each behind the default-light intent gate:

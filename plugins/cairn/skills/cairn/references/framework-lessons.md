@@ -36,3 +36,4 @@ stale. Reuse the existing owner before creating a new one.
 | "The test is slow, so skip it." | Run a focused cheaper proof or state the residual risk explicitly. |
 | "Planning slows us down." | Use `direct` for small reversible work; use discovery/spec when the wrong path is costly. |
 | "More words make the answer safer." | Cut filler, hedging, and restated context (Principle 8). Keep numbers, IDs, safety warnings, and every inference step intact. |
+| "The map was stale but I worked around it." | Fix the context that misled you — map, spec, `AGENTS.md` — not just the code (Principle 9). Ask what context was missing, not whose prompt was wrong. |

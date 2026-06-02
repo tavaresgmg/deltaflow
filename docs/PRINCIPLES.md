@@ -66,9 +66,25 @@ Never compress: security warnings, irreversible-action confirmations, public art
 step stays explicit.
 *Enforced by:* `cairn-budget.mjs` (tool surfaces); Output Style in `SKILL.md` (agent output).
 
+## 9. Compounding context
+
+Failure, surprise, or a map that lied means context was missing — fix the context, not only
+the code. Update the relevant `.cairn/codebase/<area>.md`, spec, `AGENTS.md`, or
+`framework-lessons.md` so the next session does not relearn it. Blameless: ask what context
+was missing, not whose prompt was wrong. The decision-log records *why* a choice was made;
+this records *what the system now knows*.
+*Enforced by:* close-step hygiene (`references/memory.md`); red flag (`framework-lessons.md`).
+
 ---
 
-Borrowed lineage: BMAD (discovery/research), OpenSpec (delta specs, archive lifecycle),
-Spec Kit (phase separation, consistency analysis), Superpowers/GSD (verification discipline,
-durable state). Token economy adapts the "caveman" concise-output technique
-(JuliusBrussee/caveman, wilpel/caveman-compression). See `framework-lessons.md`.
+Borrowed lineage (where the shapes came from): BMAD (discovery/research), OpenSpec (delta
+specs, archive lifecycle), Spec Kit (phase separation, consistency analysis), Superpowers/GSD
+(verification discipline, durable state). Token economy adapts the "caveman" concise-output
+technique (JuliusBrussee/caveman, wilpel/caveman-compression). See `framework-lessons.md`.
+
+Theoretical lineage (why the shapes hold): proportional depth ≈ Cynefin domains (Snowden);
+observe→classify→act→verify→close ≈ OODA (Boyd); hard gates + boundary guard ≈ Lean
+jidoka/poka-yoke; smallest change ≈ XP YAGNI; decision-log ≈ ADRs (Nygard); concise comms +
+context budget ≈ cognitive-load theory (Sweller); compounding context ≈ kaizen + blameless
+postmortems; single-threaded coding + adversarial review ≈ Theory of Constraints (human
+review, not code generation, is the real bottleneck — METR 2025, DORA 2025).

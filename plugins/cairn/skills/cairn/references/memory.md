@@ -79,3 +79,6 @@ delete transient plans after completion; never leave stale clutter. Completed `d
 repo's existing spec system, archive, or delete. Use `cairn-retention.mjs` to find completed
 active changes before cleanup. Memory is a hint, not authority — revalidate drift-prone
 external facts before acting on a recalled summary.
+
+Learn from failure (Principle 9): when work reveals context was missing, wrong, or stale,
+update the owning context doc (codebase map, spec, `AGENTS.md`) at close — not just the code.
