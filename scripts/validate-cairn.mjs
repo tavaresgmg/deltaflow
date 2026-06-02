@@ -221,6 +221,9 @@ if (!missing.length) {
     if (!b.context || !["thin", "partial", "strong"].includes(b.context.readiness)) {
       fail("cairn-boundary.mjs did not emit a valid context.readiness label");
     }
+    if (!["local", "hybrid", "commit"].includes(b.memoryPolicy)) {
+      fail("cairn-boundary.mjs did not emit a valid memoryPolicy");
+    }
   } catch (e) {
     fail(`cairn-boundary.mjs failed to run: ${e.message}`);
   }

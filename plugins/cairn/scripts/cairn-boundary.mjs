@@ -56,6 +56,21 @@ function contextReadiness(root) {
   return { ...signals, readiness: score >= 4 ? "strong" : score >= 2 ? "partial" : "thin" };
 }
 
+// The local-vs-versioned choice IS the repo's .gitignore — read it, don't invent a config.
+// local = whole .cairn/ ignored; hybrid = process (changes/decision-log) ignored; commit = none.
+function memoryPolicy(root) {
+  let lines;
+  try {
+    lines = fs.readFileSync(path.join(root, ".gitignore"), "utf8")
+      .split("\n").map((l) => l.trim()).filter((l) => l && !l.startsWith("#"));
+  } catch {
+    return "commit";
+  }
+  if (lines.some((l) => l === ".cairn" || l === ".cairn/" || l === ".cairn/*")) return "local";
+  if (lines.some((l) => /^\.cairn\/(changes|decision-log)/.test(l))) return "hybrid";
+  return "commit";
+}
+
 const repoRoot = git("rev-parse --show-toplevel", start);
 const result = { cwd: start, isRepo: Boolean(repoRoot), repoRoot };
 
@@ -94,6 +109,7 @@ if (repoRoot) {
   }
 
   result.context = contextReadiness(repoRoot);
+  result.memoryPolicy = memoryPolicy(repoRoot);
 }
 
 process.stdout.write(JSON.stringify(result, null, 2) + "\n");

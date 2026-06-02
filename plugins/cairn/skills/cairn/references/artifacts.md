@@ -167,9 +167,11 @@ load-bearing decision; never rewritten.
 - Rotate `decision-log.md` past ~200 lines: move older entries to
   `.cairn/changes/archive/decision-log-<YYYY-MM>.md`, keep the recent tail. The anchor reads
   only the last entries, so the live log stays small.
-- Commit policy is hybrid: commit durable knowledge (`specs/`, `codebase/` maps); keep process
-  local and gitignored (`changes/`, `decision-log.md`). At close, sync a change's durable findings
-  into `specs/`/`codebase/` so they survive — the planning folder itself stays local.
+- Commit policy is hybrid by default: commit durable knowledge (`specs/`, `codebase/` maps); keep
+  process local and gitignored (`changes/`, `decision-log.md`). At close, sync a change's durable
+  findings into `specs/`/`codebase/` so they survive — the planning folder itself stays local.
+  User-overridable per repo via `.gitignore` (local/hybrid/commit presets in `install.md`); the
+  boundary detector reports the effective `memoryPolicy` so the choice is read, not guessed.
 - Do not keep execution logs as durable docs.
 - Prefer code, tests, and concise specs over narrative history.
 - Use `node plugins/cairn/scripts/cairn-retention.mjs .cairn/changes` to report completed

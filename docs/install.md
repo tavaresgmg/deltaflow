@@ -92,10 +92,14 @@ Values: `on` (default), `name-only` (collapse description), `user-invocable-only
 the model, still in the `/` menu), `off`. Do **not** override `cairn` — its directive
 `description` is what drives activation. No Codex equivalent exists yet.
 
-## Committing `.cairn/` (hybrid policy)
+## Memory policy: local, hybrid, or commit
 
-Cairn's `.cairn/` is hybrid: commit the durable knowledge, keep the process local. Add to your
-project `.gitignore`:
+Whether `.cairn/` is local or versioned is set by your project `.gitignore` — that **is** the
+config, read deterministically. The boundary detector reports the effective `memoryPolicy`
+(`local|hybrid|commit`) each session, so the agent respects your choice instead of guessing.
+Pick one preset:
+
+**Hybrid (default)** — durable knowledge committed, process local:
 
 ```gitignore
 .cairn/changes/
@@ -103,10 +107,24 @@ project `.gitignore`:
 .work/
 ```
 
-Commit `.cairn/specs/` and `.cairn/codebase/` — they are living documentation that travels with
-the repo. The `changes/` planning and `decision-log.md` stay local (same-machine resume still
-works via the SessionStart anchor). This plugin's own repo keeps its whole `.cairn/` local
-because it is the plugin source, not a user project.
+**Local (everything local)** — nothing under `.cairn/` is versioned:
+
+```gitignore
+.cairn/
+.work/
+```
+
+**Commit (everything versioned)** — add nothing for `.cairn/`; let it all be committed.
+
+Commit `.cairn/specs/` and `.cairn/codebase/` whenever possible — they are living documentation.
+Process files (`changes/`, `decision-log.md`) staying local does not break same-machine resume
+(the SessionStart anchor still works).
+
+**Global default:** state your preference once in your global agent instructions
+(`~/.claude/CLAUDE.md`, or your Codex global `AGENTS.md`), e.g. `Cairn memory: keep local`. Cairn
+reads that and applies the matching preset when it first creates `.cairn/` state — or paste a
+preset above yourself. This plugin's own repo uses `local` — it is the plugin source, not a user
+project.
 
 ## Verify locally (no harness)
 
