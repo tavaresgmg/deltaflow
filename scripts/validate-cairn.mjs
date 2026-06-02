@@ -618,7 +618,7 @@ if (!missing.length) {
 
   const evalScript = read("scripts/eval-autotrigger.mjs");
   const evalDocs = read("docs/evals/auto-trigger.md");
-  for (const needle of ["p0-matrix", "answerText", "answerTail", "totalDurationMs", "slowCases", "fireMissIds", "routingMissIds", "diagnosticIds", "timeoutIds"]) {
+  for (const needle of ["p0-matrix", "answerText", "answerTail", "totalDurationMs", "slowCases", "fireMissIds", "routingMissIds", "diagnosticIds", "timeoutIds", "--out"]) {
     if (!evalScript.includes(needle)) {
       fail(`eval runner missing expected matrix support: ${needle}`);
     }
@@ -634,6 +634,32 @@ if (!missing.length) {
       fail(`eval docs missing broad-scope case ${id}`);
     }
   }
+  try {
+    const help = execSync("node scripts/eval-autotrigger.mjs --help", {
+      cwd: root,
+      stdio: ["ignore", "pipe", "pipe"],
+    }).toString();
+    if (!help.includes("--out docs/evals/results/<label>.jsonl")) {
+      fail("eval runner --help missing explicit --out usage");
+    }
+  } catch (e) {
+    fail(`eval runner --help failed: ${e.message}`);
+  }
+  const expectEvalArgFailure = (cmd, expectedText) => {
+    try {
+      execSync(cmd, { cwd: root, stdio: ["ignore", "pipe", "pipe"] });
+      fail(`eval runner accepted invalid args: ${cmd}`);
+    } catch (e) {
+      const text = `${e.stdout || ""}${e.stderr || ""}`;
+      if (!text.includes(expectedText)) {
+        fail(`eval runner invalid-arg output missing '${expectedText}' for: ${cmd}`);
+      }
+    }
+  };
+  expectEvalArgFailure("node scripts/eval-autotrigger.mjs R5,N2 --unknown", "unknown option");
+  expectEvalArgFailure("node scripts/eval-autotrigger.mjs R5,N2 --harness codex", "missing label");
+  expectEvalArgFailure("node scripts/eval-autotrigger.mjs R5,N2 --out docs/evals/results/--out.jsonl", "invalid --out filename");
+  expectEvalArgFailure("node scripts/eval-autotrigger.mjs R5,N2 --out /tmp/cairn-bad.jsonl", "--out must stay under docs/evals/results");
 
   // Researcher agent frontmatter.
   const agent = read("plugins/cairn/agents/cairn-researcher.md");

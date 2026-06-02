@@ -32,7 +32,9 @@ failure mode #1):
   delivered by the plugin inventory (skill, agent, hooks) and SessionStart bootstrap, not a
   generated root `CLAUDE.md`. Add a generated `CLAUDE.md` only if live usage proves Claude
   needs repo-root instructions outside the plugin path.
-- Hooks standardized on `${CLAUDE_PLUGIN_ROOT}` (the portable var; Codex exposes it too).
+- Hooks standardize on `${CLAUDE_PLUGIN_ROOT}` as the cross-harness root var. Claude sets it
+  natively; Codex has native `${PLUGIN_ROOT}` and also exposes `${CLAUDE_PLUGIN_ROOT}` for
+  compatibility.
 
 Public install must not depend on anything under the author's `~/.codex` or `~/.claude`.
 

@@ -72,7 +72,10 @@ Diferenças que o build precisa emitir:
 2. **Marketplace/catálogo:** `.agents/plugins/marketplace.json` (Codex) E `.claude-plugin/marketplace.json` (Claude), ambos `source.path → ./plugins/cairn`.
 3. **Skills standalone** (se ofertar sem plugin): Codex `.agents/skills/`; Claude `.claude/skills/`.
 4. **Instrução raiz:** Codex lê `AGENTS.md` nativamente; Claude Code **NÃO** lê `AGENTS.md` (doc oficial; issue #6235) — gerar `CLAUDE.md` com import `@AGENTS.md` ou symlink. **Preferir geração/import a symlink** (Windows quebra symlink). NUNCA symlinkar `.claude/` inteiro. Manter enxuto (Codex trunca silenciosamente além de `project_doc_max_bytes` 32 KiB).
-5. **Hook env var (correção crítica):** a var portável é `${CLAUDE_PLUGIN_ROOT}`, NÃO `${PLUGIN_ROOT}` (que é Codex-only/undocumented no Claude). Codex expõe `CLAUDE_PLUGIN_ROOT` "for compatibility". Padronizar hooks em `${CLAUDE_PLUGIN_ROOT}`.
+5. **Hook env var (correção crítica):** padronizar hooks em `${CLAUDE_PLUGIN_ROOT}` como
+   variável cross-harness. Claude Code define essa var nativamente; Codex define
+   `${PLUGIN_ROOT}`/`${PLUGIN_DATA}` como nomes nativos e também expõe
+   `${CLAUDE_PLUGIN_ROOT}`/`${CLAUDE_PLUGIN_DATA}` por compatibilidade.
 6. **Codex hooks:** flag canônica `[features] hooks=true` (`codex_hooks` é alias DEPRECATED). `PreToolUse` matcher filtra Bash, `apply_patch`, MCP tool names.
 
 Check de paridade no validate script: os dois `plugin.json` batem em `name/version/description/skills`; `description` ≤1024 e trigger words nos primeiros ~250 chars; nenhum diretório dentro de `.codex-plugin/`//`.claude-plugin/`; symlinks resolvem. Documentar que portabilidade é por GERAÇÃO e que instalação pública NÃO depende de nada em `~/.codex` ou `~/.claude` do autor.

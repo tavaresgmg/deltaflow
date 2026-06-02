@@ -4,6 +4,7 @@
 // right mode, and did the native Codex `analyze` skill collide. Writes JSONL + a summary.
 //
 //   node scripts/eval-autotrigger.mjs <subset> <label> [model] [--harness codex|claude] [--jobs N]
+//   node scripts/eval-autotrigger.mjs <subset> --out docs/evals/results/<label>.jsonl [--model MODEL]
 //     subset: "all" | "fire" | "nofire" | "realistic" | "p0-matrix" | comma-separated ids
 //     label:  output file name under docs/evals/results/<label>.jsonl
 //     model:  optional, passed to codex exec -m or claude --model
@@ -17,6 +18,30 @@ import { execFileSync, spawn } from "node:child_process";
 const ROOT = process.cwd();
 const PLUGIN_DIR = path.join(ROOT, "plugins/cairn");
 const DEFAULT_TIMEOUT_MS = 150000;
+const RESULTS_DIR = path.join(ROOT, "docs/evals/results");
+
+const USAGE = `Usage:
+  node scripts/eval-autotrigger.mjs <subset> <label> [model] [--harness codex|claude] [--jobs N] [--timeout-ms MS]
+  node scripts/eval-autotrigger.mjs <subset> --out docs/evals/results/<label>.jsonl [--model MODEL]
+
+Subsets:
+  all | fire | nofire | realistic | realistic-nofire | broad | p0-matrix | comma-separated ids
+
+Options:
+  --harness codex|claude
+  --jobs N
+  --timeout-ms MS
+  --label LABEL
+  --model MODEL
+  --out docs/evals/results/<label>.jsonl`;
+
+function failCli(err) {
+  console.error(err?.message || String(err));
+  process.exit(1);
+}
+
+process.on("uncaughtException", failCli);
+process.on("unhandledRejection", failCli);
 
 const CASES = [
   // must-fire (expectMode = acceptable modes; first is primary)
@@ -513,20 +538,62 @@ async function runCase(c, { harness, model, timeoutMs, safeLabel }) {
 function parseArgs(argv) {
   const opts = { harness: "codex", jobs: 1, timeoutMs: DEFAULT_TIMEOUT_MS };
   const positional = [];
+  let explicitLabel = null;
+  let explicitModel = null;
+  let explicitOut = null;
+  let help = false;
+  const requireValue = (arg, value) => {
+    if (!value || value.startsWith("--")) throw new Error(`${arg} requires a value`);
+    return value;
+  };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
-    if (arg === "--harness") opts.harness = argv[++i];
+    if (arg === "--help" || arg === "-h") help = true;
+    else if (arg === "--harness") opts.harness = requireValue(arg, argv[++i]);
     else if (arg.startsWith("--harness=")) opts.harness = arg.split("=", 2)[1];
-    else if (arg === "--jobs") opts.jobs = Number(argv[++i]);
+    else if (arg === "--jobs") opts.jobs = Number(requireValue(arg, argv[++i]));
     else if (arg.startsWith("--jobs=")) opts.jobs = Number(arg.split("=", 2)[1]);
-    else if (arg === "--timeout-ms") opts.timeoutMs = Number(argv[++i]);
+    else if (arg === "--timeout-ms") opts.timeoutMs = Number(requireValue(arg, argv[++i]));
     else if (arg.startsWith("--timeout-ms=")) opts.timeoutMs = Number(arg.split("=", 2)[1]);
+    else if (arg === "--label") explicitLabel = requireValue(arg, argv[++i]);
+    else if (arg.startsWith("--label=")) explicitLabel = arg.split("=", 2)[1];
+    else if (arg === "--model") explicitModel = requireValue(arg, argv[++i]);
+    else if (arg.startsWith("--model=")) explicitModel = arg.split("=", 2)[1];
+    else if (arg === "--out") explicitOut = requireValue(arg, argv[++i]);
+    else if (arg.startsWith("--out=")) explicitOut = arg.split("=", 2)[1];
+    else if (arg.startsWith("--")) throw new Error(`unknown option: ${arg}\n\n${USAGE}`);
     else positional.push(arg);
   }
+  if (help) return { help: true };
+  if (positional.length > 3) throw new Error(`too many positional arguments: ${positional.slice(3).join(" ")}\n\n${USAGE}`);
+  if (explicitLabel && positional[1]) throw new Error("use either positional <label> or --label, not both");
+  if (explicitModel && positional[2]) throw new Error("use either positional [model] or --model, not both");
+  if (explicitOut && positional[1]) throw new Error("use either positional <label> or --out, not both");
   if (!["codex", "claude"].includes(opts.harness)) throw new Error(`invalid --harness: ${opts.harness}`);
   if (!Number.isInteger(opts.jobs) || opts.jobs < 1) throw new Error(`invalid --jobs: ${opts.jobs}`);
   if (!Number.isInteger(opts.timeoutMs) || opts.timeoutMs < 1000) throw new Error(`invalid --timeout-ms: ${opts.timeoutMs}`);
-  return { ...opts, subsetArg: positional[0] || "all", label: positional[1] || "run", model: positional[2] || null };
+  const outFile = explicitOut ? resolveOutFile(explicitOut) : null;
+  if (!explicitLabel && !positional[1] && !outFile) {
+    throw new Error(`missing label: pass positional <label>, --label, or --out\n\n${USAGE}`);
+  }
+  const label = explicitLabel || positional[1] || path.basename(outFile, ".jsonl");
+  if (!/^[a-zA-Z0-9_.-]+$/.test(label) || label.startsWith(".") || label.startsWith("-")) {
+    throw new Error(`invalid label: ${label}; use only letters, numbers, dot, underscore, and dash, and do not start with dot or dash`);
+  }
+  return { ...opts, subsetArg: positional[0] || "all", label, model: explicitModel || positional[2] || null, outFile };
+}
+
+function resolveOutFile(value) {
+  if (!value.endsWith(".jsonl")) throw new Error(`--out must end with .jsonl: ${value}`);
+  const abs = path.resolve(ROOT, value);
+  const rel = path.relative(RESULTS_DIR, abs);
+  if (rel.startsWith("..") || path.isAbsolute(rel)) {
+    throw new Error(`--out must stay under docs/evals/results: ${value}`);
+  }
+  if (path.basename(abs).startsWith(".") || path.basename(abs).startsWith("-")) {
+    throw new Error(`invalid --out filename: ${value}`);
+  }
+  return abs;
 }
 
 async function runPool(subset, opts, onResult) {
@@ -542,7 +609,11 @@ async function runPool(subset, opts, onResult) {
 }
 
 // main
-const { subsetArg, label, model, harness, jobs, timeoutMs } = parseArgs(process.argv.slice(2));
+const { subsetArg, label, model, harness, jobs, timeoutMs, outFile: parsedOutFile, help } = parseArgs(process.argv.slice(2));
+if (help) {
+  console.log(USAGE);
+  process.exit(0);
+}
 const safeLabel = label.replace(/[^a-zA-Z0-9_.-]/g, "-");
 let subset = CASES;
 if (subsetArg === "fire") subset = CASES.filter((c) => c.expectFire);
@@ -562,10 +633,10 @@ else if (subsetArg !== "all") {
   }
 }
 
-const outDir = path.join(ROOT, "docs/evals/results");
+const outDir = RESULTS_DIR;
 fs.mkdirSync(outDir, { recursive: true });
-const outFile = path.join(outDir, `${label}.jsonl`);
-const outTmp = path.join(outDir, `.${label}.${process.pid}.tmp`);
+const outFile = parsedOutFile || path.join(outDir, `${label}.jsonl`);
+const outTmp = path.join(outDir, `.${path.basename(outFile, ".jsonl")}.${process.pid}.tmp`);
 fs.writeFileSync(outTmp, ""); // fresh, promoted only after summary is written
 
 const results = [];

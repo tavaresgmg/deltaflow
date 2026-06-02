@@ -59,6 +59,15 @@ node scripts/eval-autotrigger.mjs R5,N2 cairn-fast-codex-0.136-default --jobs 2 
 node scripts/eval-autotrigger.mjs R5,N2 cairn-fast-claude-2.1.159-default --harness claude --jobs 2 --timeout-ms 120000
 ```
 
+The runner is strict: unknown flags fail before any harness starts, labels cannot begin with
+`-` or `.`, a label or `--out` is required, and `--out` must point under
+`docs/evals/results/*.jsonl`. This prevents typos such as treating `--out` as the result
+label. Equivalent explicit-output form:
+
+```bash
+node scripts/eval-autotrigger.mjs R5,N2 --out docs/evals/results/cairn-fast-codex-0.136-default.jsonl --jobs 2 --timeout-ms 120000
+```
+
 New JSONL runs record `harness`, `harnessVersion`, `model`, `durationMs`, status, trigger
 signals, routing correctness, `totalDurationMs`, `maxDurationMs`, `slowCases`, `fireMissIds`,
 `routingMissIds`, `diagnosticIds`, and `timeoutIds`. Mode parsing is intentionally performed

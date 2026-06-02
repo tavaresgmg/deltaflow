@@ -4,9 +4,10 @@ Autonomy layer 1 (ADR-0003): a single `SessionStart` hook injects `bootstrap.md`
 agent routes through Cairn before responding — no need to invoke the skill by name.
 
 - `bootstrap.md` — the injected context (kept under ~2k tokens).
-- `session-start.sh` — harness-detecting emitter. Uses `${CLAUDE_PLUGIN_ROOT}` (the
-  portable plugin-root var). On Claude it emits `SessionStart` `additionalContext` JSON;
-  elsewhere (Codex) it emits plain text.
+- `session-start.sh` — harness-detecting emitter. Uses `${CLAUDE_PLUGIN_ROOT}` as the
+  cross-harness root var. Claude sets it natively; Codex has native `${PLUGIN_ROOT}` and
+  also exposes `${CLAUDE_PLUGIN_ROOT}` for compatibility. On Claude it emits `SessionStart`
+  `additionalContext` JSON; elsewhere (Codex) it emits plain text.
 
 Autonomy layer 3 (ADR-0003, Phase 4): a `PreToolUse` hook runs `scripts/cairn-guard.mjs`
 on file-mutating tools and blocks (exit 2) writes outside the active repo. Logic is

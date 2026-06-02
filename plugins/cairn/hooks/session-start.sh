@@ -4,8 +4,9 @@
 # harness is verified empirically (Phase 1 exit), so this stays minimal and dependency-free.
 set -euo pipefail
 
-# ${CLAUDE_PLUGIN_ROOT} is the portable plugin-root var (Codex exposes it too); fall back
-# to the script's own parent when unset (e.g. local manual runs).
+# ${CLAUDE_PLUGIN_ROOT} is the cross-harness root var used by this package. Claude sets it
+# natively; Codex also exposes it for compatibility. Fall back to this script's own parent
+# when unset (e.g. local manual runs).
 DIR="${CLAUDE_PLUGIN_ROOT:-"$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"}"
 BOOTSTRAP="$DIR/hooks/bootstrap.md"
 [ -f "$BOOTSTRAP" ] || exit 0

@@ -40,6 +40,11 @@ node scripts/eval-autotrigger.mjs R5,N2 cairn-fast-claude-2.1.159-default --harn
 node scripts/validate-cairn.mjs
 ```
 
+The runner parser is intentionally strict. Prefer positional `<label>` for normal runs, or
+`--out docs/evals/results/<label>.jsonl` for script-driven jobs. Unknown flags and output
+paths outside `docs/evals/results/` fail before any harness starts; no implicit result label
+is generated.
+
 ## Last Verified
 
 2026-06-01 by `node scripts/validate-cairn.mjs` and the fast Codex/Claude JSONL summaries.
