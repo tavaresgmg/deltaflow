@@ -44,9 +44,9 @@ next — by activation, modes/workflows, artifacts, deterministic automation, me
 
 1. **Broader eval matrix.** Realistic/broad routing is strong on Codex default, and Claude now
    has realistic no-fire proof plus a full realistic diagnostic run. `p0-matrix` gives a cheap
-   recurring regression subset with duration metrics. Still missing: full passing
-   realistic/full suites on >=2 models per harness, and route-output fixes for Claude R11/R14
-   plus Codex `gpt-5.4-mini` R5.
+   recurring regression subset with duration metrics. Route-output contract retests fixed the
+   Codex `gpt-5.4-mini` R5 and Claude R11/R14 gaps. Still missing: full passing realistic/full
+   suites on >=2 models per harness.
 2. **Spec↔code semantic analysis v2.** `cairn-analyze.mjs` now checks claim-backed delta/spec
    drift and missing claims on behavior deltas; the next level is inferred extraction from
    arbitrary prose/code without requiring explicit claims.

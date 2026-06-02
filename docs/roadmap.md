@@ -42,6 +42,8 @@ Still pending:
 - [x] Claude Code realistic no-fire subset on v2.1.159 default: 0/6 misfires.
 - [x] Second-model fast activation smoke: Claude `haiku` passed; Codex `gpt-5.4-mini`
   fired but did not emit a parseable route mode.
+- [x] Route-output contract retest: Codex `gpt-5.4-mini` R5 and Claude default R11 now
+  emit parseable expected modes.
 - [x] Confirm the Claude Code PreToolUse guard blocks outside-repo writes live.
 - [ ] Confirm the PreToolUse guard blocks live on Codex, not only via local smoke.
 

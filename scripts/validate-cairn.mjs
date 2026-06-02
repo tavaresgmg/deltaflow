@@ -177,7 +177,7 @@ if (!missing.length) {
     }
     if (!/^when_to_use:/m.test(block)) fail("SKILL.md missing when_to_use");
   }
-  for (const needle of ["Classify", "Proof", "Reuse before inventing"]) {
+  for (const needle of ["Classify", "Proof", "Reuse before inventing", "Mode: <direct|diagnose|discovery|delta-spec|tracked-change>"]) {
     if (!skill.includes(needle)) fail(`SKILL.md missing expected text: ${needle}`);
   }
   const frameworkLessons = read("plugins/cairn/skills/cairn/references/framework-lessons.md");
@@ -471,6 +471,43 @@ if (!missing.length) {
       errors: 0,
       requiredKeys: ["totalDurationMs", "maxDurationMs", "slowCases", "timeoutIds"],
     },
+    {
+      file: "docs/evals/results/cairn-route-contract-codex-0.136-gpt-5.4-mini.jsonl",
+      harness: "codex",
+      model: "gpt-5.4-mini",
+      cases: 2,
+      mustFire: 1,
+      mustFire_fired: 1,
+      mustFire_routedRight: 1,
+      mustNot: 1,
+      mustNot_misfired: 0,
+      errors: 0,
+      requiredKeys: ["totalDurationMs", "maxDurationMs", "slowCases", "fireMissIds", "routingMissIds", "diagnosticIds", "timeoutIds"],
+    },
+    {
+      file: "docs/evals/results/cairn-route-contract-claude-2.1.159-default.jsonl",
+      harness: "claude",
+      cases: 2,
+      mustFire: 1,
+      mustFire_fired: 1,
+      mustFire_routedRight: 1,
+      mustNot: 1,
+      mustNot_misfired: 0,
+      errors: 0,
+      requiredKeys: ["totalDurationMs", "maxDurationMs", "slowCases", "fireMissIds", "routingMissIds", "diagnosticIds", "timeoutIds"],
+    },
+    {
+      file: "docs/evals/results/cairn-route-contract-claude-r14-2.1.159-default.jsonl",
+      harness: "claude",
+      cases: 2,
+      mustFire: 1,
+      mustFire_fired: 1,
+      mustFire_routedRight: 1,
+      mustNot: 1,
+      mustNot_misfired: 0,
+      errors: 0,
+      requiredKeys: ["totalDurationMs", "maxDurationMs", "slowCases", "fireMissIds", "routingMissIds", "diagnosticIds", "timeoutIds"],
+    },
   ];
   for (const expected of evalExpectations) {
     if (!fs.existsSync(path.join(root, expected.file))) {
@@ -501,7 +538,7 @@ if (!missing.length) {
 
   const evalScript = read("scripts/eval-autotrigger.mjs");
   const evalDocs = read("docs/evals/auto-trigger.md");
-  for (const needle of ["p0-matrix", "totalDurationMs", "slowCases", "timeoutIds"]) {
+  for (const needle of ["p0-matrix", "answerText", "answerTail", "totalDurationMs", "slowCases", "fireMissIds", "routingMissIds", "diagnosticIds", "timeoutIds"]) {
     if (!evalScript.includes(needle)) {
       fail(`eval runner missing expected matrix support: ${needle}`);
     }

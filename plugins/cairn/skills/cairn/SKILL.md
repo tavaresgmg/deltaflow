@@ -92,9 +92,16 @@ Read these references only when needed:
 
 ## Output Shape
 
+Every Cairn-routed response must start with:
+
+```text
+Mode: <direct|diagnose|discovery|delta-spec|tracked-change>
+```
+
 For small work:
 
 ```text
+Mode: ...
 Done/Blocked: ...
 Proof: ...
 Risk: ...

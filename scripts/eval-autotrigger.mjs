@@ -195,6 +195,7 @@ const REALISTIC_MUST_NOT_CASES = [
 
 const ALL_CASES = [...CASES, ...REALISTIC_CASES, ...REALISTIC_MUST_NOT_CASES];
 const P0_MATRIX_IDS = ["R5", "R10", "R11", "N2", "N7", "N11"];
+const DIAGNOSTIC_LOG_BYTES = 1200;
 
 function selectCases(ids) {
   return ALL_CASES.filter((c) => ids.includes(c.id));
@@ -367,6 +368,7 @@ const UNIQUE = ["delta-spec", "tracked-change"]; // modes exclusive to Cairn (an
 // printed SKILL.md table (which would otherwise always match).
 function extractMode(log) {
   const patterns = [
+    /^Mode:\s*`?(direct|diagnose|discovery|delta-spec|tracked-change)`?\b/im,
     /classif\w*[^.\n]{0,40}?\b(delta-spec|tracked-change|discovery|diagnose|direct)\b/i,
     /\bmod[eo]\b[^.\n]{0,40}?\b(delta-spec|tracked-change|discovery|diagnose|direct)\b/i,
     /\bas\s+`?(delta-spec|tracked-change|discovery|diagnose|direct)`?/i,
@@ -379,14 +381,29 @@ function extractMode(log) {
   return null;
 }
 
-function detect(log) {
-  const readCairn = /plugins\/cache\/cairn|skills\/cairn\/(SKILL|references)|\.cairn\/changes|Launching skill: cairn:cairn|"skill"\s*:\s*"cairn:cairn"/i.test(log);
-  const collidedAnalyze = /skills\/analyze|\.agents\/skills\//i.test(log);
-  const modeDetected = extractMode(log);
+function detect(fullLog, answerText) {
+  const readCairn = /plugins\/cache\/cairn|skills\/cairn\/(SKILL|references)|\.cairn\/changes|Launching skill: cairn:cairn|"skill"\s*:\s*"cairn:cairn"/i.test(fullLog);
+  const collidedAnalyze = /skills\/analyze|\.agents\/skills\//i.test(fullLog);
+  const modeDetected = extractMode(answerText);
   const uniqueMode = UNIQUE.includes(modeDetected);
-  const outputShape = /Done\/Blocked|Bloqueado:|Proof:[\s\S]{0,400}Risk:[\s\S]{0,200}Next:/i.test(log);
+  const outputShape = /Done\/Blocked|Bloqueado:|Proof:[\s\S]{0,400}Risk:[\s\S]{0,200}Next:/i.test(answerText);
   const firedStrong = readCairn || modeDetected !== null || outputShape;
   return { firedStrong, readCairn, modeDetected, uniqueMode, outputShape, collidedAnalyze };
+}
+
+function diagnosticFor(c, sig, status, log, answerText) {
+  const reasons = [];
+  if (sig.firedStrong !== c.expectFire) reasons.push("fire-mismatch");
+  if (c.expectFire && !c.expectMode.includes(sig.modeDetected)) reasons.push("route-mismatch");
+  if (status !== "ok") reasons.push(status);
+  if (!reasons.length) return null;
+  return {
+    reasons,
+    expectedMode: c.expectMode,
+    modeDetected: sig.modeDetected,
+    answerTail: answerText.slice(-DIAGNOSTIC_LOG_BYTES),
+    logTail: log.slice(-DIAGNOSTIC_LOG_BYTES),
+  };
 }
 
 function harnessVersion(harness) {
@@ -426,6 +443,42 @@ function spawnCapture(command, args, opts) {
   });
 }
 
+function textFromContent(content) {
+  if (typeof content === "string") return content;
+  if (!Array.isArray(content)) return "";
+  return content
+    .map((part) => {
+      if (typeof part === "string") return part;
+      if (part && typeof part.text === "string") return part.text;
+      return "";
+    })
+    .filter(Boolean)
+    .join("\n");
+}
+
+function extractAnswerText(stdout, harness) {
+  if (harness !== "claude") return stdout || "";
+  const fragments = [];
+  for (const line of (stdout || "").split(/\r?\n/)) {
+    if (!line.trim()) continue;
+    try {
+      const event = JSON.parse(line);
+      if (typeof event.result === "string") fragments.push(event.result);
+      if (event.message?.role === "assistant") {
+        const text = textFromContent(event.message.content);
+        if (text) fragments.push(text);
+      }
+      if (event.type === "assistant") {
+        const text = textFromContent(event.content || event.message?.content);
+        if (text) fragments.push(text);
+      }
+    } catch {
+      // Ignore non-JSON progress lines.
+    }
+  }
+  return fragments.join("\n");
+}
+
 async function runCase(c, { harness, model, timeoutMs, safeLabel }) {
   const fixture = path.join("/tmp", `cairn-eval-fixture-${safeLabel}-${process.pid}-${c.id}`);
   setupFixture(fixture, c.realistic || /^R/.test(c.id), c.id);
@@ -445,14 +498,16 @@ async function runCase(c, { harness, model, timeoutMs, safeLabel }) {
   const res = await spawnCapture(command, commandArgs, { cwd: fixture, timeout: timeoutMs });
   const durationMs = Date.now() - started;
   const log = (res.stdout || "") + "\n" + (res.stderr || "");
+  const answerText = extractAnswerText(res.stdout || "", harness);
   let status = "ok";
   if (res.signal) status = "timeout";
   else if (res.error) status = "error";
-  const sig = detect(log);
+  const sig = detect(log, answerText);
   const fireCorrect = sig.firedStrong === c.expectFire;
   const modeCorrect = !c.expectFire ? null : c.expectMode.includes(sig.modeDetected);
+  const diagnostic = diagnosticFor(c, sig, status, log, answerText);
   fs.rmSync(fixture, { recursive: true, force: true });
-  return { ...c, harness, model: model || "default", status, durationMs, ...sig, fireCorrect, modeCorrect, logLen: log.length };
+  return { ...c, harness, model: model || "default", status, durationMs, ...sig, fireCorrect, modeCorrect, logLen: log.length, ...(diagnostic ? { diagnostic } : {}) };
 }
 
 function parseArgs(argv) {
@@ -543,6 +598,9 @@ const summary = {
   totalDurationMs: durations.reduce((sum, value) => sum + value, 0),
   maxDurationMs: durations.length ? Math.max(...durations) : 0,
   slowCases: sortedSlow.map((r) => ({ id: r.id, durationMs: r.durationMs })),
+  fireMissIds: results.filter((r) => !r.fireCorrect).map((r) => r.id),
+  routingMissIds: fires.filter((r) => !r.modeCorrect).map((r) => r.id),
+  diagnosticIds: results.filter((r) => r.diagnostic).map((r) => r.id),
   timeoutIds: results.filter((r) => r.status === "timeout").map((r) => r.id),
 };
 fs.appendFileSync(outTmp, JSON.stringify({ summary }) + "\n");

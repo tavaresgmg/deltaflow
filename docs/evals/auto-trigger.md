@@ -60,11 +60,14 @@ node scripts/eval-autotrigger.mjs R5,N2 cairn-fast-claude-2.1.159-default --harn
 ```
 
 New JSONL runs record `harness`, `harnessVersion`, `model`, `durationMs`, status, trigger
-signals, routing correctness, `totalDurationMs`, `maxDurationMs`, `slowCases`, and
-`timeoutIds`. Older result files may predate those metadata fields; the summary row remains the
-durable validation contract. The Claude harness loads the local plugin with
-`--plugin-dir plugins/cairn`, so it can measure plugin behavior without relying on a manual
-local install in the temp fixture repo.
+signals, routing correctness, `totalDurationMs`, `maxDurationMs`, `slowCases`, `fireMissIds`,
+`routingMissIds`, `diagnosticIds`, and `timeoutIds`. Mode parsing is intentionally performed
+against `answerText` (the final answer text), while skill-read/collision signals use the full harness log;
+this avoids counting examples from `SKILL.md` as the chosen mode. A row with a
+fire/routing/status miss also records bounded `answerTail` and `logTail` diagnostics. Older
+result files may predate those metadata fields; the summary row remains the durable validation
+contract. The Claude harness loads the local plugin with `--plugin-dir plugins/cairn`, so it
+can measure plugin behavior without relying on a manual local install in the temp fixture repo.
 
 ## Protocol
 
@@ -256,3 +259,21 @@ executed.
   - **Routing: 0/1 expected mode (0%).** R5 fired but did not emit a parseable mode.
   - **Misfire: 0/1 must-not (0%).** Treat as second-model activation proof plus a routing
     output gap for mini, not a passing route gate.
+
+- **2026-06-02 — route-output contract retest — Codex `gpt-5.4-mini` (R5,N2).**
+  `docs/evals/results/cairn-route-contract-codex-0.136-gpt-5.4-mini.jsonl`.
+  - **Trigger: 1/1 must-fire fired (100%).**
+  - **Routing: 1/1 expected mode (100%).** R5 now emits `mode=diagnose`.
+  - **Misfire: 0/1 must-not (0%).** No diagnostics emitted.
+
+- **2026-06-02 — route-output contract retest — Claude Code v2.1.159 default (R11,N7).**
+  `docs/evals/results/cairn-route-contract-claude-2.1.159-default.jsonl`.
+  - **Trigger: 1/1 must-fire fired (100%).**
+  - **Routing: 1/1 expected mode (100%).** R11 now emits `mode=delta-spec`.
+  - **Misfire: 0/1 must-not (0%).** No diagnostics emitted.
+
+- **2026-06-02 — route-output contract retest — Claude Code v2.1.159 default (R14,N8).**
+  `docs/evals/results/cairn-route-contract-claude-r14-2.1.159-default.jsonl`.
+  - **Trigger: 1/1 must-fire fired (100%).**
+  - **Routing: 1/1 expected mode (100%).** R14 now emits `mode=direct`.
+  - **Misfire: 0/1 must-not (0%).** No diagnostics emitted.
