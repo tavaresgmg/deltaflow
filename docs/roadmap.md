@@ -405,6 +405,25 @@ enforcement. The panel's own output became the proof case for the principle.
 Exit: adversarial+tradeoff is a named principle with the verify-the-refutation clause that this
 very decision exercised; the enforcement question is closed with evidence, not opinion.
 
+## Phase 15: Distribution / launch (not started)
+
+Deferred by user (2026-06-02): hold public promotion until there is real-model eval proof to show.
+The v0.1.0 GitHub Release is published as **pre-release** as the milestone marker.
+
+Prerequisite chain: publish real-model eval → promote release pre-release → latest → then announce.
+
+- [ ] Run + publish real-model eval (cost-gated) — fire-rate/routing on ≥2 models per harness.
+- [ ] Promote v0.1.0 release from pre-release → latest once the numbers are in.
+- [ ] Draft launch posts (transparent "experimental, feedback welcome" tone). Author posts
+  **manually** — no bot/automation posting (Reddit self-promo rules + one-shot first-impression
+  risk; the value is replying to comments live).
+- [ ] Channels by fit/risk: r/ClaudeAI + r/ChatGPTCoding (low risk, aligned audience), Show HN
+  (one-shot, be transparent it's experimental), PRs to awesome-claude-code / awesome-codex lists
+  (passive credibility, lowest risk), X / Dev.to (own pace). Defer r/programming and
+  r/ExperiencedDevs until there is traction + published numbers.
+
+Exit: launched with evidence (eval numbers) rather than claims; the first impression is spent well.
+
 ## Sequencing (next cycle)
 
 Each behind the default-light intent gate:
