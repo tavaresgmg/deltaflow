@@ -60,6 +60,7 @@ const required = [
   "plugins/cairn/scripts/cairn-next.mjs",
   "plugins/cairn/scripts/cairn-retention.mjs",
   "plugins/cairn/scripts/cairn-version.mjs",
+  "plugins/cairn/scripts/cairn-anchor.mjs",
   ".cairn/codebase/eval-harness.md",
   ".cairn/specs/workflow-router.md",
   "plugins/cairn/agents/cairn-researcher.md",

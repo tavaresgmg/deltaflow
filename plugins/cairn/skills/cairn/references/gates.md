@@ -11,7 +11,10 @@ advisory; only hooks and scripts enforce. This file is explicit about which is w
   `CAIRN_ALLOW_CROSS_REPO=1`.
 - **Consistency check** — `scripts/cairn-analyze.mjs .cairn/changes/<slug>` reports internal
   drift in a change folder with severity-bearing findings. It can also scan active changes with
-  `--all .cairn/changes`. Read-only; run it before claiming a change is complete.
+  `--all .cairn/changes`. For a finished change it emits a `verify` verdict
+  (completeness/coherence/proof → `verified`|`incomplete`|`drift`) — the spec→code loop closure,
+  aggregated from the findings, never running the proof commands. Read-only; run before
+  claiming a change is complete.
 
 ## Advisory (not deterministically enforceable)
 

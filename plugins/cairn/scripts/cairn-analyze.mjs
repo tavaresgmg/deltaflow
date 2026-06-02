@@ -278,11 +278,25 @@ function analyzeOne(dir) {
     findings.push(finding("LOW", "STALE_ACTIVE_CHANGE", `active change has open tasks and is ${activeAgeDays} days old`, abs));
   }
 
+  // Verify verdict (spec->code loop closure). Aggregates the findings above into the three
+  // OpenSpec dimensions; read-only and deterministic — it never runs the proof commands.
+  const codes = new Set(findings.map((f) => f.code));
+  const coherenceCodes = ["SEMANTIC_REF_MISSING", "INFERRED_SEMANTIC_REF_MISSING", "REFERENCED_PATH_MISSING", "SEMANTIC_CLAIM_WITHOUT_CODE"];
+  let verify = null;
+  if (stats && stats.items.length > 0) {
+    const completeness = stats.open.length === 0 && has(abs, "proof.md");
+    const coherence = !coherenceCodes.some((c) => codes.has(c));
+    const proofOk = has(abs, "proof.md") && !codes.has("PROOF_EMPTY") && !codes.has("PROOF_PENDING");
+    const verdict = !coherence ? "drift" : (completeness && proofOk ? "verified" : "incomplete");
+    verify = { completeness, coherence, proof: proofOk, verdict };
+  }
+
   return {
     changeDir: dir,
     ok: !findings.some((f) => ["CRITICAL", "HIGH"].includes(f.severity)),
     findings,
     stats: stats ? { tasks: stats.items.length, done: stats.done.length, open: stats.open.length } : { tasks: 0, done: 0, open: 0 },
+    ...(verify ? { verify } : {}),
   };
 }
 

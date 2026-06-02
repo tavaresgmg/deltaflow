@@ -56,6 +56,10 @@ deploy/runtime state, and versions.
 - **Write progress last, but incrementally.** Tick `tasks.md` as each step is verified — never
   batch all checkboxes at the end. A killed session must leave accurate state.
 - **One verifiable step per task line.** `- [ ] step` → `- [x] step — proof: <cmd/result>`.
+- **Compaction/resume re-injects an anchor.** On Claude, the SessionStart hook appends a
+  read-only resume anchor (`cairn-anchor.mjs`: active change, open tasks, recent decisions)
+  when `source` is `compact` or `resume`, so the active route survives a compaction. The
+  anchor is a pointer — still re-read `tasks.md` before acting. (Codex uses its internal memory.)
 
 ## decision-log.md
 

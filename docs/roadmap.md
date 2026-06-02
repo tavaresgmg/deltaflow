@@ -253,14 +253,16 @@ Shipped (cheap, aligned with existing principles, not ceremony):
 - [x] Ground-on-constraints first in `delta-spec`/`tracked-change` — read `AGENTS.md`/lockfile/
   conventions before proposing (Spec Kit constitution idea, but AGENTS.md already is ours).
 
-Next (real value, needs care — not yet built):
+Shipped (2026-06-02):
 
-- [ ] Verify loop spec→code: extend `cairn-analyze.mjs` (reuse, not a new script) to check that
-  `tasks.md` items are ticked with proof and that `delta.md` claims match current code — closes
-  the gap `cairn-analyze` leaves between internal drift and implementation conformance
-  (OpenSpec `/opsx:verify`).
-- [ ] Long-context survival: anchored pre-compaction summary (files/tools/decisions/in-progress/
-  constraints) — pairs with the Phase 8 `PreCompact` lever and the post-compaction `SessionStart`.
+- [x] Verify loop spec→code: extended `cairn-analyze.mjs` (reused the owner, no new script) with
+  a `verify` verdict — aggregates the existing findings into completeness/coherence/proof →
+  `verified`|`incomplete`|`drift`. The spec→code loop closure (OpenSpec `/opsx:verify`), read-only,
+  never runs the proof commands. Most of the loop (`DONE_WITHOUT_PROOF`, claim↔code refs,
+  lifecycle decision) already existed; this is the explicit closure.
+- [x] Long-context survival: `cairn-anchor.mjs` (read-only: active change, open tasks, recent
+  decisions) re-injected by the `SessionStart` hook when `source` is `compact`/`resume`. Smoke:
+  startup omits it, compact injects it with the open tasks; Codex relies on internal memory.
 
 Deferred by the anti-bloat principle (AGENTS.md) until real usage demands it:
 
