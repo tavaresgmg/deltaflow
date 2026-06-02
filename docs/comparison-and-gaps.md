@@ -14,7 +14,7 @@ next — by activation, modes/workflows, artifacts, deterministic automation, me
 | Artifact templates | `references/artifacts.md` | brainstorm/brief/delta/plan/tasks/proof/decision-log |
 | File-based memory + resume | `references/memory.md`, `.cairn/changes/<slug>/` | versioned, read-first/write-incremental |
 | Scoped codebase maps | `references/artifacts.md`, `references/memory.md` | optional, area-based, P0 primitive |
-| Living spec/archive lifecycle | `references/artifacts.md`, `references/gates.md` | guidance implemented; semantic sync pending |
+| Living spec/archive lifecycle | `references/artifacts.md`, `references/gates.md`, `.cairn/specs/` | guidance, semantic claims, and archive flow implemented |
 | Umbrella workspace + boundary guard | `scripts/cairn-boundary.mjs`, `cairn-guard.mjs` | deterministic, PreToolUse-enforced |
 | Consistency check | `scripts/cairn-analyze.mjs` | severity-bearing artifact/lifecycle/semantic-claim drift |
 | Next-step reporter | `scripts/cairn-next.mjs` | read-only change-folder state |
@@ -28,7 +28,7 @@ next — by activation, modes/workflows, artifacts, deterministic automation, me
 | Activation | description (native) | slash-first | none (manual) | **SessionStart hook** | hook + directive description ✓ |
 | Modes | quick-vs-full by intent | propose/explore | 8-cmd chain | brainstorm→implement | 5 modes, intent-gated ✓ |
 | Brownfield delta | addendum | **ADDED/MODIFIED/REMOVED** | greenfield-first | afterthought | delta.md (has the verbs) ~ |
-| Living truth (spec) | prd.md | **specs/ vs changes/** | specs/<feat> | none | optional `.cairn/specs/`; semantic sync pending |
+| Living truth (spec) | prd.md | **specs/ vs changes/** | specs/<feat> | none | optional `.cairn/specs/` with claim-backed drift checks |
 | Archive lifecycle | status frontmatter | **propose→apply→archive** | — | none | guidance + read-only retention helper ✓ |
 | Consistency gate | — | — | **/analyze 6 passes** | — | structured artifact/lifecycle/semantic-claim analysis |
 | Verification gate | checkpoint | deps done | checklist | **Iron Law** | advisory except boundary/analyze scripts |

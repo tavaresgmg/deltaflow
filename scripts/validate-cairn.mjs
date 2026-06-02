@@ -15,6 +15,10 @@ const readJsonlSummary = (rel) => {
   const lines = read(rel).trim().split("\n").filter(Boolean).map((line) => JSON.parse(line));
   return lines.find((row) => row.summary)?.summary;
 };
+const gitLsFiles = () => execSync("git ls-files", {
+  cwd: root,
+  stdio: ["ignore", "pipe", "ignore"],
+}).toString().split("\n").filter(Boolean);
 
 // An unquoted YAML scalar containing ": " is parsed as a mapping and breaks frontmatter
 // loading — a real failure observed on Codex. Scan top-level frontmatter values for it.
@@ -72,6 +76,28 @@ for (const f of missing) fail(`missing required file: ${f}`);
 
 // Everything below needs the files present.
 if (!missing.length) {
+  const trackedFiles = gitLsFiles();
+  for (const file of trackedFiles) {
+    if (/(^|\/)\.DS_Store$/.test(file)) {
+      fail(`tracked macOS artifact must be removed: ${file}`);
+    }
+  }
+  const staleDocPhrases = [
+    {
+      file: "docs/comparison-and-gaps.md",
+      phrase: "semantic sync pending",
+      message: "comparison doc still says semantic sync is pending",
+    },
+    {
+      file: "docs/roadmap.md",
+      phrase: "- [ ] Worked examples proving that maps reduce repeated observe cost without becoming stale docs.",
+      message: "roadmap still marks worked examples as pending",
+    },
+  ];
+  for (const item of staleDocPhrases) {
+    if (read(item.file).includes(item.phrase)) fail(item.message);
+  }
+
   const canonical = readJson("plugins/cairn/plugin.manifest.json");
   const codex = readJson("plugins/cairn/.codex-plugin/plugin.json");
   const claude = readJson("plugins/cairn/.claude-plugin/plugin.json");

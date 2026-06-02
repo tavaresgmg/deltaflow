@@ -53,7 +53,7 @@ Exit: the skill auto-fires on >=90% of must-fire prompts and routes to the right
 - [x] `tasks.md` checkbox resume protocol; read-state-first / write-progress-last.
 - [x] `cairn-next.mjs` read-only next-step reporter over a change folder.
 - [x] `cairn-retention.mjs` read-only reporter for completed active changes and archive/delete actions.
-- [ ] Worked examples proving that maps reduce repeated observe cost without becoming stale docs.
+- [x] Worked examples proving that maps reduce repeated observe cost without becoming stale docs.
 
 Exit: medium changes persist intent and resume across sessions without ceremony for small fixes.
 
