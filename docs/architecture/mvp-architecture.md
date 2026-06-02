@@ -107,7 +107,7 @@ Umbrella workspace with explicit owner per level: parent `AGENTS.md` = scope + c
 safety + repo map (not a monorepo); child repos own git/code/tests; state in two `.work/`
 layers (parent `HANDOFF.md` + child `last-session`); deterministic boundary detection
 (`git rev-parse --show-toplevel`) before any mutation; worktrees anchored per child repo.
-Multi-repo task = parent `.work/` + separate PRs per repo.
+Multi-repo task = parent `.work/` + separate PRs/MRs per repo.
 
 ## Why plugin, not CLI first
 

@@ -59,7 +59,8 @@ deploy/runtime state, and versions.
 - **Compaction/resume re-injects an anchor.** On Claude, the SessionStart hook appends a
   read-only resume anchor (`cairn-anchor.mjs`: active change, open tasks, recent decisions)
   when `source` is `compact` or `resume`, so the active route survives a compaction. The
-  anchor is a pointer — still re-read `tasks.md` before acting. (Codex uses its internal memory.)
+  anchor is a pointer — still re-read `tasks.md` before acting. (Codex has no anchor injection;
+  resume re-reads on-disk `tasks.md`/`decision-log.md`.)
 
 ## decision-log.md
 

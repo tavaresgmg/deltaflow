@@ -29,6 +29,9 @@ without false positives. They live in `AGENTS.md` / `SKILL.md` as required behav
 - Reuse existing symbols, helpers, docs, specs, and repo patterns before creating a new path.
 - Check anti-rationalization red flags before closing work that skipped proof, reuse, cleanup,
   research, or planning.
+- Public or irreversible mutation needs explicit same-turn authorization: push, PR/MR, merge,
+  release, deploy, publish, or any team/customer-facing or destructive action. Cairn sees no
+  tool call for these, so they cannot be hard-gated — required behavior, not an enforced gate.
 
 Do not pretend these are gates. If a deterministic signal becomes available later (e.g. a
 Stop-hook heuristic that checks for a recent proof command), promote it then.

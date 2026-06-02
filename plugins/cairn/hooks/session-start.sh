@@ -14,8 +14,8 @@ BOOTSTRAP="$DIR/hooks/bootstrap.md"
 if [ -n "${CLAUDE_PLUGIN_ROOT:-}" ]; then
   # Claude Code SessionStart: emit JSON with additionalContext. node ships with both repos.
   # On compact/resume, append the read-only resume anchor (active change state) so the active
-  # route survives compaction — long-context survival (Phase 10). Codex relies on its internal
-  # SQLite memory instead (see the Phase 8 capability matrix).
+  # route survives compaction — long-context survival (Phase 10). Codex has no equivalent
+  # injection; resume there re-reads the on-disk tasks.md/decision-log.md (Phase 8 matrix).
   ANCHOR="$DIR/scripts/cairn-anchor.mjs"
   node -e '
     const fs = require("node:fs");

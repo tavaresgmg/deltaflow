@@ -79,7 +79,7 @@ node scripts/validate-cairn.mjs    # structural + YAML-safety + gate smoke tests
 
 ## Status
 
-Phases 0-7 and 9 built and locally validated; Phase 8 (harness capability adoption) is gated
-on confirming recent hook features against official docs. Local versions: Codex CLI `0.136.0`,
-Claude Code `2.1.159`. Live proof, the capability matrix, and remaining cross-model eval gaps:
-`docs/roadmap.md` and `docs/evals/auto-trigger.md`. Principles: `docs/PRINCIPLES.md`.
+Phases 0-12 built and locally validated. Local versions: Codex CLI `0.136.0`, Claude Code
+`2.1.159`. Remaining open items (real-model eval runs, Codex live PreToolUse) are tracked in
+`docs/roadmap.md`. Live proof, the capability matrix, and eval gaps: `docs/roadmap.md` and
+`docs/evals/auto-trigger.md`. Principles: `docs/PRINCIPLES.md`.

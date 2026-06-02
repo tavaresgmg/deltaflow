@@ -30,7 +30,7 @@ read-only step so it doesn't pollute the main context.
 Fires on a technical unknown, a framework/library version question, an external API, or a
 build-or-buy choice — never for a trivial lib. Run it in isolation (the `cairn-researcher`
 subagent on Claude) so only a distilled summary returns. Persist that summary to
-`.cairn/changes/<slug>/research/<topic>.md` — committed, reusable as memory.
+`.cairn/changes/<slug>/research/<topic>.md` — local; sync durable findings into `specs/` at close.
 
 Evidence ladder: live system > repo/code > official docs > primary web > secondary web.
 

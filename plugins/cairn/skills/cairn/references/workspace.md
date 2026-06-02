@@ -40,13 +40,14 @@ sibling, which the umbrella detector would miscount as another repo. The detecto
 `mainWorktree`, so `.cairn/` state lands in the real repo. Never make a worktree of the umbrella
 parent.
 
-Close: PR from `cairn/<slug>`, then `git worktree remove` and prune the branch. The worktree is
-disposable; the memory it produced is not.
+Close: open a PR/MR from `cairn/<slug>` (with authorization — see `gates.md`), then
+`git worktree remove` and prune the branch. The worktree is disposable; the memory it produced
+is not.
 
 ## Multi-repo tasks
 
 A task spanning 2+ repos is coordinated from the parent `.work/HANDOFF.md` and lands as
-**separate PRs per repo** — never one PR across repos. Each child's `.cairn/` records its own
+**separate PRs/MRs per repo** — never one across repos. Each child's `.cairn/` records its own
 slice; the parent handoff records the cross-repo intent and sequencing.
 
 ## Templates

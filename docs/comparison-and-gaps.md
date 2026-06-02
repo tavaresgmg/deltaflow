@@ -1,6 +1,6 @@
 # Comparison & Gaps
 
-Cairn (Phases 1-9) vs BMAD, OpenSpec, Spec Kit, Superpowers, ECC/caveman. Anchored in
+Cairn (competitive snapshot as of Phase 9) vs BMAD, OpenSpec, Spec Kit, Superpowers, ECC/caveman. Anchored in
 `docs/research/frameworks.md`. Principles: `docs/PRINCIPLES.md`. Goal: what's strong, what's
 genuinely missing, what to build next — by activation, modes/workflows, artifacts,
 deterministic automation, memory, research, token economy.

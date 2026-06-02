@@ -126,6 +126,10 @@ reads that and applies the matching preset when it first creates `.cairn/` state
 preset above yourself. This plugin's own repo uses `local` — it is the plugin source, not a user
 project.
 
+More generally: Claude Code reads your global `~/.claude/CLAUDE.md`, Codex reads your global
+`AGENTS.md`. Cairn honors those above project files but below a same-turn chat instruction (full
+order in `docs/PRINCIPLES.md`).
+
 ## Verify locally (no harness)
 
 ```bash

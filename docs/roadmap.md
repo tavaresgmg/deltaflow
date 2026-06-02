@@ -27,7 +27,7 @@ Built and locally validated:
 - [x] Eval scoreboard over JSONL results: current gaps, historical failures, route-contract
   clears, slow cases, and next cheap command (`scripts/eval-scoreboard.mjs`).
 
-Validated on Codex (v0.135.0, gpt-5.5):
+Validated on Codex (v0.135.0, gpt-5.5 — at the time; current local is v0.136.0):
 
 - [x] Installs from a marketplace (`.agents/plugins/marketplace.json`, discovered live);
   `installed, enabled`.
@@ -179,7 +179,7 @@ Best feature of each harness, documented asymmetry. Claims verified against offi
 | --- | --- | --- | --- |
 | Hide inactive skills from model | `skillOverrides`: `on`/`name-only`/`user-invocable-only`/`off` ✓ | none -> noop | shrink system prompt: expose only active-route skill |
 | Cheapest-point prompt gating | `UserPromptExpansion` (block, per-command matcher) ✓ | `UserPromptSubmit` (block/augment, **no matcher** — fires on every prompt) ✓ | block/augment before inference tokens |
-| Survive compaction | `PreCompact` (block, `auto`/`manual`) + `SessionStart` `source:"compact"` + `reloadSkills` ✓ | SQLite memory (v0.135.0) ✓ | snapshot active route + in-flight proof |
+| Survive compaction | `PreCompact` (block, `auto`/`manual`) + `SessionStart` `source:"compact"` + `reloadSkills` ✓ | SQLite memory (v0.135.0) — global/non-editable, **not a Cairn lever**; resume re-reads on-disk state | snapshot active route + in-flight proof |
 | Inject route identity into subagents | `SubagentStart` `additionalContext` ✓ (**cannot block**; block via `SubagentStop`) | none -> parent-prompt fallback | route constraints at spawn, not via parent prompt |
 | Plugin-bundled hooks | yes ✓ | `hooks/hooks.json` + `PLUGIN_ROOT`/`PLUGIN_DATA` ✓ **behind `plugin_hooks` feature flag** (PR #19705) | zero-config distribution |
 | Per-route tool restriction | skill `disallowed-tools` (+ `allowed-tools`) ✓ | `PreToolUse` `updatedInput` rewrite ✓ (**`apply_patch` may not fire** — Issue #17794) | static permission enforcement per mode |
@@ -235,7 +235,7 @@ has / how it wins". Drift risk across three surfaces.
   logs, which are valid proof). No removal needed.
 
 Exit (met): each principle fact lives once in `PRINCIPLES.md`; `cairn-budget.mjs` green;
-validate passes (37 files).
+validate passes (38 files).
 
 ## Phase 10: Methodology depth
 
@@ -262,7 +262,8 @@ Shipped (2026-06-02):
   lifecycle decision) already existed; this is the explicit closure.
 - [x] Long-context survival: `cairn-anchor.mjs` (read-only: active change, open tasks, recent
   decisions) re-injected by the `SessionStart` hook when `source` is `compact`/`resume`. Smoke:
-  startup omits it, compact injects it with the open tasks; Codex relies on internal memory.
+  startup omits it, compact injects it with the open tasks; Codex has no anchor — resume there
+  re-reads on-disk `tasks.md`/`decision-log.md`.
 
 Deferred by the anti-bloat principle (AGENTS.md) until real usage demands it:
 
@@ -337,6 +338,36 @@ Open items (tracked, not bugs — deferred by cost or upstream block):
 - Real-model eval runs (full auto-trigger suite, token-delta, Claude default rerun) — cost-gated.
 - Codex live PreToolUse proof — blocked on `plugin_hooks` GA + Issue #17794 (upstream).
 - `Mode:` contract reinforcement for small models — open design decision, awaits real usage.
+
+## Phase 13: Safety + coherence review (git, native memory, AGENTS/CLAUDE)
+
+Multi-agent read-only review (2026-06-02, 4 dimensions: git/safety, native memory,
+AGENTS/CLAUDE, doc coherence). Verdict per dimension: `minor-gaps` — core is sound, gaps were
+documentation-only. Quick wins shipped:
+
+- [x] Public-mutation hard gate now SHIPS with the plugin. Was only in a personal global
+  `CLAUDE.md`; a clean install routed work with no push/PR gate. Stated in `bootstrap.md`
+  (always-on) + `gates.md` advisory: push/PR/MR/merge/release/deploy/publish need explicit
+  same-turn authorization; honest-determinism — required behavior, not an enforced gate.
+- [x] Host-neutral git: "PR" → "PR/MR" in `workspace.md` (GitLab/merge-request aware), close
+  step gated by `gates.md`.
+- [x] Codex resume honesty: dropped the "Codex uses its internal memory" implication
+  (contradicted ADR-0004 — Codex memory is global/non-editable). Codex has no anchor; resume
+  re-reads on-disk `tasks.md`/`decision-log.md`. Fixed `memory.md`, `session-start.sh`,
+  roadmap capability matrix + Phase 10 note.
+- [x] Authority/precedence order documented once in `PRINCIPLES.md` (chat > global gates >
+  project AGENTS/CLAUDE > principles/refs > memory > inference); `install.md` states the
+  global-instructions rule for both harnesses; Principle 5 now names the `CLAUDE.md`→`AGENTS.md`
+  import.
+- [x] `validate-cairn.mjs` asserts `CLAUDE.md` imports `@AGENTS.md` (prevents silent one-source
+  rot). Coherence fixes: README status (Phases 0-12), research.md commit-policy line, file
+  count (38), comparison/Phase-1 snapshot labels.
+
+Deliberately not done: git rebase/conflict/stash guidance (general agent skill, would be the
+ceremony Cairn avoids).
+
+Exit: the safety gate ships, git guidance is host-neutral, Codex resume is honestly stated, and
+the precedence chain is written down once.
 
 ## Sequencing (next cycle)
 

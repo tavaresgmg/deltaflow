@@ -77,6 +77,11 @@ const required = [
 const missing = required.filter((f) => !fs.existsSync(path.join(root, f)));
 for (const f of missing) fail(`missing required file: ${f}`);
 
+// CLAUDE.md must import AGENTS.md, not duplicate it — one-source dual-harness (Principle 5).
+if (!missing.includes("CLAUDE.md") && !read("CLAUDE.md").includes("@AGENTS.md")) {
+  fail("CLAUDE.md must import AGENTS.md via @AGENTS.md (one-source dual-harness)");
+}
+
 // Everything below needs the files present.
 if (!missing.length) {
   const trackedFiles = gitLsFiles();

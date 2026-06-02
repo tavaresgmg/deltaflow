@@ -5,6 +5,10 @@ and references implement these; when they conflict, a principle wins and the ref
 wrong. README thesis, `SKILL.md`, `scope-and-workflows.md`, and `framework-lessons.md`
 point here instead of restating.
 
+**Authority order** when sources conflict: same-turn chat > global user gates
+(`~/.claude/CLAUDE.md` / Codex global `AGENTS.md`) > project `AGENTS.md`/`CLAUDE.md` > these
+principles and skill references > recalled memory (a hint, revalidated) > inference.
+
 ## 1. Proportional depth
 
 Structure matches risk. Tiny tasks stay tiny; research, SDD, greenfield, cleanup, and
@@ -33,7 +37,8 @@ owner per concern. If you do not reuse the obvious owner, name why.
 
 ## 5. One source -> both harnesses
 
-Canonical metadata edits in one place generate Codex and Claude Code manifests. Portability
+Canonical metadata edits in one place generate Codex and Claude Code manifests. The same rule
+covers instruction files: `CLAUDE.md` imports `AGENTS.md` rather than duplicating it. Portability
 is a differentiator. Harness-exclusive capabilities are allowed when they degrade gracefully
 on the other harness and the asymmetry is documented in the capability matrix.
 *Enforced by:* `build-manifests.mjs`, `validate-cairn.mjs` parity checks.
