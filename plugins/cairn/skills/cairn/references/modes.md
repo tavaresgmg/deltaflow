@@ -102,8 +102,7 @@ Workflow:
 4. Record reuse/adapt/new decisions before implementation phases that add owners.
 5. Implement in phases.
 6. Verify each boundary.
-7. Adversarial review: have a separate isolated subagent check the diff against `delta.md`
-   and the boundaries (writer ≠ reviewer). Review only — never parallelize the coding itself.
+7. Adversarial review (mandatory) — isolated subagent, writer ≠ reviewer. See `review.md`.
 8. Archive/sync after completion.
 
 This mode can later delegate to OpenSpec or another formal framework if the

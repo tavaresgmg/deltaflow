@@ -59,6 +59,7 @@ Read these references only when needed:
 - `references/modes.md` for detailed mode selection and workflow steps.
 - `references/artifacts.md` for artifact templates and retention rules.
 - `references/research.md` for the brainstorm / web-research / docs-grounding stages.
+- `references/review.md` for the proportional review ladder (self-review to adversarial).
 - `references/memory.md` for the `.cairn/` state layout and the resume protocol.
 - `references/workspace.md` for the umbrella model and boundary detection.
 - `references/gates.md` for what is deterministically enforced vs advisory, and reconciliation.

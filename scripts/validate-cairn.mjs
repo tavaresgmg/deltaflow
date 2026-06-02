@@ -66,6 +66,7 @@ const required = [
   "plugins/cairn/agents/cairn-researcher.md",
   "plugins/cairn/skills/cairn/SKILL.md",
   "plugins/cairn/skills/cairn/references/modes.md",
+  "plugins/cairn/skills/cairn/references/review.md",
   "plugins/cairn/skills/cairn/references/artifacts.md",
   "plugins/cairn/skills/cairn/references/memory.md",
   "plugins/cairn/skills/cairn/references/research.md",

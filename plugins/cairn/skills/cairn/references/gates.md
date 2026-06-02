@@ -23,6 +23,8 @@ without false positives. They live in `AGENTS.md` / `SKILL.md` as required behav
 
 - Brainstorm before code when stakes warrant (ADR-0006).
 - Fresh, executable proof before saying "done".
+- Review the diff proportional to risk before proof (`review.md`): intent, boundaries, edges,
+  security. Proof says it works; review says it is right and safe.
 - Research external truth early when it can change the plan.
 - Reuse existing symbols, helpers, docs, specs, and repo patterns before creating a new path.
 - Check anti-rationalization red flags before closing work that skipped proof, reuse, cleanup,

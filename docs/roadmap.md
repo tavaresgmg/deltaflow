@@ -312,6 +312,32 @@ Rejected / deferred:
 Exit: Cairn's pragmatic principles now have a named theoretical spine; the one missing loop
 (learn from failure) is codified.
 
+## Phase 12: Proportional review
+
+Audit (2026-06-02) of honesty / research / review maturity:
+
+- **Honesty** — sufficient. Principle 3 (evidence ladder), Principle 6 (determinism boundary),
+  diagnose evidence grading, `cairn-analyze` verify verdict, and the new context-readiness
+  "declare the gap" all cover it. Adding confidence grading to every mode would be ceremony.
+- **Web research** — sufficient. `research.md` is intent-gated (default-light table), isolated
+  (`cairn-researcher`), evidence-laddered, lockfile-version grounded. No change.
+- **Review** — the real gap. Adversarial review existed only in `tracked-change`; `direct`,
+  `diagnose`, and `delta-spec` had proof (does it work) but no review (is it right and safe).
+  Post-AI, review is the bottleneck and the value (METR 2025, DORA 2025).
+
+Shipped:
+
+- [x] `references/review.md` — proportional review ladder (self-review → diff-vs-delta →
+  isolated adversarial subagent), single owner. Wired by pointer from SKILL, `modes.md` step 7
+  (trimmed to a pointer — removed the restated text), and a `gates.md` advisory bullet. Budget
+  entry added; validate `required` list updated.
+
+Open items (tracked, not bugs — deferred by cost or upstream block):
+
+- Real-model eval runs (full auto-trigger suite, token-delta, Claude default rerun) — cost-gated.
+- Codex live PreToolUse proof — blocked on `plugin_hooks` GA + Issue #17794 (upstream).
+- `Mode:` contract reinforcement for small models — open design decision, awaits real usage.
+
 ## Sequencing (next cycle)
 
 Each behind the default-light intent gate:

@@ -15,6 +15,7 @@ const SURFACES = [
   { name: "references/memory", file: "plugins/cairn/skills/cairn/references/memory.md", maxWords: 650, maxChars: 4200, alwaysOn: false },
   { name: "references/modes", file: "plugins/cairn/skills/cairn/references/modes.md", maxWords: 600, maxChars: 3900, alwaysOn: false },
   { name: "references/research", file: "plugins/cairn/skills/cairn/references/research.md", maxWords: 550, maxChars: 3700, alwaysOn: false },
+  { name: "references/review", file: "plugins/cairn/skills/cairn/references/review.md", maxWords: 320, maxChars: 2100, alwaysOn: false },
   { name: "references/workspace", file: "plugins/cairn/skills/cairn/references/workspace.md", maxWords: 400, maxChars: 2800, alwaysOn: false },
 ];
 
