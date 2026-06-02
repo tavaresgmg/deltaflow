@@ -36,6 +36,7 @@ function yamlColonCheck(block, label) {
 const required = [
   "README.md",
   "AGENTS.md",
+  "CLAUDE.md",
   "docs/research/framework-survey.md",
   "docs/research/frameworks.md",
   "docs/research/context-and-portability.md",
