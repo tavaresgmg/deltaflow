@@ -82,6 +82,27 @@ function referencedPaths(markdown) {
   return [...refs];
 }
 
+function backtickValues(markdown) {
+  return [...markdown.matchAll(/`([^`]+)`/g)]
+    .map((m) => m[1].trim())
+    .filter(Boolean);
+}
+
+function looksLikeProofCommand(value) {
+  return /^(node|npm|pnpm|yarn|bun|npx|python|pytest|ruff|go|cargo|make|git|claude|codex|deno|uv|mise)\b/.test(value);
+}
+
+function looksLikeCodeRef(value) {
+  if (!value || value.startsWith("http") || looksLikeProofCommand(value) || /[*?[\]{}]/.test(value)) return false;
+  if (path.isAbsolute(value) || value.startsWith("./") || value.startsWith("../") || value.includes("/")) return true;
+  return /^(README|AGENTS|SKILL|Makefile|Dockerfile)(\.md)?$/.test(value)
+    || /^[A-Za-z0-9_.-]+\.(mjs|js|ts|tsx|jsx|md|json|yml|yaml|sh|py|go|rs|sql)$/.test(value);
+}
+
+function looksBehavioral(text) {
+  return /\b(adds?|changes?|updates?|removes?|replaces?|refactors?|routes?|validates?|detects?|emits?|supports?|blocks?|archives?|syncs?|deletes?|requires?|allows?|preserves?|rejects?|infers?|records?|warns?|must|should|will|becomes|no longer|corrig|ajust|implement|adicion|valid|detect|bloque)\b/i.test(text);
+}
+
 function section(markdown, title) {
   const lines = markdown.split("\n");
   const start = lines.findIndex((line) => new RegExp(`^##\\s+${title}\\s*$`, "i").test(line.trim()));
@@ -112,7 +133,23 @@ function semanticClaims(markdown) {
 function validateSemanticClaims(file, markdown, findings, { requireClaims = false, missingCodeSeverity = "HIGH" } = {}) {
   const claims = semanticClaims(markdown);
   if (requireClaims && claims.length === 0) {
-    findings.push(finding("MEDIUM", "SEMANTIC_CLAIMS_MISSING", "behavior text has no checkable Semantic Claims", file));
+    const inferred = inferredSemanticCoverage(markdown);
+    if (!inferred.hasBehavior || (inferred.code.length === 0 && inferred.proof.length === 0)) {
+      findings.push(finding("MEDIUM", "SEMANTIC_CLAIMS_MISSING", "behavior text has no checkable Semantic Claims, code refs, or proof commands", file));
+      return;
+    }
+    if (inferred.code.length === 0) {
+      findings.push(finding("MEDIUM", "INFERRED_BEHAVIOR_WITHOUT_CODE", "behavior prose has proof commands but no code refs", file));
+    }
+    if (inferred.proof.length === 0) {
+      findings.push(finding("MEDIUM", "INFERRED_BEHAVIOR_WITHOUT_PROOF", "behavior prose has code refs but no proof commands", file));
+    }
+    for (const ref of inferred.code) {
+      const targetPath = path.isAbsolute(ref) ? ref : path.join(root, ref);
+      if (!fs.existsSync(targetPath)) {
+        findings.push(finding(missingCodeSeverity, "INFERRED_SEMANTIC_REF_MISSING", `behavior prose references missing code: ${ref}`, file));
+      }
+    }
     return;
   }
   for (const claim of claims) {
@@ -129,6 +166,23 @@ function validateSemanticClaims(file, markdown, findings, { requireClaims = fals
       }
     }
   }
+}
+
+function inferredSemanticCoverage(markdown) {
+  const proposed = section(markdown, "Proposed Behavior");
+  const lines = proposed
+    .split("\n")
+    .map((line) => line.replace(/^\s*[-*]\s*/, "").trim())
+    .filter(Boolean);
+  const behaviorLines = lines.filter(looksBehavioral);
+  const scope = behaviorLines.length ? behaviorLines.join("\n") : proposed;
+  const values = backtickValues(scope);
+  return {
+    hasBehavior: textHasMeaningfulContent(proposed) && (behaviorLines.length > 0 || values.length > 0),
+    behaviorLines,
+    code: values.filter(looksLikeCodeRef),
+    proof: values.filter(looksLikeProofCommand),
+  };
 }
 
 function markdownFiles(dir) {

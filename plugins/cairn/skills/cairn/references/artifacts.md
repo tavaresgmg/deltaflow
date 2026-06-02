@@ -98,6 +98,11 @@ Use `Semantic Claims` only when drift would matter. Keep claims explicit and che
 one behavior claim, one code path, one proof command. `cairn-analyze.mjs` validates that
 claims have `code:` references, `proof:` commands, and existing code paths.
 
+`cairn-analyze.mjs` also infers coverage from `Proposed Behavior` when the prose has
+behavior verbs plus code/proof candidates. Complete implicit coverage is accepted; missing
+code, proof, or referenced paths become findings. This is a read-only heuristic to catch
+underspecified deltas; explicit `Semantic Claims` remain preferred for durable behavior.
+
 ## Plan
 
 ```md

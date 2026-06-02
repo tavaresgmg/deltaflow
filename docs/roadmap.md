@@ -85,7 +85,8 @@ Exit: a task spanning 2+ repos in one workspace is coordinated without touching 
 - [x] Claim-backed spec<->code drift check: deltas and living specs validate code refs and
   proof commands; behavior deltas without claims are flagged.
 - [x] Completed retained changes archived under `.cairn/changes/archive/<date>-<slug>/`.
-- [ ] Inferred semantic extraction from arbitrary prose/code beyond explicit claims.
+- [x] Inferred semantic extraction from behavior prose beyond explicit claims: code/proof
+  candidates are accepted as coverage, and missing code/proof/refs become findings.
 - [x] Claude Code live hook proof: SessionStart and PreToolUse.
 - [ ] Codex live hook proof beyond local smoke.
 

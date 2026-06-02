@@ -302,6 +302,80 @@ if (!missing.length) {
     if (!bad.findings.some((f) => f.code === "SEMANTIC_CLAIM_WITHOUT_PROOF")) {
       fail("cairn-analyze.mjs did not flag a semantic claim without proof");
     }
+    const implicitGood = path.join(tmp, ".cairn/changes/implicit-good");
+    fs.mkdirSync(implicitGood, { recursive: true });
+    fs.writeFileSync(path.join(implicitGood, "delta.md"), [
+      "# Delta",
+      "",
+      "## Proposed Behavior",
+      "",
+      "- Add CSV escaping behavior in `plugins/cairn/scripts/cairn-analyze.mjs`.",
+      "- Validate it with `node scripts/validate-cairn.mjs`.",
+      "",
+    ].join("\n"));
+    const implicitGoodOut = execSync(`node ${JSON.stringify(path.join(root, "plugins/cairn/scripts/cairn-analyze.mjs"))} ${JSON.stringify(implicitGood)}`, {
+      cwd: root,
+      stdio: ["ignore", "pipe", "ignore"],
+    }).toString();
+    const implicitGoodJson = JSON.parse(implicitGoodOut);
+    if (implicitGoodJson.findings.some((f) => /^SEMANTIC_|^INFERRED_/.test(f.code || ""))) {
+      fail("cairn-analyze.mjs flagged implicit behavior prose with code and proof coverage");
+    }
+    const implicitMissingProof = path.join(tmp, ".cairn/changes/implicit-missing-proof");
+    fs.mkdirSync(implicitMissingProof, { recursive: true });
+    fs.writeFileSync(path.join(implicitMissingProof, "delta.md"), [
+      "# Delta",
+      "",
+      "## Proposed Behavior",
+      "",
+      "- Add CSV escaping behavior in `plugins/cairn/scripts/cairn-analyze.mjs`.",
+      "",
+    ].join("\n"));
+    const missingProofOut = execSync(`node ${JSON.stringify(path.join(root, "plugins/cairn/scripts/cairn-analyze.mjs"))} ${JSON.stringify(implicitMissingProof)}`, {
+      cwd: root,
+      stdio: ["ignore", "pipe", "ignore"],
+    }).toString();
+    const missingProof = JSON.parse(missingProofOut);
+    if (!missingProof.findings.some((f) => f.code === "INFERRED_BEHAVIOR_WITHOUT_PROOF")) {
+      fail("cairn-analyze.mjs did not flag implicit behavior with code refs but no proof");
+    }
+    const implicitMissingCode = path.join(tmp, ".cairn/changes/implicit-missing-code");
+    fs.mkdirSync(implicitMissingCode, { recursive: true });
+    fs.writeFileSync(path.join(implicitMissingCode, "delta.md"), [
+      "# Delta",
+      "",
+      "## Proposed Behavior",
+      "",
+      "- Add CSV escaping behavior and validate it with `node scripts/validate-cairn.mjs`.",
+      "",
+    ].join("\n"));
+    const missingCodeOut = execSync(`node ${JSON.stringify(path.join(root, "plugins/cairn/scripts/cairn-analyze.mjs"))} ${JSON.stringify(implicitMissingCode)}`, {
+      cwd: root,
+      stdio: ["ignore", "pipe", "ignore"],
+    }).toString();
+    const missingCode = JSON.parse(missingCodeOut);
+    if (!missingCode.findings.some((f) => f.code === "INFERRED_BEHAVIOR_WITHOUT_CODE")) {
+      fail("cairn-analyze.mjs did not flag implicit behavior with proof but no code refs");
+    }
+    const implicitMissingRef = path.join(tmp, ".cairn/changes/implicit-missing-ref");
+    fs.mkdirSync(implicitMissingRef, { recursive: true });
+    fs.writeFileSync(path.join(implicitMissingRef, "delta.md"), [
+      "# Delta",
+      "",
+      "## Proposed Behavior",
+      "",
+      "- Add CSV escaping behavior in `missing/path.mjs`.",
+      "- Validate it with `node scripts/validate-cairn.mjs`.",
+      "",
+    ].join("\n"));
+    const missingRefOut = execSync(`node ${JSON.stringify(path.join(root, "plugins/cairn/scripts/cairn-analyze.mjs"))} ${JSON.stringify(implicitMissingRef)}`, {
+      cwd: root,
+      stdio: ["ignore", "pipe", "ignore"],
+    }).toString();
+    const missingRef = JSON.parse(missingRefOut);
+    if (!missingRef.findings.some((f) => f.code === "INFERRED_SEMANTIC_REF_MISSING")) {
+      fail("cairn-analyze.mjs did not flag missing inferred code reference");
+    }
     const specRoot = path.join(tmp, ".cairn/specs");
     fs.mkdirSync(specRoot, { recursive: true });
     fs.writeFileSync(path.join(specRoot, "bad-spec.md"), [

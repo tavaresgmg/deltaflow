@@ -48,8 +48,8 @@ next — by activation, modes/workflows, artifacts, deterministic automation, me
    Codex `gpt-5.4-mini` R5 and Claude R11/R14 gaps. Still missing: full passing realistic/full
    suites on >=2 models per harness.
 2. **Spec↔code semantic analysis v2.** `cairn-analyze.mjs` now checks claim-backed delta/spec
-   drift and missing claims on behavior deltas; the next level is inferred extraction from
-   arbitrary prose/code without requiring explicit claims.
+   drift and infers coverage from ordinary behavior prose with code/proof candidates, without
+   trying to become a full NLP/spec engine.
 3. **Archive/apply helper.** `cairn-retention.mjs` now reports completed active changes and
    archive/delete actions. A future helper may perform reviewed moves, but only if manual
    cleanup repeats enough to justify mutation.
