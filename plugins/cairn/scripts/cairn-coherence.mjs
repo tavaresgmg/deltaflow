@@ -3,6 +3,9 @@
 // folder exists under the repo, surface a one-shot corrective (exit 2 + stderr) so the agent
 // scaffolds before closing — the deterministic signal gates.md reserved. Never a hard gate:
 // guarded by stop_hook_active so it nudges once, then lets the turn close.
+// Blast-radius gate: a Stop hook fires in every session on every project. To avoid nagging
+// unrelated repos, it stays silent unless the repo has ALREADY adopted Cairn (a `.cairn/` dir
+// exists). A brand-new repo's first change is covered by the prose contract, not this hook.
 //   node cairn-coherence.mjs '{"last_assistant_message":"Mode: tracked-change\n...","cwd":"..."}'
 // Reads the harness Stop event as JSON on stdin (or argv[2] for testing). Exit 2 = block-once.
 import { execSync } from "node:child_process";
@@ -23,6 +26,16 @@ function repoRoot(cwd) {
       .trim();
   } catch {
     return null;
+  }
+}
+
+// Has the repo adopted Cairn? A `.cairn/` dir means specs/changes/decision-log live here, so a
+// declared mode without a change folder is a real gap. No `.cairn/` = don't nag this project.
+function hasCairnDir(root) {
+  try {
+    return fs.statSync(path.join(root, ".cairn")).isDirectory();
+  } catch {
+    return false;
   }
 }
 
@@ -97,6 +110,7 @@ if (!m) process.exit(0);
 const cwd = event.cwd || process.cwd();
 const root = repoRoot(cwd);
 if (!root) process.exit(0); // not in a repo — nothing to check
+if (!hasCairnDir(root)) process.exit(0); // repo hasn't adopted Cairn — don't nag unrelated projects
 if (hasChangeFolder(root)) process.exit(0);
 
 process.stderr.write(

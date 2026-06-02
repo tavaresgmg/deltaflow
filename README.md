@@ -80,9 +80,9 @@ Full setup, memory-policy presets, and local development: [`docs/install.md`](do
 ## Status
 
 **Experimental.** Phases 0–16 built and locally validated (`node scripts/validate-cairn.mjs` —
-39 files green). Verified live on Codex CLI `0.136.0` and Claude Code `2.1.159` (PreToolUse guard
-confirmed firing). Open items — real-model eval runs and Codex live hook enforcement — are tracked
-in the roadmap.
+39 files green). Verified live on Codex CLI `0.136.0` and Claude Code `2.1.159` (PreToolUse guard confirmed firing
+on Claude Code; Codex `Stop` hook confirmed firing + honoring `exit 2`). Open items — real-model
+eval runs and Codex PreToolUse guard parity — are tracked in the roadmap.
 
 - Roadmap & live proof: [`docs/roadmap.md`](docs/roadmap.md)
 - Activation evals: [`docs/evals/auto-trigger.md`](docs/evals/auto-trigger.md)

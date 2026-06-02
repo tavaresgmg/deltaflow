@@ -13,11 +13,10 @@ advisory; only hooks and scripts enforce. This file is explicit about which is w
   drift in a change folder (or `--all .cairn/changes`). For a finished change it emits a `verify`
   verdict (completeness/coherence/proof → `verified`|`incomplete`|`drift`) — the spec→code loop
   closure, never running the proof commands. Read-only; run before claiming a change complete.
-- **End-of-turn coherence** — `scripts/cairn-coherence.mjs`, a `Stop` hook. If the turn declared
-  `Mode: tracked-change|delta-spec` but no `.cairn/changes/<slug>/` exists, it blocks the close
-  once (exit 2 + stderr) to force scaffolding. Not a hard gate: `stop_hook_active`
-  guards looping, so a Mode line in read-only Q&A gets one nudge then closes. Codex `Stop` parity
-  doc-supported, not live-proven — pending.
+- **End-of-turn coherence** — `scripts/cairn-coherence.mjs`, a `Stop` hook, active only in repos
+  that already use `.cairn/` (no global nagging). If the turn declared `Mode: tracked-change|delta-spec`
+  but no `.cairn/changes/<slug>/` exists, it blocks the close once (exit 2 + stderr) to force
+  scaffolding. Not a hard gate: `stop_hook_active` guards looping. Codex `Stop` parity live-proven.
 
 ## Advisory (not deterministically enforceable)
 
@@ -56,7 +55,6 @@ explicitly. When a `delta.md` exists and code has moved:
 ## Cross-harness parity & validation status
 
 The guard *logic* is harness-neutral and unit-tested, including `apply_patch` patch-header
-paths. Claude Code live wiring is confirmed. Codex hook docs support plugin-bundled hooks,
-`apply_patch` matchers, trust review, and `exit 2` blocking, but local Codex CLI v0.136.0
-`exec` smoke did not deliver a captured `PreToolUse` event for file changes. Treat Codex
-mutation guard parity as pending, not proven.
+paths. Claude Code live wiring is confirmed. Codex `exec` fires `SessionStart` and `Stop` plugin
+hooks (live-proven 2026-06-02) but did not deliver a captured `PreToolUse` event for file changes
+on v0.136.0. Treat Codex *mutation guard* parity as pending, not proven.

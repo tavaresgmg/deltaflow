@@ -277,7 +277,11 @@ if (!missing.length) {
   try {
     execSync("git init -q", { cwd: freshRepo, stdio: ["ignore", "ignore", "ignore"] });
     const declared = "Mode: tracked-change\n\nWork done.";
-    // No folder yet: declared mode blocks once; guard + non-folder modes still pass.
+    // Blast-radius gate: a repo with no .cairn/ stays silent even on a declared mode.
+    const notAdopted = runCoherence({ hook_event_name: "Stop", last_assistant_message: declared, cwd: freshRepo });
+    if (notAdopted !== 0) fail(`cairn-coherence.mjs nagged a non-Cairn repo (no .cairn/) (exit ${notAdopted})`);
+    // Adopt Cairn (the .cairn/ dir exists) but no change folder yet → declared mode blocks once.
+    fs.mkdirSync(path.join(freshRepo, ".cairn"), { recursive: true });
     const incoherent = runCoherence({ hook_event_name: "Stop", last_assistant_message: declared, cwd: freshRepo });
     if (incoherent !== 2) fail(`cairn-coherence.mjs did not block a declared mode with no change folder (exit ${incoherent})`);
     const looped = runCoherence({ hook_event_name: "Stop", last_assistant_message: declared, cwd: freshRepo, stop_hook_active: true });

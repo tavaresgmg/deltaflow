@@ -463,11 +463,20 @@ CLI/MCP never trips a file-write guard, and the hook knows neither mode nor slug
   turn's declared `Mode:` (Codex `last_assistant_message`; Claude Code transcript tail) and, if it is
   `tracked-change`/`delta-spec` with no `.cairn/changes/<slug>/`, blocks the close once (exit 2,
   `stop_hook_active`-guarded) to force scaffolding. Promotes the signal `gates.md` reserved.
+  **Blast-radius gate (added after a live incident):** a Stop hook fires in *every* Codex session
+  on *every* project; to avoid nagging unrelated repos it stays silent unless the repo already uses
+  `.cairn/` (a brand-new repo's first change is covered by prose, not this hook).
   *Tradeoff (named):* coarse (fires on "zero folders", not "wrong folder"); transcript-tail parsing
-  is best-effort; Codex `Stop` parity is doc-supported, not live-proven — pending like the guard.
-  *Proof:* `validate-cairn.mjs` smoke test (incoherent→exit 2, transcript-tail→exit 2,
-  `stop_hook_active`→0, non-folder mode→0, folder-present→0); built dogfood — scaffolded
-  `.cairn/changes/coherence-stop-hook/` before mutating, per this phase's own contract.
+  is best-effort; misses the first change in a never-adopted repo (accepted, for bounded blast radius).
+  *Codex parity — live-proven (2026-06-02):* a probe confirmed Codex fires the plugin `Stop` hook,
+  passes `last_assistant_message`/`cwd`/`stop_hook_active`, and honors `exit 2` (the blocked model
+  tried to scaffold). The unguarded probe also looped infinitely, validating why the shipped hook
+  guards `stop_hook_active`. **Incident lesson:** the probe was injected into the *shared global*
+  `~/.codex/plugins/cache`, leaking into an unrelated live Codex session — never instrument the
+  global cache; use an isolated `CODEX_HOME`. Cache reverted to original after the test.
+  *Proof:* `validate-cairn.mjs` smoke test (non-Cairn repo→0, adopted+incoherent→exit 2,
+  transcript-tail→exit 2, `stop_hook_active`→0, non-folder mode→0, folder-present→0); built dogfood —
+  scaffolded `.cairn/changes/coherence-stop-hook/` before mutating, per this phase's own contract.
 
 Exit: the create-before-mutate contract lives in flow + skill + honesty red flag, now backed by the
 first deterministic end-of-turn signal — a lever no surveyed framework has.
