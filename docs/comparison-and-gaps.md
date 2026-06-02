@@ -1,8 +1,9 @@
 # Comparison & Gaps
 
-Cairn (Phases 1-6, built) vs BMAD, OpenSpec, Spec Kit, Superpowers. Anchored in
-`docs/research/frameworks.md`. Goal: what's strong, what's genuinely missing, what to build
-next — by activation, modes/workflows, artifacts, deterministic automation, memory, research.
+Cairn (Phases 1-9) vs BMAD, OpenSpec, Spec Kit, Superpowers, ECC/caveman. Anchored in
+`docs/research/frameworks.md`. Principles: `docs/PRINCIPLES.md`. Goal: what's strong, what's
+genuinely missing, what to build next — by activation, modes/workflows, artifacts,
+deterministic automation, memory, research, token economy.
 
 ## What Cairn already has (with evidence)
 
@@ -39,6 +40,12 @@ next — by activation, modes/workflows, artifacts, deterministic automation, me
 | Determinism | Python (hot path) | CLI state machine | scripts | one bash hook | scripts + hooks ✓ |
 | Memory | .decision-log | filesystem-as-state | constitution | TodoWrite (ephemeral) | .cairn/ versioned ✓ |
 | Multi-repo | refuses nesting | one-instance | `.specify` over git | — | **umbrella (unique)** ✓ |
+| Concise output | — | — | — | — | caveman `full` Output Style, safety/public exempt ✓ (Phase 7) |
+
+ECC/caveman (`affaan-m/ECC`, `JuliusBrussee/caveman`) is not a workflow framework — it is a
+concise-output technique. Cairn borrows the `full` level as Principle 8 (Output Style in
+`SKILL.md`), with hard exemptions for safety warnings, irreversible confirmations, public
+artifacts, and any number/ID/date/path. It does not adopt the ambiguous `ultra` level.
 
 ## Gaps, prioritized
 

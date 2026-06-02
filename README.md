@@ -17,7 +17,8 @@ Most coding-agent workflow frameworks overfit one of two extremes:
 - too much structure: every card becomes a mini product program with excess artifacts.
 
 Cairn's answer is proportional depth: tiny tasks stay tiny; research, SDD, greenfield, cleanup,
-and high-risk implementation get only the structure their risk justifies.
+and high-risk implementation get only the structure their risk justifies. Full principles:
+`docs/PRINCIPLES.md`.
 
 Cairn keeps the useful parts:
 
@@ -78,16 +79,7 @@ node scripts/validate-cairn.mjs    # structural + YAML-safety + gate smoke tests
 
 ## Status
 
-Phases 0-6 are built and locally validated. Current local `latest` package versions:
-Codex CLI `0.136.0` and Claude Code `2.1.159` (npm also advertises Claude Code
-`next=2.1.160`). Codex has live install, SessionStart, auto-trigger proof, P0 matrix proof
-on default + `gpt-5.4-mini`, and focused route-contract retests. Claude Code v2.1.159 has
-live local marketplace/install, component inventory, SessionStart, PreToolUse allow/block,
-realistic no-fire proof, and a diagnostic realistic run. P0 primitives are in place:
-optional codebase maps, living specs/archive guidance, structured `cairn-analyze`,
-semantic-claim drift checks, context budget guard, eval scoreboard, faster cross-harness
-evals, and read-only `cairn-next`.
-
-Remaining: full passing realistic suites on >=2 models per harness, Claude second-model P0
-coverage, and live Codex PreToolUse proof beyond local smoke (`docs/evals/auto-trigger.md`,
-`docs/roadmap.md`).
+Phases 0-7 and 9 built and locally validated; Phase 8 (harness capability adoption) is gated
+on confirming recent hook features against official docs. Local versions: Codex CLI `0.136.0`,
+Claude Code `2.1.159`. Live proof, the capability matrix, and remaining cross-model eval gaps:
+`docs/roadmap.md` and `docs/evals/auto-trigger.md`. Principles: `docs/PRINCIPLES.md`.

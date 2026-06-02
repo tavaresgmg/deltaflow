@@ -29,11 +29,9 @@ cleanup, complexity reduction, and alignment with existing repository patterns.
 
 ## How Cairn wins
 
-- Proportional depth: direct work stays direct; high-risk work gets gates.
-- Brownfield fit: repo patterns, current code, tests, and runtime beat generic plans.
-- Official-doc research when external truth can change the plan.
-- Deterministic helpers for state and checks instead of long repeated prompts.
-- Durable memory only where it prevents repeated rediscovery.
+See `docs/PRINCIPLES.md` — the canonical principles (proportional depth, brownfield fit,
+evidence first, reuse, portability, honest determinism, no stale artifacts, token economy).
+This doc covers *which work routes where*; principles cover *why*.
 
 ## Official-doc implications checked 2026-06-01
 

@@ -1,8 +1,7 @@
 # Roadmap
 
-Decisions: `docs/decisions/`. Evidence: `docs/research/`.
-
-Scope: `docs/scope-and-workflows.md`.
+Principles: `docs/PRINCIPLES.md` (canonical). Decisions: `docs/decisions/`.
+Evidence: `docs/research/`. Scope: `docs/scope-and-workflows.md`.
 
 ## Phase 0: Seed + research + decisions — DONE
 
@@ -127,3 +126,80 @@ Exit: brainstorm + research + docs improve quality without recreating ceremony o
 - [ ] Same realistic routing subset on >=2 models per harness. Codex `gpt-5.4-mini`
   diagnostic gaps were cleared by focused retest, but the full realistic rerun is still pending.
 - [ ] Publish patterns only after real brownfield usage validates the core assumptions.
+
+## Phase 7: Token economy / concise comms (Principle 8) — NEXT
+
+The cheapest, highest-frequency lever: every turn pays. Adapts the "caveman" concise-output
+technique (JuliusBrussee/caveman, wilpel/caveman-compression) without extreme compression.
+
+- [x] `Output Style` section in `SKILL.md` (extends existing `Output Shape`, reusing the owner):
+  caveman `full` for agent output — fragments ok, active voice, present tense, one idea per
+  line. Hard exceptions: security warnings, irreversible confirmations, public artifacts,
+  numbers/IDs/dates/paths. Budget green after edit (skill 7032/7200 chars).
+- [~] `cairn-budget.mjs` already counts the whole `SKILL.md` as one budgeted surface; per-section
+  granularity skipped as over-engineering. If `SKILL.md` later overflows its char cap, push the
+  Output Style block to a `references/output-style.md` lazy reference then.
+- [x] Concise-comms red flag added to `framework-lessons.md` ("More words make the answer safer"
+  -> cut filler, keep numbers/IDs/safety/inference steps).
+- [ ] Eval: measure mean output tokens per routed turn before/after on the existing fixtures;
+  log the delta. No accuracy regression on the auto-trigger + route-contract suites. (Needs a
+  real-model run — deferred to the next eval cycle.)
+
+Exit: routed turns drop measurable output tokens with zero routing/accuracy regression, and
+the concision rule never fires on a safety/public surface.
+
+## Phase 8: Harness capability adoption (Principle 5, graceful fallback)
+
+Best feature of each harness, documented asymmetry. All recent-feature claims below are from
+secondary changelogs and MUST be `[confirm]`-ed against official docs before building
+(`code.claude.com/docs/en/hooks`, `developers.openai.com/codex/hooks`).
+
+### Capability matrix (to verify, then encode in `build-manifests.mjs`)
+
+| Capability | Claude Code | Codex | Cairn use |
+| --- | --- | --- | --- |
+| Hide inactive skills from model | `skillOverrides` `[confirm v2.1.141]` | none -> noop | shrink system prompt: expose only active-route skill |
+| Cheapest-point prompt gating | `UserPromptExpansion` `[confirm]` | `UserPromptSubmit` (no per-cmd matcher) | block/augment before inference tokens |
+| Survive compaction | `PreCompact` block-capable `[confirm]` | SQLite memory `[confirm v0.135]` | snapshot active route + in-flight proof |
+| Inject route identity into subagents | `SubagentStart` systemMessage `[confirm v2.1.139]` | subagent identity in hook input `[confirm]` | route constraints at spawn, not via parent prompt |
+| Plugin-bundled hooks | yes | `hooks/hooks.json` `[confirm v0.133]` | zero-config distribution |
+| Per-route tool restriction | skill `disallowed-tools` `[confirm v2.1.152]` | `PreToolUse updatedInput` rewrite `[confirm v0.134]` | static permission enforcement per mode |
+
+- [ ] Confirm each row against official docs; drop confabulated rows.
+- [ ] `PreCompact`/SessionStart-`compact` route-state snapshot + reload — fixes post-compaction
+  continuity loss (the known failure mode of long router sessions).
+- [ ] `skillOverrides`-style inactive-skill hiding where supported; measure system-prompt token
+  drop via `/context all`.
+- [ ] `SubagentStart` route-identity injection where supported; fall back to parent-prompt on Codex.
+- [ ] Each adopted capability degrades to a documented noop on the harness that lacks it; parity
+  asymmetries recorded in the matrix, validated by `validate-cairn.mjs`.
+
+Exit: each harness uses its best available lever; no capability hard-fails on the other; the
+matrix is the single source for what is real vs aspirational.
+
+## Phase 9: Consolidation / redundancy cleanup (Principle 7 + 8)
+
+`roadmap.md`, `comparison-and-gaps.md`, and `scope-and-workflows.md` overlap on "what Cairn
+has / how it wins". Drift risk across three surfaces.
+
+- [x] `PRINCIPLES.md` is the only home for principles; README thesis, `scope` "How Cairn wins",
+  and `framework-lessons` Design Rules reduced to pointers.
+- [x] `comparison-and-gaps.md` keeps the competitive matrix; added ECC/caveman + a concise-output
+  dimension, pointed principles to `PRINCIPLES.md`.
+- [x] Re-ran `cairn-budget.mjs` — green; `framework-lessons` shrank (324->310 words).
+- [x] Checked for stale archived-change refs in public docs — none load-bearing (only dated eval
+  logs, which are valid proof). No removal needed.
+
+Exit (met): each principle fact lives once in `PRINCIPLES.md`; `cairn-budget.mjs` green;
+validate passes (37 files).
+
+## Sequencing (next cycle)
+
+All four selected. Order by cost/impact, each behind the default-light intent gate:
+
+1. **Phase 7** first — cheapest, every turn benefits, low risk, measurable.
+2. **Phase 9 (partial)** alongside — fold principles into `PRINCIPLES.md` while editing those
+   files anyway; avoids touching them twice.
+3. **Phase 8** after `[confirm]` pass — gated on verifying the feature claims are real.
+4. **Phase 6 eval gaps** continuous — re-run after any `description`/mode/Output-Style change to
+   catch regressions; close the >=2-models-per-harness and Claude second-model P0 debt.

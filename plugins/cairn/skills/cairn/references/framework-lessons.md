@@ -20,13 +20,10 @@
 
 ## Design Rules
 
-1. Route first, then execute.
-2. The smallest sufficient mode wins.
-3. Existing system evidence beats abstract planning.
-4. External truth is researched early when it can change the plan.
-5. Proof lives near the work.
-6. Artifacts are deleted, archived, or synced; never left as stale clutter.
-7. Reuse the existing owner before creating a new one.
+Canonical principles: `docs/PRINCIPLES.md`. Operating shorthand: route first then execute;
+smallest sufficient mode wins; evidence beats abstract planning; research external truth early
+when it changes the plan; proof lives near the work; artifacts deleted/archived/synced, never
+stale. Reuse the existing owner before creating a new one.
 
 ## Anti-Rationalization Red Flags
 
@@ -38,3 +35,4 @@
 | "I will clean this later." | Delete, archive, or sync touched stale artifacts before close. |
 | "The test is slow, so skip it." | Run a focused cheaper proof or state the residual risk explicitly. |
 | "Planning slows us down." | Use `direct` for small reversible work; use discovery/spec when the wrong path is costly. |
+| "More words make the answer safer." | Cut filler, hedging, and restated context (Principle 8). Keep numbers, IDs, safety warnings, and every inference step intact. |

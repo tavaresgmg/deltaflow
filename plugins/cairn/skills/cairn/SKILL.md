@@ -98,3 +98,14 @@ Every Cairn-routed response must start with
 For small work, close with Done/Blocked, Proof, Risk, and Next when useful. For planning,
 include Why, Facts, Open questions, Plan, and Proof strategy. For incomplete work, name the
 blocker and the next concrete action.
+
+## Output Style
+
+Concise comms (Principle 8 — `docs/PRINCIPLES.md`). Few tokens when few do the trick. Cut
+filler, hedging, intensifiers, and context the reader already has. Fragments ok; active voice;
+present tense; one idea per line. Keep technical terms and code exact. Applies to subagent
+prompts/returns, decision-log, proof notes, and technical replies to the dev.
+
+Never compress — full prose, no dropped words: security warnings, irreversible-action
+confirmations, public artifacts (PR/changelog), and any number, ID, date, or path. Concise is
+not ambiguous: every inference step stays explicit.
