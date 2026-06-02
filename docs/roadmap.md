@@ -52,6 +52,7 @@ Exit: the skill auto-fires on >=90% of must-fire prompts and routes to the right
 - [x] `.cairn/decision-log.md` append-only convention (write during the work).
 - [x] `tasks.md` checkbox resume protocol; read-state-first / write-progress-last.
 - [x] `cairn-next.mjs` read-only next-step reporter over a change folder.
+- [x] `cairn-retention.mjs` read-only reporter for completed active changes and archive/delete actions.
 - [ ] Worked examples proving that maps reduce repeated observe cost without becoming stale docs.
 
 Exit: medium changes persist intent and resume across sessions without ceremony for small fixes.
@@ -76,6 +77,7 @@ Exit: a task spanning 2+ repos in one workspace is coordinated without touching 
   existing code refs.
 - [x] Claim-backed spec<->code drift check: deltas and living specs validate code refs and
   proof commands; behavior deltas without claims are flagged.
+- [x] Completed retained changes archived under `.cairn/changes/archive/<date>-<slug>/`.
 - [ ] Inferred semantic extraction from arbitrary prose/code beyond explicit claims.
 - [x] Claude Code live hook proof: SessionStart and PreToolUse.
 - [ ] Codex live hook proof beyond local smoke.

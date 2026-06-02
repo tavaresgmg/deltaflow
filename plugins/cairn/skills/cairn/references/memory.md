@@ -72,5 +72,6 @@ It records *why*, not *what happened*. No narrative logs — code, tests, and sp
 Retention rules live in `artifacts.md`: keep specs that describe durable behavior; archive or
 delete transient plans after completion; never leave stale clutter. Completed `delta-spec` and
 `tracked-change` work must end with an explicit choice: sync to living spec, delegate to the
-repo's existing spec system, archive, or delete. Memory is a hint, not authority — revalidate
-drift-prone external facts before acting on a recalled summary.
+repo's existing spec system, archive, or delete. Use `cairn-retention.mjs` to find completed
+active changes before cleanup. Memory is a hint, not authority — revalidate drift-prone
+external facts before acting on a recalled summary.

@@ -52,6 +52,7 @@ const required = [
   "plugins/cairn/scripts/cairn-guard.mjs",
   "plugins/cairn/scripts/cairn-analyze.mjs",
   "plugins/cairn/scripts/cairn-next.mjs",
+  "plugins/cairn/scripts/cairn-retention.mjs",
   "plugins/cairn/scripts/cairn-version.mjs",
   ".cairn/codebase/eval-harness.md",
   ".cairn/specs/workflow-router.md",
@@ -289,6 +290,23 @@ if (!missing.length) {
     }).toString();
     const next = JSON.parse(nextOut);
     if (!next.next?.code) fail("cairn-next.mjs did not emit next.code");
+    fs.writeFileSync(path.join(change, "tasks.md"), "# Tasks\n\n- [x] step — proof: demo\n");
+    fs.writeFileSync(path.join(change, "proof.md"), [
+      "# Proof",
+      "",
+      "## Lifecycle Decision",
+      "",
+      "Lifecycle decision: sync — demo",
+      "",
+    ].join("\n"));
+    const retentionOut = execSync(`node ${JSON.stringify(path.join(root, "plugins/cairn/scripts/cairn-retention.mjs"))} ${JSON.stringify(path.join(tmp, ".cairn/changes"))}`, {
+      cwd: root,
+      stdio: ["ignore", "pipe", "ignore"],
+    }).toString();
+    const retention = JSON.parse(retentionOut);
+    if (!retention.actionable?.some((item) => item.slug === "demo" && item.action === "archive")) {
+      fail("cairn-retention.mjs did not recommend archiving a completed change with lifecycle decision");
+    }
   } catch (e) {
     fail(`state helper smoke test failed: ${e.message}`);
   } finally {

@@ -161,3 +161,6 @@ load-bearing decision; never rewritten.
 - Delete transient plans after completion when code/tests/docs already carry the truth.
 - Do not keep execution logs as durable docs.
 - Prefer code, tests, and concise specs over narrative history.
+- Use `node plugins/cairn/scripts/cairn-retention.mjs .cairn/changes` to report completed
+  active changes and the next retention action. The helper is read-only; move/archive/delete
+  files deliberately after reviewing its JSON.

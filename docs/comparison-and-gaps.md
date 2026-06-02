@@ -29,7 +29,7 @@ next — by activation, modes/workflows, artifacts, deterministic automation, me
 | Modes | quick-vs-full by intent | propose/explore | 8-cmd chain | brainstorm→implement | 5 modes, intent-gated ✓ |
 | Brownfield delta | addendum | **ADDED/MODIFIED/REMOVED** | greenfield-first | afterthought | delta.md (has the verbs) ~ |
 | Living truth (spec) | prd.md | **specs/ vs changes/** | specs/<feat> | none | optional `.cairn/specs/`; semantic sync pending |
-| Archive lifecycle | status frontmatter | **propose→apply→archive** | — | none | guidance + analyzer warning; helper pending |
+| Archive lifecycle | status frontmatter | **propose→apply→archive** | — | none | guidance + read-only retention helper ✓ |
 | Consistency gate | — | — | **/analyze 6 passes** | — | structured artifact/lifecycle/semantic-claim analysis |
 | Verification gate | checkpoint | deps done | checklist | **Iron Law** | advisory except boundary/analyze scripts |
 | Codebase mapping | document-project | — | — | — | optional scoped codebase maps |
@@ -47,8 +47,9 @@ next — by activation, modes/workflows, artifacts, deterministic automation, me
 2. **Spec↔code semantic analysis v2.** `cairn-analyze.mjs` now checks claim-backed delta/spec
    drift and missing claims on behavior deltas; the next level is inferred extraction from
    arbitrary prose/code without requiring explicit claims.
-3. **Archive/retention helper.** Lifecycle guidance exists. Add a read-only reporter or small
-   helper only after real changes show repeated stale-folder cleanup.
+3. **Archive/apply helper.** `cairn-retention.mjs` now reports completed active changes and
+   archive/delete actions. A future helper may perform reviewed moves, but only if manual
+   cleanup repeats enough to justify mutation.
 
 ### P1 — sharpens correctness & quality
 
@@ -66,7 +67,8 @@ next — by activation, modes/workflows, artifacts, deterministic automation, me
 
 8. **`cairn-next.mjs`** — deterministic "what's the next step" over a change folder (like
    OpenSpec `status --json`): which artifact is missing, what's unchecked. Drives resume.
-9. **Archive/retention helper** — a read-only reporter for stale `.cairn/changes/` folders.
+9. **Reviewed archive/apply helper** — optional mutation layer only if manual archive moves
+   become repeated toil.
 
 ## Where Cairn already leads
 
