@@ -10,13 +10,14 @@ both Codex and Claude."
 
 Read first:
 
-- `.cairn/codebase/eval-harness.md` for the eval owner map.
+- a local `.cairn/codebase/<area>.md` map if one exists (this repo keeps an eval-harness map
+  in its own gitignored `.cairn/`, since the plugin source treats `.cairn/` as local dev state).
 - `scripts/eval-autotrigger.mjs` for runner shape and detection signals.
 - `docs/evals/auto-trigger.md` for protocol and result log.
 - `scripts/validate-cairn.mjs` for release-time checks.
 
-The map removes repeated rediscovery: it names temp fixture ownership, result-file ownership,
-the reason for `R*` realistic cases, and why must-not cases must stay in fast subsets.
+A codebase map removes repeated rediscovery: it names temp fixture ownership, result-file
+ownership, the reason for `R*` realistic cases, and why must-not cases must stay in fast subsets.
 
 ## Classify
 
@@ -45,7 +46,7 @@ node scripts/eval-autotrigger.mjs R5,N2 cairn-fast-codex-0.136-default --jobs 2 
 node scripts/eval-autotrigger.mjs R5,N2 cairn-fast-claude-2.1.159-default --harness claude --jobs 2 --timeout-ms 120000
 node --check scripts/eval-autotrigger.mjs && node --check scripts/validate-cairn.mjs
 node scripts/validate-cairn.mjs
-node plugins/cairn/scripts/cairn-analyze.mjs .cairn/changes/make-cairn-excellent
+node plugins/cairn/scripts/cairn-analyze.mjs .cairn/changes/<slug>   # if a change folder exists locally
 git diff --check
 ```
 
