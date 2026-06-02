@@ -170,17 +170,23 @@ REFUTED / corrected by the verification pass:
 - `SubagentStart` does **not** support `decision:"block"`; use `additionalContext`, block via `SubagentStop`.
 - `--output-schema` works in `codex exec` but **not** `codex exec resume` (open issues #14343, #22998).
 
-- [x] Confirm each row against official docs; confabulated rows dropped (see REFUTED above).
-- [ ] `PreCompact`/SessionStart-`compact` route-state snapshot + reload (Claude) — fixes
-  post-compaction continuity loss. Codex fallback: persist route to `.cairn/` (SQLite is internal).
-- [ ] `skillOverrides: user-invocable-only` to hide inactive skills (Claude); measure
-  system-prompt token drop via `/context all`. Codex: noop.
-- [ ] `SubagentStart` `additionalContext` route-identity injection (Claude); parent-prompt on Codex.
-- [ ] Each adopted capability degrades to a documented noop on the harness that lacks it; parity
-  asymmetries recorded in the matrix, validated by `validate-cairn.mjs`.
+Decision after verification: do **not** inflate the plugin with new runtime hooks that the
+task does not prove the need for (AGENTS.md). Most "levers" don't fit a single-skill router:
 
-Exit: each harness uses its best available lever; no capability hard-fails on the other; the
-matrix is the single source for what is real vs aspirational.
+- [x] Confirm each row against official docs; confabulated rows dropped (see REFUTED above).
+- [x] `skillOverrides` shipped as an install.md tip — not for `cairn` itself (collapsing its
+  `description` would break activation) but to hide *competing* skills that pollute routing.
+  Real activation win; documented, no plugin change.
+- [~] `PreCompact` route snapshot — **skipped**. `SessionStart` already has a `compact` matcher
+  and re-injects the bootstrap; a second hook is redundant and unprovable here.
+- [~] `SubagentStart` identity injection — **skipped**. `cairn-researcher` is already
+  self-contained; broad injection would add noise.
+- [x] Codex enforcement fallback (manual `~/.codex/hooks.json` registration, `plugin_hooks`
+  flag, Issue #17794) documented in install.md.
+
+Exit (met for the parts that fit): Claude's `skillOverrides` lever is documented; the Codex
+gap has a root cause and a fallback; no low-value runtime hooks added. The matrix is the single
+source for what is real vs aspirational.
 
 ### Root cause found for the long-standing Codex live-PreToolUse gap
 

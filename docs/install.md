@@ -42,9 +42,19 @@ codex plugin marketplace add . && codex plugin add cairn@cairn
 
 Verified behavior on Codex: the `SessionStart` hook injects the routing bootstrap, the
 `cairn` skill loads, and it auto-fires on brownfield work — e.g. it routed "there's a bug in
-calc.js" to **diagnose** mode without being named. Not yet verified on Codex: live
-`PreToolUse` mutation-guard blocking; Codex CLI v0.136.0 `exec` file-change smoke did not
-produce a captured `PreToolUse` event.
+calc.js" to **diagnose** mode without being named.
+
+Live `PreToolUse` mutation-guard blocking is **not yet provable on Codex**, and the cause is
+upstream, not Cairn (verified 2026-06-02 against `openai/codex`):
+
+- Plugin-bundled hooks load at runtime only behind the `plugin_hooks` feature flag (PR
+  #19705/#19778). Without it the boundary guard does not enforce automatically. **Fallback:**
+  register the guard manually in `~/.codex/hooks.json` until the flag is GA.
+- File-write ops (`apply_patch`) may not fire `PreToolUse` at all (Issue #17794), so a
+  write-block on Codex stays best-effort until that lands.
+
+Check `plugin_hooks` status in `config.schema.json` on `openai/codex` main before relying on
+plugin-delivered enforcement.
 
 ## Claude Code (validated on v2.1.159)
 
@@ -66,6 +76,21 @@ Marketplace manifest is at `.claude-plugin/marketplace.json`; hooks use the docu
 inventory (skill, agent, SessionStart, PreToolUse), SessionStart injection, PreToolUse allow
 inside repo, PreToolUse block outside repo, and a fast auto-trigger eval through
 `scripts/eval-autotrigger.mjs --harness claude`.
+
+## Reducing routing noise (Claude Code, optional)
+
+Cairn routes by auto-activation. Other installed skills with broad descriptions compete for
+the same prompts and can misfire ahead of Cairn. Claude Code's `skillOverrides` setting
+(`code.claude.com/docs/en/settings`) trims that noise without uninstalling anything:
+
+```jsonc
+// .claude/settings.json — hide or collapse competing skills, keep Cairn fully visible
+{ "skillOverrides": { "some-broad-skill": "off", "another-skill": "name-only" } }
+```
+
+Values: `on` (default), `name-only` (collapse description), `user-invocable-only` (hidden from
+the model, still in the `/` menu), `off`. Do **not** override `cairn` — its directive
+`description` is what drives activation. No Codex equivalent exists yet.
 
 ## Verify locally (no harness)
 
