@@ -150,32 +150,51 @@ the concision rule never fires on a safety/public surface.
 
 ## Phase 8: Harness capability adoption (Principle 5, graceful fallback)
 
-Best feature of each harness, documented asymmetry. All recent-feature claims below are from
-secondary changelogs and MUST be `[confirm]`-ed against official docs before building
-(`code.claude.com/docs/en/hooks`, `developers.openai.com/codex/hooks`).
+Best feature of each harness, documented asymmetry. Claims verified against official docs on
+2026-06-02 (`code.claude.com/docs/en/hooks`, `/skills`, `/settings`; `developers.openai.com/codex/hooks`,
+`/plugins/build`; `github.com/openai/codex` PRs/releases). Verdicts below are CONFIRMED unless noted.
 
-### Capability matrix (to verify, then encode in `build-manifests.mjs`)
+### Capability matrix (verified — encode supported set in `build-manifests.mjs`)
 
 | Capability | Claude Code | Codex | Cairn use |
 | --- | --- | --- | --- |
-| Hide inactive skills from model | `skillOverrides` `[confirm v2.1.141]` | none -> noop | shrink system prompt: expose only active-route skill |
-| Cheapest-point prompt gating | `UserPromptExpansion` `[confirm]` | `UserPromptSubmit` (no per-cmd matcher) | block/augment before inference tokens |
-| Survive compaction | `PreCompact` block-capable `[confirm]` | SQLite memory `[confirm v0.135]` | snapshot active route + in-flight proof |
-| Inject route identity into subagents | `SubagentStart` systemMessage `[confirm v2.1.139]` | subagent identity in hook input `[confirm]` | route constraints at spawn, not via parent prompt |
-| Plugin-bundled hooks | yes | `hooks/hooks.json` `[confirm v0.133]` | zero-config distribution |
-| Per-route tool restriction | skill `disallowed-tools` `[confirm v2.1.152]` | `PreToolUse updatedInput` rewrite `[confirm v0.134]` | static permission enforcement per mode |
+| Hide inactive skills from model | `skillOverrides`: `on`/`name-only`/`user-invocable-only`/`off` ✓ | none -> noop | shrink system prompt: expose only active-route skill |
+| Cheapest-point prompt gating | `UserPromptExpansion` (block, per-command matcher) ✓ | `UserPromptSubmit` (block/augment, **no matcher** — fires on every prompt) ✓ | block/augment before inference tokens |
+| Survive compaction | `PreCompact` (block, `auto`/`manual`) + `SessionStart` `source:"compact"` + `reloadSkills` ✓ | SQLite memory (v0.135.0) ✓ | snapshot active route + in-flight proof |
+| Inject route identity into subagents | `SubagentStart` `additionalContext` ✓ (**cannot block**; block via `SubagentStop`) | none -> parent-prompt fallback | route constraints at spawn, not via parent prompt |
+| Plugin-bundled hooks | yes ✓ | `hooks/hooks.json` + `PLUGIN_ROOT`/`PLUGIN_DATA` ✓ **behind `plugin_hooks` feature flag** (PR #19705) | zero-config distribution |
+| Per-route tool restriction | skill `disallowed-tools` (+ `allowed-tools`) ✓ | `PreToolUse` `updatedInput` rewrite ✓ (**`apply_patch` may not fire** — Issue #17794) | static permission enforcement per mode |
 
-- [ ] Confirm each row against official docs; drop confabulated rows.
-- [ ] `PreCompact`/SessionStart-`compact` route-state snapshot + reload — fixes post-compaction
-  continuity loss (the known failure mode of long router sessions).
-- [ ] `skillOverrides`-style inactive-skill hiding where supported; measure system-prompt token
-  drop via `/context all`.
-- [ ] `SubagentStart` route-identity injection where supported; fall back to parent-prompt on Codex.
+REFUTED / corrected by the verification pass:
+- `continueOnBlock` (PostToolUse) — not in official docs. Dropped. (`updatedToolOutput` is real.)
+- `SubagentStart` does **not** support `decision:"block"`; use `additionalContext`, block via `SubagentStop`.
+- `--output-schema` works in `codex exec` but **not** `codex exec resume` (open issues #14343, #22998).
+
+- [x] Confirm each row against official docs; confabulated rows dropped (see REFUTED above).
+- [ ] `PreCompact`/SessionStart-`compact` route-state snapshot + reload (Claude) — fixes
+  post-compaction continuity loss. Codex fallback: persist route to `.cairn/` (SQLite is internal).
+- [ ] `skillOverrides: user-invocable-only` to hide inactive skills (Claude); measure
+  system-prompt token drop via `/context all`. Codex: noop.
+- [ ] `SubagentStart` `additionalContext` route-identity injection (Claude); parent-prompt on Codex.
 - [ ] Each adopted capability degrades to a documented noop on the harness that lacks it; parity
   asymmetries recorded in the matrix, validated by `validate-cairn.mjs`.
 
 Exit: each harness uses its best available lever; no capability hard-fails on the other; the
 matrix is the single source for what is real vs aspirational.
+
+### Root cause found for the long-standing Codex live-PreToolUse gap
+
+The Phase 1/Phase 4 pending item ("Codex live PreToolUse proof beyond local smoke") has a
+verified two-part cause, not a Cairn bug:
+1. **`plugin_hooks` feature flag** — plugin-bundled hooks were not loaded at runtime until PR
+   #19705/#19778, and remain behind the `plugin_hooks` flag. Without it, a plugin cannot enforce
+   `PreToolUse`; the user must register the hook manually in `~/.codex/hooks.json`.
+2. **`apply_patch` hook gap** — Issue #17794: file-write ops sometimes do not fire
+   `PreToolUse`/`PostToolUse`, which is exactly what the boundary guard needs to intercept.
+
+- [ ] Re-test Codex live PreToolUse once `plugin_hooks` is confirmed GA (check `config.schema.json`
+  on `openai/codex` main). Until then, document the manual-registration fallback in `install.md`.
+- [ ] Track Issue #17794; the boundary guard's write-block on Codex is best-effort until it lands.
 
 ## Phase 9: Consolidation / redundancy cleanup (Principle 7 + 8)
 
