@@ -123,9 +123,28 @@ Exit: brainstorm + research + docs improve quality without recreating ceremony o
 - [x] P0 matrix subset with duration metrics on Codex default and Claude default.
 - [x] Read-only eval scoreboard for choosing the next cheapest useful run.
 - [x] Fast second-model subset on Claude `haiku`; Codex `gpt-5.4-mini` P0 matrix passed.
-- [ ] Same realistic routing subset on >=2 models per harness. Codex `gpt-5.4-mini`
-  diagnostic gaps were cleared by focused retest, but the full realistic rerun is still pending.
+- [x] Codex `default` full realistic (14): 14/14 fired, 14/14 routed, 0 timeouts on v0.136.0
+  (`cairn-realistic-codex-0.136-default-full`). Strongest realistic proof to date.
+- [~] Second small model to 100% realistic: **not reachable, by model capacity.** Codex
+  `gpt-5.4-mini` reruns hold at 12/14 and Claude `haiku` p0-matrix at 1/3 — both miss the
+  **same** cases (R5, R11). See finding below. The `>=2 models at 100%` bar is a large-model
+  bar; small models route the work but skip the `Mode:` contract.
+- [ ] Claude `default` realistic rerun on v2.1.160 (was lossy on 2.1.159: 3 near-timeouts).
+  Deferred — expensive (large model, ~180s/case); run on request.
 - [ ] Publish patterns only after real brownfield usage validates the core assumptions.
+
+### Finding: small models skip the `Mode:` contract on "obvious" work (2026-06-02)
+
+R5 ("investigate why npm test fails, propose smallest fix") and R11 ("simplify auth logic,
+plan first — security boundary") reproducibly fail fire/route detection on **both** small
+models (`gpt-5.4-mini`, `haiku`) while large models pass. The models do the right work — fix
+the bug, build the truth table — but emit no `Mode:` header and skip Output Shape, so the
+detector scores them as not-fired. Bootstrap injection is fine (R10 fires). This is model
+adherence, not activation.
+
+- [ ] Decide: reinforce the `Mode:` header so small models emit it on terse/obvious tasks
+  (bootstrap/SKILL nudge), or accept that Cairn targets capable models and document the floor.
+  Do not over-engineer the contract for the weakest model before real usage asks for it.
 
 ## Phase 7: Token economy / concise comms (Principle 8) — NEXT
 
