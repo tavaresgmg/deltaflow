@@ -41,3 +41,14 @@ verdade canônica fica em código/specs/ADRs versionados; a memória só APONTA.
 
 BMAD `.decision-log.md`; OpenSpec delta/archive; developers.openai.com/codex/memories;
 code.claude.com/docs/en/memory; dev.to/ac12644 (MemGuard). Ver `docs/research/frameworks.md`.
+
+## Update 2026-06-02 — hybrid commit policy
+
+The "work state is the one shareable layer, so version it" stance is refined: `.cairn/` is now
+HYBRID. Commit durable knowledge (`specs/`, `codebase/` maps — living documentation); keep
+process local/gitignored (`changes/`, `decision-log.md`). Durable findings sync from a change
+into `specs/`/`codebase/` at close, so they survive; the planning folder itself does not enter
+the repo. Trade-off: cross-machine/team resume of in-progress work is lost — acceptable, since
+local same-machine resume via the anchor and `tasks.md` is unaffected and durable knowledge
+still travels. Rule owner: `references/artifacts.md`. This repo (plugin source) keeps its whole
+`.cairn/` local. Supersedes the "versioned `.cairn/changes/`" detail above.

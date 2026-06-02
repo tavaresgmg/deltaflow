@@ -92,6 +92,22 @@ Values: `on` (default), `name-only` (collapse description), `user-invocable-only
 the model, still in the `/` menu), `off`. Do **not** override `cairn` — its directive
 `description` is what drives activation. No Codex equivalent exists yet.
 
+## Committing `.cairn/` (hybrid policy)
+
+Cairn's `.cairn/` is hybrid: commit the durable knowledge, keep the process local. Add to your
+project `.gitignore`:
+
+```gitignore
+.cairn/changes/
+.cairn/decision-log.md
+.work/
+```
+
+Commit `.cairn/specs/` and `.cairn/codebase/` — they are living documentation that travels with
+the repo. The `changes/` planning and `decision-log.md` stay local (same-machine resume still
+works via the SessionStart anchor). This plugin's own repo keeps its whole `.cairn/` local
+because it is the plugin source, not a user project.
+
 ## Verify locally (no harness)
 
 ```bash

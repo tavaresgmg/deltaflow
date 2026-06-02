@@ -26,7 +26,7 @@ each file are in `artifacts.md`.
   specs/<capability>.md  # optional living truth for durable behavior
   changes/<slug>/
     brainstorm.md          # tracked-change / when stakes warrant design-before-code
-    research/<topic>.md     # distilled, reusable research summary (committed = memory)
+    research/<topic>.md     # distilled research summary (local; sync durable bits at close)
     brief.md                # discovery
     delta.md                # ADDED / MODIFIED / REMOVED behavior
     plan.md                 # phases, files/owners, proof, rollback
@@ -37,8 +37,8 @@ each file are in `artifacts.md`.
   decision-log.md           # append-only, one line per decision, written DURING the work
 ```
 
-`.cairn/` is committed — research summaries and decisions are reusable memory. The umbrella
-workspace's ephemeral `.work/` layer (Phase 3) is separate and gitignored.
+Commit policy is hybrid: durable knowledge (`specs/`, `codebase/`) committed; process
+(`changes/`, `decision-log.md`) local/gitignored. `.work/` is always gitignored. See `artifacts.md`.
 
 ## Codebase maps
 

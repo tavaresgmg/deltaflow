@@ -8,9 +8,10 @@ monorepo. Each level has one owner. This is the gap no other framework fills.
 | Level | Owns | State |
 | --- | --- | --- |
 | Parent (umbrella) | scope, cross-repo safety, repo map | `AGENTS.md` + ephemeral `.work/HANDOFF.md` |
-| Child repo | its own git, code, tests, build | versioned `.cairn/changes/<slug>/` + ephemeral `.work/last-session` |
+| Child repo | its own git, code, tests, build | committed `.cairn/specs`+`codebase/`, local `.cairn/changes/` + ephemeral `.work/` |
 
-`.cairn/` is committed (durable memory); `.work/` is gitignored (ephemeral session/coordination).
+Commit policy is hybrid: durable `.cairn/specs`+`codebase/` committed; `.cairn/changes/` and
+`decision-log` local; `.work/` gitignored (see `artifacts.md`).
 
 ## Boundary check before any mutation
 
