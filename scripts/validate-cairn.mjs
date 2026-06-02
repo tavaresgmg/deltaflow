@@ -177,8 +177,18 @@ if (!missing.length) {
     }
     if (!/^when_to_use:/m.test(block)) fail("SKILL.md missing when_to_use");
   }
-  for (const needle of ["Classify", "Proof"]) {
+  for (const needle of ["Classify", "Proof", "Reuse before inventing"]) {
     if (!skill.includes(needle)) fail(`SKILL.md missing expected text: ${needle}`);
+  }
+  const frameworkLessons = read("plugins/cairn/skills/cairn/references/framework-lessons.md");
+  for (const needle of ["Anti-Rationalization Red Flags", "Reuse the existing owner"]) {
+    if (!frameworkLessons.includes(needle)) {
+      fail(`framework-lessons.md missing expected text: ${needle}`);
+    }
+  }
+  const modes = read("plugins/cairn/skills/cairn/references/modes.md");
+  if (!modes.includes("reuse/adapt/new")) {
+    fail("modes.md missing reuse/adapt/new decision guidance");
   }
 
   // Hook portability.

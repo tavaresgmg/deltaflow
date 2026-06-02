@@ -74,6 +74,8 @@ Read these references only when needed:
   summarizing a card, listing a script, or opening a file without implementation, planning,
   diagnosis, or investigation should skip Cairn.
 - Evidence first: do not invent IDs, dates, owners, card facts, API behavior, or runtime status.
+- Reuse before inventing: search existing symbols, helpers, docs, specs, and local patterns
+  before adding a new path. If you do not reuse the obvious owner, name why.
 - Research first when external truth can change the plan. Brainstorm, web research, and
   official-docs grounding are first-class but intent-gated (see `references/research.md`):
   skip them on small clear work; ground new libs on the lockfile version, not the newest.

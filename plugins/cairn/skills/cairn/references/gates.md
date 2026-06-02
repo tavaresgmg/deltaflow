@@ -21,6 +21,9 @@ without false positives. They live in `AGENTS.md` / `SKILL.md` as required behav
 - Brainstorm before code when stakes warrant (ADR-0006).
 - Fresh, executable proof before saying "done".
 - Research external truth early when it can change the plan.
+- Reuse existing symbols, helpers, docs, specs, and repo patterns before creating a new path.
+- Check anti-rationalization red flags before closing work that skipped proof, reuse, cleanup,
+  research, or planning.
 
 Do not pretend these are gates. If a deterministic signal becomes available later (e.g. a
 Stop-hook heuristic that checks for a recent proof command), promote it then.

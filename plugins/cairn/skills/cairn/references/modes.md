@@ -46,8 +46,9 @@ Workflow:
 2. Search current external sources when market, library, API, pricing, legal,
    or standards facts can change the decision.
 3. Inspect current repo docs and code before proposing integration shape.
-4. Create or update `.cairn/codebase/<area>.md` only when repeated observation would be costly.
-5. Produce a concise brief with options, recommendation, accepted downside,
+4. Name the likely reuse/adapt/new decision and the reason.
+5. Create or update `.cairn/codebase/<area>.md` only when repeated observation would be costly.
+6. Produce a concise brief with options, recommendation, accepted downside,
    and proof strategy.
 
 Borrow from BMAD's analysis phase, but stop before PRD ceremony unless the
@@ -62,9 +63,10 @@ Workflow:
 1. Identify current behavior from code/docs/runtime.
 2. Write the proposed behavior delta.
 3. Name affected capabilities and contracts.
-4. Create a plan with phases and proof.
-5. Implement and update the delta when reality differs.
-6. Archive or sync final behavior when done.
+4. Name the existing owner or pattern to reuse/adapt, or explain why a new one is needed.
+5. Create a plan with phases and proof.
+6. Implement and update the delta when reality differs.
+7. Archive or sync final behavior when done.
 
 Borrow from OpenSpec's delta model.
 
@@ -82,9 +84,10 @@ Workflow:
 
 1. Create durable change folder.
 2. Capture evidence, scope, gates, rollback, and proof strategy.
-3. Implement in phases.
-4. Verify each boundary.
-5. Archive/sync after completion.
+3. Record reuse/adapt/new decisions before implementation phases that add owners.
+4. Implement in phases.
+5. Verify each boundary.
+6. Archive/sync after completion.
 
 This mode can later delegate to OpenSpec or another formal framework if the
 repo already uses one.

@@ -19,6 +19,7 @@ next — by activation, modes/workflows, artifacts, deterministic automation, me
 | Consistency check | `scripts/cairn-analyze.mjs` | severity-bearing artifact/lifecycle/semantic-claim drift |
 | Next-step reporter | `scripts/cairn-next.mjs` | read-only change-folder state |
 | Research stages | `cairn-version.mjs`, `agents/cairn-researcher.md`, `references/research.md` | lockfile grounding, isolated subagent |
+| Reuse + anti-rationalization guardrails | `SKILL.md`, `framework-lessons.md`, `gates.md` | explicit advisory behavior, validator-guarded |
 | Dual-harness from one source | `build-manifests.mjs`, both marketplaces | install verified on Codex |
 
 ## By dimension
@@ -56,11 +57,7 @@ next — by activation, modes/workflows, artifacts, deterministic automation, me
 4. **Brainstorm gate that bites for `tracked-change`** (from Superpowers/BMAD). Still advisory.
    A heuristic UserPromptSubmit/PreToolUse check: if mode is tracked-change and no
    `brainstorm.md` exists, warn (not hard-block — false positives). Honest middle ground.
-5. **Anti-rationalization red-flags table** (from Superpowers). A short reference listing the
-   "skip the gate" excuses and their rebuttals. Cheap, prose-only, high guardrail value.
-6. **Forced-reuse rule** (brownfield practice). Explicit: "search for an existing function
-   before creating one." One line in Required Behavior + a note in modes.
-7. **Run the full eval suite on Claude Code** too, and on ≥2 models per harness — the fast
+5. **Run the full eval suite on Claude Code** too, and on ≥2 models per harness — the fast
    subset already closes the first activation-validation loop.
 
 ### P2 — automation polish
