@@ -3,6 +3,31 @@
 Data: 2026-06-01. Frente 2 (contexto, eficiência de tokens, packaging/portabilidade,
 auto-trigger, princípios). Destilado verificado; idioma pt-BR (rationale interno).
 
+## Atualização oficial 2026-06-02
+
+Rechecagem em docs oficiais Codex + Claude Code:
+
+- Codex confirma que skills são o formato do workflow e plugins são a unidade instalável;
+  a lista inicial de skills é limitada a ~2% do contexto ou 8.000 caracteres quando a janela
+  é desconhecida. Implicação: `description` curta/front-loaded e `cairn-budget.mjs` continuam
+  sendo P0, não polimento.
+- Codex subagents são explícitos, paralelos e úteis para exploração/testes/logs/sumarização;
+  docs avisam sobre custo maior e cuidado com workflows write-heavy. Implicação: manter
+  subagentes como isolamento de pesquisa/review, não como paralelismo padrão de implementação.
+- Codex hooks são oficiais e plugin-bundled hooks usam trust review; `PreToolUse` cobre
+  Bash, `apply_patch`/Edit/Write e MCP por matcher, mas a prova local ainda manda. Implicação:
+  continuar tratando Codex PreToolUse como documentado mas não publicado como gate provado até
+  smoke local capturar o evento.
+- Claude Code skills carregam o corpo só quando usadas e suportam `context: fork`; plugins
+  namespacem skills. Implicação: não duplicar skill por harness, manter uma fonte e usar fork
+  só para pesquisa/adversarial review quando vale o custo.
+- Claude Code hooks seguem sendo o mecanismo determinístico para enforcement; skills e
+  `CLAUDE.md` continuam sendo instrução, não trava.
+
+Fontes oficiais: developers.openai.com/codex/{skills,hooks,subagents,plugins/build,changelog};
+docs.anthropic.com/en/docs/claude-code/{skills,hooks-guide,sub-agents};
+docs.anthropic.com/en/release-notes/claude-code.
+
 ## Estratégia de contexto
 
 Contexto é recurso finito de alto sinal (Anthropic): performance degrada conforme a

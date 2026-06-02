@@ -621,6 +621,45 @@ if (!missing.length) {
       errors: 0,
       requiredKeys: ["totalDurationMs", "maxDurationMs", "slowCases", "fireMissIds", "routingMissIds", "diagnosticIds", "timeoutIds"],
     },
+    {
+      file: "docs/evals/results/cairn-p0-matrix-codex-0.136-gpt-5.4-mini.jsonl",
+      harness: "codex",
+      model: "gpt-5.4-mini",
+      cases: 6,
+      mustFire: 3,
+      mustFire_fired: 3,
+      mustFire_routedRight: 3,
+      mustNot: 3,
+      mustNot_misfired: 0,
+      errors: 0,
+      requiredKeys: ["totalDurationMs", "maxDurationMs", "slowCases", "fireMissIds", "routingMissIds", "diagnosticIds", "timeoutIds"],
+    },
+    {
+      file: "docs/evals/results/cairn-realistic-codex-0.136-gpt-5.4-mini.jsonl",
+      harness: "codex",
+      model: "gpt-5.4-mini",
+      cases: 14,
+      mustFire: 14,
+      mustFire_fired: 13,
+      mustFire_routedRight: 12,
+      mustNot: 0,
+      mustNot_misfired: 0,
+      errors: 0,
+      requiredKeys: ["totalDurationMs", "maxDurationMs", "slowCases", "fireMissIds", "routingMissIds", "diagnosticIds", "timeoutIds"],
+    },
+    {
+      file: "docs/evals/results/cairn-route-contract-codex-0.136-gpt-5.4-mini-realistic-gaps.jsonl",
+      harness: "codex",
+      model: "gpt-5.4-mini",
+      cases: 4,
+      mustFire: 2,
+      mustFire_fired: 2,
+      mustFire_routedRight: 2,
+      mustNot: 2,
+      mustNot_misfired: 0,
+      errors: 0,
+      requiredKeys: ["totalDurationMs", "maxDurationMs", "slowCases", "fireMissIds", "routingMissIds", "diagnosticIds", "timeoutIds"],
+    },
   ];
   for (const expected of evalExpectations) {
     if (!fs.existsSync(path.join(root, expected.file))) {
@@ -668,8 +707,8 @@ if (!missing.length) {
     if (!Array.isArray(scoreboard.slowCases) || !scoreboard.slowCases.some((row) => row.nearTimeout)) {
       fail("eval-scoreboard.mjs did not surface near-timeout slow cases");
     }
-    if (!scoreboard.nextCommand?.command?.includes("eval-autotrigger.mjs p0-matrix")) {
-      fail("eval-scoreboard.mjs did not emit a p0-matrix next command");
+    if (!scoreboard.nextCommand?.command?.includes("eval-autotrigger.mjs realistic")) {
+      fail("eval-scoreboard.mjs did not return to a realistic next command after Codex mini focused retest");
     }
     const claudeP0 = scoreboard.rows.find((row) => row.label === "cairn-p0-matrix-claude-2.1.159-default");
     if (!claudeP0?.clearedRoutingMissIds?.includes("R11")) {
@@ -678,6 +717,13 @@ if (!missing.length) {
     const codexMiniFast = scoreboard.rows.find((row) => row.label === "cairn-fast-codex-0.136-gpt-5.4-mini");
     if (!codexMiniFast?.clearedRoutingMissIds?.includes("R5")) {
       fail("eval-scoreboard.mjs did not mark Codex mini R5 as cleared by route-contract retest");
+    }
+    const codexMiniRealistic = scoreboard.rows.find((row) => row.label === "cairn-realistic-codex-0.136-gpt-5.4-mini");
+    if (!codexMiniRealistic?.clearedFireMissIds?.includes("R9") || !codexMiniRealistic?.clearedRoutingMissIds?.includes("R14")) {
+      fail("eval-scoreboard.mjs did not mark Codex mini realistic gaps as cleared by focused route-contract retest");
+    }
+    if (!scoreboard.missingCoverage?.includes("codex: fewer than two passing realistic must-fire models")) {
+      fail("eval-scoreboard.mjs must keep full Codex realistic coverage pending after focused retest");
     }
     const realisticClaude = scoreboard.rows.find((row) => row.label === "cairn-realistic-claude-2.1.159-default");
     if (!realisticClaude?.timeoutIds?.includes("R3") || !realisticClaude?.timeoutIds?.includes("R6") || !realisticClaude?.timeoutIds?.includes("R7")) {

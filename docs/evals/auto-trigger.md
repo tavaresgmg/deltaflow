@@ -305,3 +305,26 @@ executed.
   - **Routing: 3/3 expected mode (100%).**
   - **Misfire: 0/3 must-not (0%).**
   - **Slowest:** R10 51.8s, R5 48.9s, R11 40.1s.
+
+- **2026-06-02 — Codex v0.136.0, `gpt-5.4-mini` — P0 matrix (R5,R10,R11,N2,N7,N11).**
+  `docs/evals/results/cairn-p0-matrix-codex-0.136-gpt-5.4-mini.jsonl`.
+  - **Trigger: 3/3 must-fire fired (100%).**
+  - **Routing: 3/3 expected mode (100%).**
+  - **Misfire: 0/3 must-not (0%).**
+  - **Slowest:** R10 68.5s, R11 62.2s, R5 37.4s. This closes the Codex second-model
+    P0 matrix gap; the next Codex gap is realistic must-fire coverage on a second model.
+
+- **2026-06-02 — Codex v0.136.0, `gpt-5.4-mini` — realistic must-fire diagnostic (14).**
+  `docs/evals/results/cairn-realistic-codex-0.136-gpt-5.4-mini.jsonl`.
+  - **Trigger: 13/14 must-fire fired (93%).**
+  - **Routing: 12/14 expected mode (86%).** R9 did not fire; R14 fired but routed to
+    `diagnose` instead of `direct`/`delta-spec`.
+  - **Errors/timeouts: 0/14.** Treat this as diagnostic evidence, not a passing coverage gate.
+
+- **2026-06-02 — route-output contract retest — Codex `gpt-5.4-mini` realistic gaps.**
+  `docs/evals/results/cairn-route-contract-codex-0.136-gpt-5.4-mini-realistic-gaps.jsonl`.
+  - **Trigger: 2/2 must-fire fired (100%).**
+  - **Routing: 2/2 expected mode (100%).** R9 now emits `mode=discovery`; R14 now emits
+    `mode=direct`.
+  - **Misfire: 0/2 must-not (0%).** N10/N12 stayed out of Cairn. This clears the focused
+    diagnostic debt but does not replace a future full realistic rerun.

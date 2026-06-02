@@ -43,9 +43,12 @@ Still pending:
 - [x] Incremental P0 matrix runner/result contract with duration metrics.
 - [x] Claude Code realistic no-fire subset on v2.1.159 default: 0/6 misfires.
 - [x] Second-model fast activation smoke: Claude `haiku` passed; Codex `gpt-5.4-mini`
-  fired but did not emit a parseable route mode.
+  initially fired without a parseable route mode, then passed route-contract and P0 retests.
 - [x] Route-output contract retest: Codex `gpt-5.4-mini` R5 and Claude default R11 now
   emit parseable expected modes.
+- [x] Codex `gpt-5.4-mini` P0 matrix: 3/3 must-fire routed, 0/3 must-not misfires.
+- [x] Codex `gpt-5.4-mini` realistic diagnostic run: 13/14 fired, 12/14 routed, 0 timeouts;
+  focused R9/R14 route-contract retest passed.
 - [x] Confirm the Claude Code PreToolUse guard blocks outside-repo writes live.
 - [ ] Confirm the PreToolUse guard blocks live on Codex, not only via local smoke.
   Latest v0.136.0 `exec` smoke proved the gap: `apply_patch` outside the repo was blocked by
@@ -120,7 +123,7 @@ Exit: brainstorm + research + docs improve quality without recreating ceremony o
   Claude Code broad-fast subset.
 - [x] P0 matrix subset with duration metrics on Codex default and Claude default.
 - [x] Read-only eval scoreboard for choosing the next cheapest useful run.
-- [x] Fast second-model subset on Claude `haiku`; Codex `gpt-5.4-mini` activation passed but
-  routing output needs work.
-- [ ] Same realistic routing subset on >=2 models per harness.
+- [x] Fast second-model subset on Claude `haiku`; Codex `gpt-5.4-mini` P0 matrix passed.
+- [ ] Same realistic routing subset on >=2 models per harness. Codex `gpt-5.4-mini`
+  diagnostic gaps were cleared by focused retest, but the full realistic rerun is still pending.
 - [ ] Publish patterns only after real brownfield usage validates the core assumptions.

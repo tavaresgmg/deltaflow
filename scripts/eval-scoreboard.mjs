@@ -190,15 +190,20 @@ function routeContractClears(rows) {
 function attachClearedState(rows) {
   const cleared = routeContractClears(rows);
   return rows.map((row) => {
+    const clearedFireMissIds = row.fireMissIds.filter((id) => cleared.has(`${row.harness}:${row.model}:${id}`));
+    const unclearedFireMissIds = row.fireMissIds.filter((id) => !cleared.has(`${row.harness}:${row.model}:${id}`));
     const clearedRoutingMissIds = row.routingMissIds.filter((id) => cleared.has(`${row.harness}:${row.model}:${id}`));
     const unclearedRoutingMissIds = row.routingMissIds.filter((id) => !cleared.has(`${row.harness}:${row.model}:${id}`));
     const activeFailures = row.failures.filter((failure) => {
+      if (failure === "fire") return unclearedFireMissIds.length > 0 || row.fireMissIds.length === 0;
       if (failure !== "route") return true;
       return unclearedRoutingMissIds.length > 0 || row.routingMissIds.length === 0;
     });
     const control = row.type === "baseline" || row.variant === "on-clean";
     return {
       ...row,
+      clearedFireMissIds,
+      unclearedFireMissIds,
       clearedRoutingMissIds,
       unclearedRoutingMissIds,
       activeFailures: control ? [] : activeFailures,
@@ -280,7 +285,7 @@ function missingCoverage(rows) {
       .map((row) => row.model));
     if (modelsWithP0.size < 2) gaps.push(`${harness}: fewer than two passing p0-matrix models`);
     const realisticModels = new Set(rows
-      .filter((row) => row.harness === harness && row.type === "realistic" && row.activePass)
+      .filter((row) => row.harness === harness && row.type === "realistic" && row.pass)
       .map((row) => row.model));
     if (realisticModels.size < 2) gaps.push(`${harness}: fewer than two passing realistic must-fire models`);
     const nofireModels = new Set(rows
@@ -297,6 +302,18 @@ function nextCommand(rows) {
     return {
       reason: "Codex has no passing second-model p0-matrix; this is cheaper than the full realistic suite.",
       command: "node scripts/eval-autotrigger.mjs p0-matrix cairn-p0-matrix-codex-0.136-gpt-5.4-mini gpt-5.4-mini --jobs 4 --timeout-ms 150000",
+    };
+  }
+  const codexMiniRealistic = rows.find((row) => row.harness === "codex" && row.model !== "default" && row.type === "realistic");
+  if (codexMiniRealistic && !codexMiniRealistic.activePass) {
+    const missIds = sortedIds(new Set([
+      ...codexMiniRealistic.fireMissIds,
+      ...codexMiniRealistic.unclearedRoutingMissIds,
+    ]));
+    const subset = sortedIds(new Set([...missIds, "N10", "N12"])).join(",");
+    return {
+      reason: `Codex second-model realistic suite has focused diagnostic debt (${missIds.join(",")}); retest only those gaps plus near-misses before rerunning the full suite.`,
+      command: `node scripts/eval-autotrigger.mjs ${subset} cairn-route-contract-codex-0.136-gpt-5.4-mini-realistic-gaps gpt-5.4-mini --jobs 4 --timeout-ms 180000`,
     };
   }
   return {
