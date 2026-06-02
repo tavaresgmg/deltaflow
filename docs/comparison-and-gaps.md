@@ -20,6 +20,7 @@ next — by activation, modes/workflows, artifacts, deterministic automation, me
 | Next-step reporter | `scripts/cairn-next.mjs` | read-only change-folder state |
 | Research stages | `cairn-version.mjs`, `agents/cairn-researcher.md`, `references/research.md` | lockfile grounding, isolated subagent |
 | Reuse + anti-rationalization guardrails | `SKILL.md`, `framework-lessons.md`, `gates.md` | explicit advisory behavior, validator-guarded |
+| Context budget guard | `cairn-budget.mjs`, `validate-cairn.mjs` | always-on bootstrap + progressive references budgeted |
 | Dual-harness from one source | `build-manifests.mjs`, both marketplaces | install verified on Codex |
 
 ## By dimension

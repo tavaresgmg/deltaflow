@@ -92,31 +92,9 @@ Read these references only when needed:
 
 ## Output Shape
 
-Every Cairn-routed response must start with:
+Every Cairn-routed response must start with
+`Mode: <direct|diagnose|discovery|delta-spec|tracked-change>`.
 
-```text
-Mode: <direct|diagnose|discovery|delta-spec|tracked-change>
-```
-
-For small work:
-
-```text
-Mode: ...
-Done/Blocked: ...
-Proof: ...
-Risk: ...
-Next: ...
-```
-
-For planning work:
-
-```text
-Mode: ...
-Why: ...
-Facts: ...
-Open questions: ...
-Plan: ...
-Proof strategy: ...
-```
-
-For incomplete work, name the blocker and the next concrete action.
+For small work, close with Done/Blocked, Proof, Risk, and Next when useful. For planning,
+include Why, Facts, Open questions, Plan, and Proof strategy. For incomplete work, name the
+blocker and the next concrete action.

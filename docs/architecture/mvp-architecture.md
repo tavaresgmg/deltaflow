@@ -53,6 +53,11 @@ reinforced in three layers:
    advisory unless promoted to a deterministic Stop/UserPromptSubmit heuristic. Prose in
    AGENTS.md is advisory.
 
+Context budget is enforced by `plugins/cairn/scripts/cairn-budget.mjs` and
+`node scripts/validate-cairn.mjs`: the always-on bootstrap, the selected `SKILL.md`, each
+reference file, and aggregate reference/package surfaces have explicit word/character budgets.
+This keeps the router small while still using progressive disclosure for deeper guidance.
+
 ## Core flow
 
 ```text

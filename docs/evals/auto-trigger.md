@@ -286,3 +286,10 @@ executed.
   - **Trigger: 1/1 must-fire fired (100%).**
   - **Routing: 1/1 expected mode (100%).** R14 now emits `mode=direct`.
   - **Misfire: 0/1 must-not (0%).** No diagnostics emitted.
+
+- **2026-06-02 — Codex v0.136.0, default model — context-budget SKILL compactness retest.**
+  `docs/evals/results/cairn-p0-matrix-codex-0.136-context-budget.jsonl`.
+  - **Trigger: 3/3 must-fire fired (100%).**
+  - **Routing: 3/3 expected mode (100%).**
+  - **Misfire: 0/3 must-not (0%).**
+  - **Slowest:** R10 51.8s, R5 48.9s, R11 40.1s.

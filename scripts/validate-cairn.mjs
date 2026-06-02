@@ -55,6 +55,7 @@ const required = [
   "plugins/cairn/scripts/cairn-boundary.mjs",
   "plugins/cairn/scripts/cairn-guard.mjs",
   "plugins/cairn/scripts/cairn-analyze.mjs",
+  "plugins/cairn/scripts/cairn-budget.mjs",
   "plugins/cairn/scripts/cairn-next.mjs",
   "plugins/cairn/scripts/cairn-retention.mjs",
   "plugins/cairn/scripts/cairn-version.mjs",
@@ -252,6 +253,25 @@ if (!missing.length) {
     if (!Array.isArray(v.found)) fail("cairn-version.mjs did not emit a found[] array");
   } catch (e) {
     fail(`cairn-version.mjs failed to run: ${e.message}`);
+  }
+
+  // Context budget report: keeps always-on bootstrap and progressive references from bloating.
+  try {
+    const out = execSync("node plugins/cairn/scripts/cairn-budget.mjs --json", {
+      cwd: root,
+      stdio: ["ignore", "pipe", "ignore"],
+    }).toString();
+    const budget = JSON.parse(out);
+    if (!budget.ok) fail("cairn-budget.mjs reported context budget findings");
+    const bootstrap = budget.surfaces.find((row) => row.name === "bootstrap");
+    if (!bootstrap || bootstrap.alwaysOn !== true) {
+      fail("cairn-budget.mjs missing always-on bootstrap surface");
+    }
+    if (!budget.aggregates.some((row) => row.name === "whole-skill-package")) {
+      fail("cairn-budget.mjs missing whole-skill-package aggregate");
+    }
+  } catch (e) {
+    fail(`cairn-budget.mjs failed to run: ${e.message}`);
   }
 
   // State helpers smoke test: must emit valid JSON on a minimal change folder.
@@ -584,6 +604,18 @@ if (!missing.length) {
       mustFire_fired: 1,
       mustFire_routedRight: 1,
       mustNot: 1,
+      mustNot_misfired: 0,
+      errors: 0,
+      requiredKeys: ["totalDurationMs", "maxDurationMs", "slowCases", "fireMissIds", "routingMissIds", "diagnosticIds", "timeoutIds"],
+    },
+    {
+      file: "docs/evals/results/cairn-p0-matrix-codex-0.136-context-budget.jsonl",
+      harness: "codex",
+      cases: 6,
+      mustFire: 3,
+      mustFire_fired: 3,
+      mustFire_routedRight: 3,
+      mustNot: 3,
       mustNot_misfired: 0,
       errors: 0,
       requiredKeys: ["totalDurationMs", "maxDurationMs", "slowCases", "fireMissIds", "routingMissIds", "diagnosticIds", "timeoutIds"],
