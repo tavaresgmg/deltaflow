@@ -50,6 +50,7 @@ function variant(label = "") {
 function runType(label = "") {
   if (label.includes("route-contract")) return "route-contract";
   if (label.includes("p0-matrix")) return "p0-matrix";
+  if (label.includes("infra-lens")) return "infra-lens";
   if (label.includes("realistic-nofire") || label.includes("nofire-after-scope")) return "realistic-nofire";
   if (label.includes("realistic")) return "realistic";
   if (label.includes("broad")) return "broad";
@@ -85,6 +86,11 @@ function idsEqual(a, b) {
   const aa = sortedIds(a);
   const bb = sortedIds(b);
   return aa.length === bb.length && aa.every((id, index) => id === bb[index]);
+}
+
+function rerunNumber(label = "") {
+  const match = label.match(/-rerun-(\d+)$/);
+  return match ? Number(match[1]) : 0;
 }
 
 function derivedIds(summaryIds, cases, predicate) {
@@ -130,6 +136,12 @@ function score(run, file) {
   const fireMissIds = derivedIds(summary.fireMissIds, cases, (row) => row.expectFire === true && row.fireCorrect === false);
   const routingMissIds = derivedIds(summary.routingMissIds, cases, (row) => row.expectFire === true && row.modeCorrect === false);
   const diagnosticIds = derivedIds(summary.diagnosticIds, cases, (row) => row.status !== "ok" || row.fireCorrect === false || row.modeCorrect === false);
+  const clearedIds = type === "route-contract"
+    ? cases
+      .filter((row) => row.expectFire === true && row.status === "ok" && row.fireCorrect === true && row.modeCorrect === true)
+      .map((row) => row.id)
+      .filter(Boolean)
+    : [];
   const errors = summary.errors ?? cases.filter((row) => row.status && row.status !== "ok").length;
   const failures = [];
   if (errors > 0) failures.push("errors");
@@ -143,6 +155,7 @@ function score(run, file) {
   return {
     file: path.relative(ROOT, file),
     label,
+    rerunNumber: rerunNumber(label),
     type,
     variant: variant(label),
     harness: harness.value,
@@ -167,6 +180,7 @@ function score(run, file) {
     routingMissIds,
     diagnosticIds,
     timeoutIds,
+    clearedIds,
     fireRate: mustFire ? fired / mustFire : null,
     routeRate: mustFire ? routed / mustFire : null,
     misfireRate: mustNot ? misfired / mustNot : null,
@@ -177,11 +191,13 @@ function score(run, file) {
 }
 
 function routeContractClears(rows) {
-  const cleared = new Set();
+  const cleared = new Map();
   for (const row of rows) {
-    if (row.type !== "route-contract" || !row.pass) continue;
-    for (const id of row.ids) {
-      cleared.add(`${row.harness}:${row.model}:${id}`);
+    if (row.type !== "route-contract") continue;
+    const ids = row.clearedIds.length ? row.clearedIds : (row.pass ? row.ids : []);
+    for (const id of ids) {
+      const key = `${row.harness}:${row.model}:${id}`;
+      cleared.set(key, Math.max(cleared.get(key) ?? -1, row.rerunNumber ?? 0));
     }
   }
   return cleared;
@@ -189,15 +205,20 @@ function routeContractClears(rows) {
 
 function attachClearedState(rows) {
   const cleared = routeContractClears(rows);
+  const clearsRow = (row, id) => (cleared.get(`${row.harness}:${row.model}:${id}`) ?? -1) >= (row.rerunNumber ?? 0);
   return rows.map((row) => {
-    const clearedFireMissIds = row.fireMissIds.filter((id) => cleared.has(`${row.harness}:${row.model}:${id}`));
-    const unclearedFireMissIds = row.fireMissIds.filter((id) => !cleared.has(`${row.harness}:${row.model}:${id}`));
-    const clearedRoutingMissIds = row.routingMissIds.filter((id) => cleared.has(`${row.harness}:${row.model}:${id}`));
-    const unclearedRoutingMissIds = row.routingMissIds.filter((id) => !cleared.has(`${row.harness}:${row.model}:${id}`));
+    const clearedFireMissIds = row.fireMissIds.filter((id) => clearsRow(row, id));
+    const unclearedFireMissIds = row.fireMissIds.filter((id) => !clearsRow(row, id));
+    const clearedRoutingMissIds = row.routingMissIds.filter((id) => clearsRow(row, id));
+    const unclearedRoutingMissIds = row.routingMissIds.filter((id) => !clearsRow(row, id));
+    const clearedTimeoutIds = row.timeoutIds.filter((id) => clearsRow(row, id));
+    const unclearedTimeoutIds = row.timeoutIds.filter((id) => !clearsRow(row, id));
     const activeFailures = row.failures.filter((failure) => {
       if (failure === "fire") return unclearedFireMissIds.length > 0 || row.fireMissIds.length === 0;
-      if (failure !== "route") return true;
-      return unclearedRoutingMissIds.length > 0 || row.routingMissIds.length === 0;
+      if (failure === "route") return unclearedRoutingMissIds.length > 0 || row.routingMissIds.length === 0;
+      if (failure === "timeout") return unclearedTimeoutIds.length > 0 || row.timeoutIds.length === 0;
+      if (failure === "errors" && row.errors === row.timeoutIds.length) return unclearedTimeoutIds.length > 0 || row.timeoutIds.length === 0;
+      return true;
     });
     const control = row.type === "baseline" || row.variant === "on-clean";
     return {
@@ -206,6 +227,8 @@ function attachClearedState(rows) {
       unclearedFireMissIds,
       clearedRoutingMissIds,
       unclearedRoutingMissIds,
+      clearedTimeoutIds,
+      unclearedTimeoutIds,
       activeFailures: control ? [] : activeFailures,
       activePass: control || activeFailures.length === 0,
     };
@@ -296,12 +319,26 @@ function missingCoverage(rows) {
   return gaps;
 }
 
+function resultFileExists(label) {
+  return fs.existsSync(path.join(RESULTS_DIR, `${label}.jsonl`));
+}
+
+function nextAvailableLabel(base) {
+  if (!resultFileExists(base)) return base;
+  for (let i = 1; i < 100; i += 1) {
+    const candidate = `${base}-rerun-${i}`;
+    if (!resultFileExists(candidate)) return candidate;
+  }
+  throw new Error(`could not find available result label for ${base}`);
+}
+
 function nextCommand(rows) {
   const codexMiniP0 = rows.find((row) => row.harness === "codex" && row.model !== "default" && row.type === "p0-matrix" && row.activePass);
   if (!codexMiniP0) {
+    const label = nextAvailableLabel("cairn-p0-matrix-codex-0.136-gpt-5.4-mini");
     return {
       reason: "Codex has no passing second-model p0-matrix; this is cheaper than the full realistic suite.",
-      command: "node scripts/eval-autotrigger.mjs p0-matrix cairn-p0-matrix-codex-0.136-gpt-5.4-mini gpt-5.4-mini --jobs 4 --timeout-ms 150000",
+      command: `node scripts/eval-autotrigger.mjs p0-matrix ${label} gpt-5.4-mini --jobs 4 --timeout-ms 150000`,
     };
   }
   const codexMiniRealistic = rows.find((row) => row.harness === "codex" && row.model !== "default" && row.type === "realistic");
@@ -309,16 +346,24 @@ function nextCommand(rows) {
     const missIds = sortedIds(new Set([
       ...codexMiniRealistic.fireMissIds,
       ...codexMiniRealistic.unclearedRoutingMissIds,
+      ...codexMiniRealistic.unclearedTimeoutIds,
     ]));
     const subset = sortedIds(new Set([...missIds, "N10", "N12"])).join(",");
+    const label = nextAvailableLabel("cairn-route-contract-codex-0.136-gpt-5.4-mini-realistic-gaps");
+    const repeatedTimeout = rows.some((row) => row.harness === "codex"
+      && row.model === codexMiniRealistic.model
+      && row.type === "route-contract"
+      && row.timeoutIds.some((id) => missIds.includes(id)));
+    const timeoutMs = repeatedTimeout ? 240000 : 180000;
     return {
-      reason: `Codex second-model realistic suite has focused diagnostic debt (${missIds.join(",")}); retest only those gaps plus near-misses before rerunning the full suite.`,
-      command: `node scripts/eval-autotrigger.mjs ${subset} cairn-route-contract-codex-0.136-gpt-5.4-mini-realistic-gaps gpt-5.4-mini --jobs 4 --timeout-ms 180000`,
+      reason: `Codex second-model realistic suite has focused diagnostic debt (${missIds.join(",")}); retest only those gaps plus near-misses before rerunning the full suite.${repeatedTimeout ? " Repeated timeout debt bumps the focused timeout to 240s." : ""}`,
+      command: `node scripts/eval-autotrigger.mjs ${subset} ${label} gpt-5.4-mini --jobs 4 --timeout-ms ${timeoutMs}`,
     };
   }
+  const label = nextAvailableLabel("cairn-realistic-codex-0.136-gpt-5.4-mini");
   return {
     reason: "Next remaining roadmap proof is realistic routing on a second model per harness.",
-    command: "node scripts/eval-autotrigger.mjs realistic cairn-realistic-codex-0.136-gpt-5.4-mini gpt-5.4-mini --jobs 4 --timeout-ms 180000",
+    command: `node scripts/eval-autotrigger.mjs realistic ${label} gpt-5.4-mini --jobs 4 --timeout-ms 180000`,
   };
 }
 

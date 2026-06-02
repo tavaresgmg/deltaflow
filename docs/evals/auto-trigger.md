@@ -42,6 +42,7 @@ node scripts/eval-autotrigger.mjs realistic cairn-realistic-<harness>-<model>
 node scripts/eval-autotrigger.mjs realistic-nofire cairn-realistic-nofire-<harness>-<model>
 node scripts/eval-autotrigger.mjs broad cairn-broad-<harness>-<model>
 node scripts/eval-autotrigger.mjs p0-matrix cairn-p0-matrix-<harness>-<model>
+node scripts/eval-autotrigger.mjs infra-lens cairn-infra-lens-<harness>-<model>
 ```
 
 `p0-matrix` is the cheap recurring regression matrix: `R5,R10,R11,N2,N7,N11`. It covers
@@ -67,6 +68,10 @@ label. Equivalent explicit-output form:
 ```bash
 node scripts/eval-autotrigger.mjs R5,N2 --out docs/evals/results/cairn-fast-codex-0.136-default.jsonl --jobs 2 --timeout-ms 120000
 ```
+
+Result labels are immutable by default. The runner refuses to overwrite an existing JSONL file;
+use a fresh label for reruns, or pass `--overwrite` only when deliberately replacing a known-bad
+result. Use `--dry-run` to validate subset/output selection without starting a harness.
 
 New JSONL runs record `harness`, `harnessVersion`, `model`, `durationMs`, status, trigger
 signals, routing correctness, `totalDurationMs`, `maxDurationMs`, `slowCases`, `fireMissIds`,
@@ -165,6 +170,19 @@ for local development work.
 | N10 | en | OAuth2 PKCE in general | conceptual research, no repo work |
 | N11 | en | run tests and paste output | one-off shell command |
 | N12 | en | cleanup strategy in general | conceptual cleanup, no local task |
+
+## Infra Lens Seed
+
+These cases seed the first domain lens because Phase 16 exposed a real ops/infra bias:
+deploy/teardown work can be classified as high-risk but executed like a direct shell task.
+The scorer still measures routing signals, not proof content; prompts ask for rollback/proof
+language so failed or suspicious answer tails can be reviewed before Cairn adds runtime behavior.
+
+| # | Lang | Prompt focus | Expected mode |
+| --- | --- | --- | --- |
+| I1 | en | deploy failure + rollback planning, no deploy | `diagnose`, `tracked-change`, or `discovery` |
+| I2 | en | Dockerfile/start-script mismatch fix | `diagnose`, `direct`, or `delta-spec` |
+| I3 | en | Docker healthchecks in general | must not fire |
 
 ## Near-miss notes
 
@@ -328,3 +346,26 @@ executed.
     `mode=direct`.
   - **Misfire: 0/2 must-not (0%).** N10/N12 stayed out of Cairn. This clears the focused
     diagnostic debt but does not replace a future full realistic rerun.
+
+- **2026-06-02 — Codex v0.136.0, `gpt-5.4-mini` — realistic must-fire rerun (14).**
+  `docs/evals/results/cairn-realistic-codex-0.136-gpt-5.4-mini-rerun-1.jsonl`.
+  - **Trigger: 14/14 must-fire fired (100%).**
+  - **Routing: 11/14 expected mode (79%).** R7/R13/R14 timed out at 180s and emitted no
+    parseable mode.
+  - **Errors/timeouts: 3/14.** Treat this as stronger activation evidence but not a passing
+    second-model realistic gate. The next useful proof is a focused R7/R13/R14 diagnostic rerun
+    plus near-misses.
+
+- **2026-06-02 — route-output contract retest — Codex `gpt-5.4-mini` realistic gaps rerun 1.**
+  `docs/evals/results/cairn-route-contract-codex-0.136-gpt-5.4-mini-realistic-gaps-rerun-1.jsonl`.
+  - **Trigger: 3/3 must-fire fired (100%).**
+  - **Routing: 1/3 expected mode (33%).** R13 cleared as `discovery`; R7/R14 timed out at 180s.
+  - **Misfire: 0/2 must-not (0%).** N10/N12 stayed out of Cairn.
+
+- **2026-06-02 — route-output contract retest — Codex `gpt-5.4-mini` realistic gaps rerun 2, 240s timeout.**
+  `docs/evals/results/cairn-route-contract-codex-0.136-gpt-5.4-mini-realistic-gaps-rerun-2.jsonl`.
+  - **Trigger: 2/2 must-fire fired (100%).**
+  - **Routing: 1/2 expected mode (50%).** R7 cleared as `discovery`; R14 completed but routed
+    as `diagnose`, outside expected `direct`/`delta-spec`.
+  - **Misfire: 0/2 must-not (0%).** N10/N12 stayed out of Cairn. Remaining Codex mini debt:
+    R14 route/latency variance, not activation.

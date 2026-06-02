@@ -125,28 +125,26 @@ Exit: brainstorm + research + docs improve quality without recreating ceremony o
 - [x] Fast second-model subset on Claude `haiku`; Codex `gpt-5.4-mini` P0 matrix passed.
 - [x] Codex `default` full realistic (14): 14/14 fired, 14/14 routed, 0 timeouts on v0.136.0
   (`cairn-realistic-codex-0.136-default-full`). Strongest realistic proof to date.
-- [~] Second small model to 100% realistic: **not reachable, by model capacity.** Codex
-  `gpt-5.4-mini` reruns hold at 12/14 and Claude `haiku` p0-matrix at 1/3 — both miss the
-  **same** cases (R5, R11). See finding below. The `>=2 models at 100%` bar is a large-model
-  bar; small models route the work but skip the `Mode:` contract.
+- [~] Second-model realistic proof is still pending at the full-run level. Codex
+  `gpt-5.4-mini` has focused route-contract clears, but the latest full realistic rerun
+  (`cairn-realistic-codex-0.136-gpt-5.4-mini-rerun-1`) reached 14/14 fired and only 11/14
+  routed because R7/R13/R14 timed out. Focused retests cleared R13 and R7; R14 now completes
+  under a 240s timeout but routes as `diagnose`, so the second Codex realistic proof remains
+  open as a narrow R14 routing/latency variance.
 - [ ] Claude `default` realistic rerun on v2.1.160 (was lossy on 2.1.159: 3 near-timeouts).
   Deferred — expensive (large model, ~180s/case); run on request.
 - [ ] Publish patterns only after real brownfield usage validates the core assumptions.
 
-### Finding: small models skip the `Mode:` contract on "obvious" work (2026-06-02)
+### Finding: small-model routing misses are variance until proven otherwise (2026-06-02)
 
-R5 ("investigate why npm test fails, propose smallest fix") and R11 ("simplify auth logic,
-plan first — security boundary") reproducibly fail fire/route detection on **both** small
-models (`gpt-5.4-mini`, `haiku`) while large models pass. The models do the right work — fix
-the bug, build the truth table — but emit no `Mode:` header and skip Output Shape, so the
-detector scores them as not-fired. Bootstrap injection is fine (R10 fires). This is model
-adherence, not activation.
+Small-model misses have not been proven to be a capacity limit or a promptable fix. Later
+adversarial review found the earlier "route-contract retest" signal was a same-prompt rerun,
+not a special subset or new enforcement path. Treat the gaps as execution variance until
+repeated real-model runs (n>1) prove a stable pattern.
 
-- [ ] Decide: reinforce the `Mode:` header so small models emit it on terse/obvious tasks
-  (bootstrap/SKILL nudge), or accept that Cairn targets capable models and document the floor.
-  Do not over-engineer the contract for the weakest model before real usage asks for it.
+- [ ] Do not add routing enforcement. Next proof is repeated eval, not a prose hook.
 
-## Phase 7: Token economy / concise comms (Principle 8) — NEXT
+## Phase 7: Token economy / concise comms (Principle 8)
 
 The cheapest, highest-frequency lever: every turn pays. Adapts the "caveman" concise-output
 technique (JuliusBrussee/caveman, wilpel/caveman-compression) without extreme compression.
@@ -164,8 +162,9 @@ technique (JuliusBrussee/caveman, wilpel/caveman-compression) without extreme co
   log the delta. No accuracy regression on the auto-trigger + route-contract suites. (Needs a
   real-model run — deferred to the next eval cycle.)
 
-Exit: routed turns drop measurable output tokens with zero routing/accuracy regression, and
-the concision rule never fires on a safety/public surface.
+Exit target: routed turns drop measurable output tokens with zero routing/accuracy regression,
+and the concision rule never fires on a safety/public surface. Token-delta eval remains deferred
+to the next real-model cycle.
 
 ## Phase 8: Harness capability adoption (Principle 5, graceful fallback)
 
@@ -405,7 +404,7 @@ enforcement. The panel's own output became the proof case for the principle.
 Exit: adversarial+tradeoff is a named principle with the verify-the-refutation clause that this
 very decision exercised; the enforcement question is closed with evidence, not opinion.
 
-## Phase 15: Distribution / launch (not started)
+## Phase 15: Distribution / public launch (deferred)
 
 Deferred by user (2026-06-02): hold public promotion until there is real-model eval proof to show.
 The v0.1.0 GitHub Release is published as **pre-release** as the milestone marker.
@@ -440,8 +439,8 @@ Root cause (3 layers, not one bug):
 - **HANDOFF vs `.cairn` confusion.** Parent `.work/HANDOFF.md` was treated as if it replaced the
   child's change folder.
 
-Fix — flow + contract + honesty, **zero new surface** (a PreToolUse hook is weak here: ops via
-CLI/MCP never trips a file-write guard, and the hook knows neither mode nor slug):
+Fix, part 1 — flow + contract + honesty. A PreToolUse hook is weak here: ops via CLI/MCP never
+trips a file-write guard, and the hook knows neither mode nor slug.
 - [x] `modes.md` — tracked-change step 2 now "scaffold `.cairn/changes/<slug>/` **before any
   mutation**; tick `tasks.md` live, never retroactively; no folder first = not tracked-change."
   Same early-scaffold note added to delta-spec. Cut redundant "Borrow from…" lines to bank budget
@@ -481,13 +480,42 @@ CLI/MCP never trips a file-write guard, and the hook knows neither mode nor slug
 Exit: the create-before-mutate contract lives in flow + skill + honesty red flag, now backed by the
 first deterministic end-of-turn signal — a lever no surveyed framework has.
 
+## Phase 17: Domain lenses inside Cairn (discovery backlog)
+
+Working direction: keep only truly external specialty skills outside Cairn (for now `secrets`
+and media transcription). Common development lenses should be folded into Cairn's proportional
+workflow only when evals or real brownfield usage prove a routing/proof gap.
+
+Candidate lenses to analyze and fold into references/evals:
+
+- `infra`: runtime systems, Docker, deploy, CI/CD, logs, health, SSH, connectors. Seeded as
+  `infra-lens` eval cases (`I1`-`I3`) because Phase 16 exposed a real ops/infra bias.
+- `database`: schema, migrations, ORM, queries, indexes, N+1. Likely needs explicit
+  expand-contract and rollback proof guidance.
+- `ui`: visual validation, screenshots, responsive/accessibility, design-system fit. Likely
+  adds proof expectations for browser/device checks.
+- `testing`: strategy, fixtures, mocks, integration/e2e, TDD when useful. Cairn already says
+  tests are proportional; add sharper test-selection heuristics.
+- `analyze`: zoom-out/diagnose/audit/decide/research modes. Map useful parts onto Cairn modes
+  instead of preserving a parallel router.
+- `product`: MVP, JTBD, prioritization, whether-to-build, user journey. Likely belongs in
+  `discovery` before implementation.
+
+Entry rule: add a lens only with a concrete fixture or dogfood incident showing current Cairn
+guidance is underspecified. Prefer a short lazy reference or eval fixture over inflating
+`SKILL.md`.
+
 ## Sequencing (next cycle)
 
 Each behind the default-light intent gate:
 
-1. **Phase 7** — done (concise output, every turn benefits).
-2. **Phase 9** — done (consolidation, principles deduped).
-3. **Phase 8** — verified; `skillOverrides` + Codex fallback shipped; runtime hooks deferred.
-4. **Phase 10** — methodology gaps: 3 shipped; verify-loop + long-context survival are next.
-5. **Phase 6 eval gaps** continuous — re-run after any `description`/mode/Output-Style change;
-   codex realistic closed (14/14), small-model `Mode:` contract is the open design question.
+1. **Protect eval history** — result labels are immutable by default; use `--overwrite` only for
+   a known-bad file.
+2. **Phase 6 eval gaps** — next cheap proof from the scoreboard is the Codex
+   `gpt-5.4-mini` full realistic rerun; Claude default realistic rerun remains expensive and
+   on-request.
+3. **Phase 17 domain lenses** — start with fixtures, not runtime changes. Add the first lens only
+   when a concrete brownfield case proves current guidance is too vague. `infra-lens` is seeded;
+   run it before editing `SKILL.md`.
+4. **Phase 15 distribution** — still gated on published real-model eval numbers; no launch
+   before evidence.

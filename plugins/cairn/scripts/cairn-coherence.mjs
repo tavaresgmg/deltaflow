@@ -8,26 +8,13 @@
 // exists). A brand-new repo's first change is covered by the prose contract, not this hook.
 //   node cairn-coherence.mjs '{"last_assistant_message":"Mode: tracked-change\n...","cwd":"..."}'
 // Reads the harness Stop event as JSON on stdin (or argv[2] for testing). Exit 2 = block-once.
-import { execSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { resolveCairnBoundary } from "./cairn-workspace.mjs";
 
 // Only these two modes contract a durable change folder (modes.md). direct/diagnose/discovery
 // do not, so declaring them must never trip the check.
 const MODE_RE = /^\s*Mode:\s*(tracked-change|delta-spec)\b/im;
-
-function repoRoot(cwd) {
-  try {
-    return execSync("git rev-parse --show-toplevel", {
-      cwd,
-      stdio: ["ignore", "pipe", "ignore"],
-    })
-      .toString()
-      .trim();
-  } catch {
-    return null;
-  }
-}
 
 // Has the repo adopted Cairn? A `.cairn/` dir means specs/changes/decision-log live here, so a
 // declared mode without a change folder is a real gap. No `.cairn/` = don't nag this project.
@@ -104,13 +91,22 @@ if ((name && !/^stop$/i.test(name)) || event.stop_hook_active === true) {
 }
 
 const text = lastAssistantText(event);
+const cwd = event.cwd || process.cwd();
+const boundary = resolveCairnBoundary(cwd);
+const root = boundary.cairnStateRoot;
+if (!root) process.exit(0); // not in a repo/workspace — nothing to check
+if (boundary.cairnStateScope === "workspace" && boundary.repoRoot && hasCairnDir(boundary.repoRoot)) {
+  process.stderr.write(
+    `Cairn coherence: ${path.join(boundary.repoRoot, ".cairn")} is inside a child repo of marked workspace ${root}. ` +
+      `Move Cairn state under ${path.join(root, ".cairn")} before closing.\n`,
+  );
+  process.exit(2);
+}
+
 const m = text.match(MODE_RE);
 if (!m) process.exit(0);
 
-const cwd = event.cwd || process.cwd();
-const root = repoRoot(cwd);
-if (!root) process.exit(0); // not in a repo — nothing to check
-if (!hasCairnDir(root)) process.exit(0); // repo hasn't adopted Cairn — don't nag unrelated projects
+if (!hasCairnDir(root)) process.exit(0); // project hasn't adopted Cairn — don't nag unrelated projects
 if (hasChangeFolder(root)) process.exit(0);
 
 process.stderr.write(

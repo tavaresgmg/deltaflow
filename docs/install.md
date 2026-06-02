@@ -7,11 +7,9 @@ Cairn ships one plugin from this repo, for both Codex and Claude Code, from one 
 Last checked: 2026-06-02.
 
 - Local Codex: `codex-cli 0.136.0`; npm `@openai/codex` `latest=0.136.0`.
-- Local Claude Code: `2.1.159`; npm `@anthropic-ai/claude-code` `latest=2.1.159`,
-  `next=2.1.160`.
+- Local Claude Code: `2.1.160`; npm `@anthropic-ai/claude-code` `latest=2.1.160`.
 
-Use the `latest` channel for normal validation. Treat `next` as pre-release/forward-looking
-unless a specific eval asks for it.
+Use the `latest` channel for normal validation.
 
 ## Codex (validated on v0.136.0)
 

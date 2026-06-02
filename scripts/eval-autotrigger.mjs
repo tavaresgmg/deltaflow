@@ -5,7 +5,7 @@
 //
 //   node scripts/eval-autotrigger.mjs <subset> <label> [model] [--harness codex|claude] [--jobs N]
 //   node scripts/eval-autotrigger.mjs <subset> --out docs/evals/results/<label>.jsonl [--model MODEL]
-//     subset: "all" | "fire" | "nofire" | "realistic" | "p0-matrix" | comma-separated ids
+//     subset: "all" | "fire" | "nofire" | "realistic" | "p0-matrix" | "infra-lens" | comma-separated ids
 //     label:  output file name under docs/evals/results/<label>.jsonl
 //     model:  optional, passed to codex exec -m or claude --model
 //
@@ -25,7 +25,7 @@ const USAGE = `Usage:
   node scripts/eval-autotrigger.mjs <subset> --out docs/evals/results/<label>.jsonl [--model MODEL]
 
 Subsets:
-  all | fire | nofire | realistic | realistic-nofire | broad | p0-matrix | comma-separated ids
+  all | fire | nofire | realistic | realistic-nofire | broad | p0-matrix | infra-lens | comma-separated ids
 
 Options:
   --harness codex|claude
@@ -33,7 +33,9 @@ Options:
   --timeout-ms MS
   --label LABEL
   --model MODEL
-  --out docs/evals/results/<label>.jsonl`;
+  --out docs/evals/results/<label>.jsonl
+  --dry-run
+  --overwrite`;
 
 function failCli(err) {
   console.error(err?.message || String(err));
@@ -218,7 +220,33 @@ const REALISTIC_MUST_NOT_CASES = [
   },
 ];
 
-const ALL_CASES = [...CASES, ...REALISTIC_CASES, ...REALISTIC_MUST_NOT_CASES];
+const INFRA_LENS_CASES = [
+  {
+    id: "I1",
+    lang: "en",
+    realistic: true,
+    expectFire: true,
+    expectMode: ["diagnose", "tracked-change", "discovery"],
+    prompt: "Investigate the deployment failure in OPS-rollback.md and plan the smallest rollback/proof path. Do not deploy.",
+  },
+  {
+    id: "I2",
+    lang: "en",
+    realistic: true,
+    expectFire: true,
+    expectMode: ["diagnose", "direct", "delta-spec"],
+    prompt: "Fix the Dockerfile/start-script mismatch in this repo and name the local proof command you would run.",
+  },
+  {
+    id: "I3",
+    lang: "en",
+    expectFire: false,
+    expectMode: [],
+    prompt: "Explain Docker healthchecks in general. Do not inspect this repo.",
+  },
+];
+
+const ALL_CASES = [...CASES, ...REALISTIC_CASES, ...REALISTIC_MUST_NOT_CASES, ...INFRA_LENS_CASES];
 const P0_MATRIX_IDS = ["R5", "R10", "R11", "N2", "N7", "N11"];
 const DIAGNOSTIC_LOG_BYTES = 1200;
 
@@ -381,6 +409,37 @@ function setupFixture(fixture, realistic = false, caseId = null) {
       "}",
       "",
     ].join("\n"));
+    if (/^I[12]$/.test(caseId || "")) {
+      fs.mkdirSync(path.join(fixture, "scripts"), { recursive: true });
+      fs.writeFileSync(path.join(fixture, "Dockerfile"), [
+        "FROM node:22-alpine",
+        "WORKDIR /app",
+        "COPY package.json ./",
+        "CMD [\"npm\", \"start\"]",
+        "",
+      ].join("\n"));
+      fs.writeFileSync(path.join(fixture, "docker-compose.yml"), [
+        "services:",
+        "  app:",
+        "    build: .",
+        "    command: npm start",
+        "",
+      ].join("\n"));
+      fs.writeFileSync(path.join(fixture, "scripts/deploy.sh"), [
+        "#!/usr/bin/env sh",
+        "set -eu",
+        "docker compose up --build app",
+        "",
+      ].join("\n"));
+      fs.writeFileSync(path.join(fixture, "OPS-rollback.md"), [
+        "# Ops: deploy rollback",
+        "",
+        "Latest deploy failed after the app image rolled out.",
+        "The container exits immediately with `npm ERR! Missing script: start`.",
+        "Do not deploy from the eval fixture. Identify the likely owner, rollback path, and proof.",
+        "",
+      ].join("\n"));
+    }
   }
   execFileSync("git", ["init", "-q"], { cwd: fixture });
   execFileSync("git", ["add", "-A"], { cwd: fixture });
@@ -561,6 +620,8 @@ function parseArgs(argv) {
     else if (arg.startsWith("--model=")) explicitModel = arg.split("=", 2)[1];
     else if (arg === "--out") explicitOut = requireValue(arg, argv[++i]);
     else if (arg.startsWith("--out=")) explicitOut = arg.split("=", 2)[1];
+    else if (arg === "--dry-run") opts.dryRun = true;
+    else if (arg === "--overwrite") opts.overwrite = true;
     else if (arg.startsWith("--")) throw new Error(`unknown option: ${arg}\n\n${USAGE}`);
     else positional.push(arg);
   }
@@ -608,8 +669,25 @@ async function runPool(subset, opts, onResult) {
   await Promise.all(workers);
 }
 
+function promoteOutput(outTmp, outFile, overwrite) {
+  if (overwrite) {
+    fs.renameSync(outTmp, outFile);
+    return;
+  }
+  try {
+    fs.copyFileSync(outTmp, outFile, fs.constants.COPYFILE_EXCL);
+    fs.unlinkSync(outTmp);
+  } catch (e) {
+    fs.rmSync(outTmp, { force: true });
+    if (e.code === "EEXIST") {
+      throw new Error(`output already exists: ${path.relative(ROOT, outFile)}; use a fresh label or pass --overwrite`);
+    }
+    throw e;
+  }
+}
+
 // main
-const { subsetArg, label, model, harness, jobs, timeoutMs, outFile: parsedOutFile, help } = parseArgs(process.argv.slice(2));
+const { subsetArg, label, model, harness, jobs, timeoutMs, outFile: parsedOutFile, dryRun, overwrite, help } = parseArgs(process.argv.slice(2));
 if (help) {
   console.log(USAGE);
   process.exit(0);
@@ -621,6 +699,7 @@ else if (subsetArg === "nofire") subset = CASES.filter((c) => !c.expectFire);
 else if (subsetArg === "realistic") subset = REALISTIC_CASES;
 else if (subsetArg === "realistic-nofire") subset = REALISTIC_MUST_NOT_CASES;
 else if (subsetArg === "p0-matrix") subset = selectCases(P0_MATRIX_IDS);
+else if (subsetArg === "infra-lens") subset = INFRA_LENS_CASES;
 else if (subsetArg === "broad") subset = [
   ...REALISTIC_CASES.filter((c) => ["R8", "R9", "R10", "R11", "R12", "R13", "R14"].includes(c.id)),
   ...REALISTIC_MUST_NOT_CASES,
@@ -636,6 +715,20 @@ else if (subsetArg !== "all") {
 const outDir = RESULTS_DIR;
 fs.mkdirSync(outDir, { recursive: true });
 const outFile = parsedOutFile || path.join(outDir, `${label}.jsonl`);
+if (!overwrite && fs.existsSync(outFile)) {
+  throw new Error(`output already exists: ${path.relative(ROOT, outFile)}; use a fresh label or pass --overwrite`);
+}
+if (dryRun) {
+  console.log(JSON.stringify({
+    label,
+    subset: subset.map((c) => c.id),
+    harness,
+    model: model || "default",
+    outFile: path.relative(ROOT, outFile),
+    overwrite: Boolean(overwrite),
+  }, null, 2));
+  process.exit(0);
+}
 const outTmp = path.join(outDir, `.${path.basename(outFile, ".jsonl")}.${process.pid}.tmp`);
 fs.writeFileSync(outTmp, ""); // fresh, promoted only after summary is written
 
@@ -675,5 +768,5 @@ const summary = {
   timeoutIds: results.filter((r) => r.status === "timeout").map((r) => r.id),
 };
 fs.appendFileSync(outTmp, JSON.stringify({ summary }) + "\n");
-fs.renameSync(outTmp, outFile);
+promoteOutput(outTmp, outFile, overwrite);
 console.log("\nSUMMARY", JSON.stringify(summary, null, 2));

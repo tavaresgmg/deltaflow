@@ -54,10 +54,11 @@ Ten principles drive every decision (full text in [`docs/PRINCIPLES.md`](docs/PR
 ## One source, both harnesses
 
 Cairn ships a single canonical manifest that generates the Codex and Claude Code plugins, so the
-two never drift. Two deterministic hooks run on both harnesses: a PreToolUse guard blocks writes
-outside the active repo, and an end-of-turn Stop hook nudges you to scaffold the change folder when
-a turn claims a tracked mode without one. Read-only helper scripts report facts (boundary, context
-readiness, drift) while the prose decides. What's enforced vs advisory is stated plainly, never overclaimed.
+two never drift. It bundles a repo-boundary guard and an end-of-turn coherence hook. Claude
+PreToolUse guard is live-proven; Codex Stop hook is live-proven; Codex write-guard parity remains
+best-effort until upstream PreToolUse/plugin-hook behavior is fully reliable. Read-only helper
+scripts report facts (boundary, context readiness, drift) while the prose decides. What's enforced
+vs advisory is stated plainly, never overclaimed.
 
 ## Install
 

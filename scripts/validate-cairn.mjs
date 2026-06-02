@@ -55,6 +55,7 @@ const required = [
   "plugins/cairn/hooks/session-start.sh",
   "plugins/cairn/hooks/hooks.json",
   "plugins/cairn/scripts/cairn-boundary.mjs",
+  "plugins/cairn/scripts/cairn-workspace.mjs",
   "plugins/cairn/scripts/cairn-guard.mjs",
   "plugins/cairn/scripts/cairn-coherence.mjs",
   "plugins/cairn/scripts/cairn-analyze.mjs",
@@ -233,8 +234,63 @@ if (!missing.length) {
     if (!["local", "hybrid", "commit"].includes(b.memoryPolicy)) {
       fail("cairn-boundary.mjs did not emit a valid memoryPolicy");
     }
+    if (!b.cairnStateRoot || !["repo", "workspace"].includes(b.cairnStateScope)) {
+      fail("cairn-boundary.mjs did not emit a valid Cairn state root/scope here");
+    }
   } catch (e) {
     fail(`cairn-boundary.mjs failed to run: ${e.message}`);
+  }
+
+  // Workspace root smoke test: a marked parent workspace owns Cairn state even when commands
+  // run from a child Git repo. Child repos still own Git/build/test, not .cairn state.
+  const tmpWorkspace = fs.mkdtempSync(path.join(fs.realpathSync("/tmp"), "cairn-workspace-"));
+  const workspace = path.join(tmpWorkspace, "workspace");
+  const appRepo = path.join(workspace, "app");
+  const apiRepo = path.join(workspace, "api");
+  try {
+    fs.mkdirSync(path.join(workspace, ".work"), { recursive: true });
+    fs.writeFileSync(path.join(workspace, "AGENTS.md"), "# Workspace\n");
+    fs.mkdirSync(appRepo, { recursive: true });
+    fs.mkdirSync(apiRepo, { recursive: true });
+    execSync("git init -q", { cwd: appRepo, stdio: ["ignore", "ignore", "ignore"] });
+    execSync("git init -q", { cwd: apiRepo, stdio: ["ignore", "ignore", "ignore"] });
+    const fromParent = JSON.parse(execSync(`node ${JSON.stringify(path.join(root, "plugins/cairn/scripts/cairn-boundary.mjs"))} ${JSON.stringify(workspace)}`, {
+      cwd: root,
+      stdio: ["ignore", "pipe", "ignore"],
+    }).toString());
+    const fromChild = JSON.parse(execSync(`node ${JSON.stringify(path.join(root, "plugins/cairn/scripts/cairn-boundary.mjs"))} ${JSON.stringify(appRepo)}`, {
+      cwd: root,
+      stdio: ["ignore", "pipe", "ignore"],
+    }).toString());
+    if (fromParent.isRepo) fail("workspace boundary marked the parent workspace as a Git repo");
+    if (fromParent.workspaceRoot !== workspace || fromParent.cairnStateRoot !== workspace || fromParent.cairnStateScope !== "workspace") {
+      fail("workspace boundary did not use the marked parent as Cairn state root");
+    }
+    if (fromParent.siblingRepos.length !== 2) fail("workspace boundary did not list child repos from parent");
+    if (fromParent.memoryPolicy !== "local") fail("workspace boundary did not mark workspace state as local");
+    if (fromChild.repoRoot !== appRepo || fromChild.workspaceRoot !== workspace || fromChild.cairnStateRoot !== workspace) {
+      fail("workspace boundary from child repo did not resolve parent Cairn state root");
+    }
+    if (fromChild.cairnStateScope !== "workspace" || fromChild.memoryPolicy !== "local") {
+      fail("workspace boundary from child repo did not report workspace/local state");
+    }
+    const gitParent = path.join(tmpWorkspace, "git-parent");
+    const nestedRepo = path.join(gitParent, "nested");
+    fs.mkdirSync(path.join(gitParent, ".work"), { recursive: true });
+    execSync("git init -q", { cwd: gitParent, stdio: ["ignore", "ignore", "ignore"] });
+    fs.mkdirSync(nestedRepo, { recursive: true });
+    execSync("git init -q", { cwd: nestedRepo, stdio: ["ignore", "ignore", "ignore"] });
+    const nested = JSON.parse(execSync(`node ${JSON.stringify(path.join(root, "plugins/cairn/scripts/cairn-boundary.mjs"))} ${JSON.stringify(nestedRepo)}`, {
+      cwd: root,
+      stdio: ["ignore", "pipe", "ignore"],
+    }).toString());
+    if (nested.cairnStateScope !== "repo" || nested.cairnStateRoot !== nestedRepo || nested.workspaceRoot !== null) {
+      fail("workspace boundary treated a Git repo parent with .work/ as a marked workspace");
+    }
+  } catch (e) {
+    fail(`workspace boundary smoke test failed: ${e.message}`);
+  } finally {
+    fs.rmSync(tmpWorkspace, { recursive: true, force: true });
   }
 
   // Guard smoke test: allow inside the repo (exit 0), block outside (exit 2).
@@ -259,6 +315,58 @@ if (!missing.length) {
   if (inside !== 0) fail(`cairn-guard.mjs blocked an in-repo write (exit ${inside})`);
   if (outside !== 2) fail(`cairn-guard.mjs did not block an out-of-repo write (exit ${outside})`);
   if (outsidePatch !== 2) fail(`cairn-guard.mjs did not block an out-of-repo apply_patch (exit ${outsidePatch})`);
+
+  const guardWorkspaceTmp = fs.mkdtempSync(path.join(fs.realpathSync("/tmp"), "cairn-guard-workspace-"));
+  const guardWorkspace = path.join(guardWorkspaceTmp, "workspace");
+  const guardChild = path.join(guardWorkspace, "app");
+  const guardSibling = path.join(guardWorkspace, "api");
+  try {
+    fs.mkdirSync(path.join(guardWorkspace, ".work"), { recursive: true });
+    fs.mkdirSync(guardChild, { recursive: true });
+    fs.mkdirSync(guardSibling, { recursive: true });
+    execSync("git init -q", { cwd: guardChild, stdio: ["ignore", "ignore", "ignore"] });
+    execSync("git init -q", { cwd: guardSibling, stdio: ["ignore", "ignore", "ignore"] });
+    const parentState = runGuard({
+      tool_name: "Edit",
+      tool_input: { file_path: path.join(guardWorkspace, ".cairn/changes/demo/tasks.md") },
+      cwd: guardChild,
+    });
+    const childState = runGuard({
+      tool_name: "Edit",
+      tool_input: { file_path: path.join(guardChild, ".cairn/changes/demo/tasks.md") },
+      cwd: guardChild,
+    });
+    const siblingWrite = runGuard({
+      tool_name: "Edit",
+      tool_input: { file_path: path.join(guardSibling, "README.md") },
+      cwd: guardChild,
+    });
+    const shellChildState = runGuard({
+      tool_name: "Bash",
+      tool_input: { command: "mkdir -p .cairn/changes/demo" },
+      cwd: guardChild,
+    });
+    const shellParentState = runGuard({
+      tool_name: "Bash",
+      tool_input: { command: "mkdir -p ../.cairn/changes/demo" },
+      cwd: guardChild,
+    });
+    const shellReadonly = runGuard({
+      tool_name: "Bash",
+      tool_input: { command: "find . -name .cairn -print" },
+      cwd: guardChild,
+    });
+    if (parentState !== 0) fail(`cairn-guard.mjs blocked workspace parent .cairn state (exit ${parentState})`);
+    if (childState !== 2) fail(`cairn-guard.mjs allowed child repo .cairn under a marked workspace (exit ${childState})`);
+    if (siblingWrite !== 2) fail(`cairn-guard.mjs allowed sibling repo mutation from child cwd (exit ${siblingWrite})`);
+    if (shellChildState !== 2) fail(`cairn-guard.mjs allowed shell-created child repo .cairn under a marked workspace (exit ${shellChildState})`);
+    if (shellParentState !== 0) fail(`cairn-guard.mjs blocked shell-created parent workspace .cairn state (exit ${shellParentState})`);
+    if (shellReadonly !== 0) fail(`cairn-guard.mjs blocked read-only shell inspection of .cairn (exit ${shellReadonly})`);
+  } catch (e) {
+    fail(`workspace guard smoke test failed: ${e.message}`);
+  } finally {
+    fs.rmSync(guardWorkspaceTmp, { recursive: true, force: true });
+  }
 
   // Coherence Stop-hook smoke test: incoherent (declared tracked-change, no change folder in a
   // fresh repo) blocks once (exit 2); coherent and guarded cases pass (exit 0).
@@ -304,6 +412,39 @@ if (!missing.length) {
     fail(`cairn-coherence.mjs smoke test failed: ${e.message}`);
   } finally {
     fs.rmSync(freshRepo, { recursive: true, force: true });
+  }
+
+  const cohWorkspaceTmp = fs.mkdtempSync(path.join(fs.realpathSync("/tmp"), "cairn-coh-workspace-"));
+  const cohWorkspace = path.join(cohWorkspaceTmp, "workspace");
+  const cohChild = path.join(cohWorkspace, "app");
+  const cohSibling = path.join(cohWorkspace, "api");
+  try {
+    fs.mkdirSync(path.join(cohWorkspace, ".work"), { recursive: true });
+    fs.mkdirSync(cohChild, { recursive: true });
+    fs.mkdirSync(cohSibling, { recursive: true });
+    execSync("git init -q", { cwd: cohChild, stdio: ["ignore", "ignore", "ignore"] });
+    execSync("git init -q", { cwd: cohSibling, stdio: ["ignore", "ignore", "ignore"] });
+    const declared = "Mode: tracked-change\n\nWork done.";
+    // Parent not adopted yet and no misplaced child state: stays silent.
+    const workspaceNotAdopted = runCoherence({ hook_event_name: "Stop", last_assistant_message: declared, cwd: cohChild });
+    if (workspaceNotAdopted !== 0) fail(`cairn-coherence.mjs nagged a clean non-adopted workspace (exit ${workspaceNotAdopted})`);
+    // Misplaced child .cairn in a marked workspace is always a declared-mode error.
+    fs.mkdirSync(path.join(cohChild, ".cairn"), { recursive: true });
+    const misplacedChildState = runCoherence({ hook_event_name: "Stop", last_assistant_message: declared, cwd: cohChild });
+    if (misplacedChildState !== 2) fail(`cairn-coherence.mjs did not block misplaced child .cairn in workspace (exit ${misplacedChildState})`);
+    const directMisplacedChildState = runCoherence({ hook_event_name: "Stop", last_assistant_message: "Mode: direct\n\nDone.", cwd: cohChild });
+    if (directMisplacedChildState !== 2) fail(`cairn-coherence.mjs did not block misplaced child .cairn on direct close (exit ${directMisplacedChildState})`);
+    fs.rmSync(path.join(cohChild, ".cairn"), { recursive: true, force: true });
+    fs.mkdirSync(path.join(cohWorkspace, ".cairn"), { recursive: true });
+    const workspaceIncoherent = runCoherence({ hook_event_name: "Stop", last_assistant_message: declared, cwd: cohChild });
+    if (workspaceIncoherent !== 2) fail(`cairn-coherence.mjs did not check parent workspace .cairn changes (exit ${workspaceIncoherent})`);
+    fs.mkdirSync(path.join(cohWorkspace, ".cairn/changes/demo"), { recursive: true });
+    const workspaceCoherent = runCoherence({ hook_event_name: "Stop", last_assistant_message: declared, cwd: cohChild });
+    if (workspaceCoherent !== 0) fail(`cairn-coherence.mjs blocked coherent parent workspace state (exit ${workspaceCoherent})`);
+  } catch (e) {
+    fail(`workspace coherence smoke test failed: ${e.message}`);
+  } finally {
+    fs.rmSync(cohWorkspaceTmp, { recursive: true, force: true });
   }
 
   // Version resolver smoke test: must emit valid JSON with a found[] array.
@@ -794,8 +935,15 @@ if (!missing.length) {
     if (!Array.isArray(scoreboard.slowCases) || !scoreboard.slowCases.some((row) => row.nearTimeout)) {
       fail("eval-scoreboard.mjs did not surface near-timeout slow cases");
     }
-    if (!scoreboard.nextCommand?.command?.includes("eval-autotrigger.mjs realistic")) {
-      fail("eval-scoreboard.mjs did not return to a realistic next command after Codex mini focused retest");
+    if (!scoreboard.nextCommand?.command?.includes("eval-autotrigger.mjs")) {
+      fail("eval-scoreboard.mjs did not emit a next eval command");
+    }
+    if (scoreboard.nextCommand?.command?.includes("realistic-gaps-rerun") && !scoreboard.nextCommand.command.includes("R14")) {
+      fail("eval-scoreboard.mjs focused rerun must include timeout diagnostics such as R14");
+    }
+    const nextLabel = scoreboard.nextCommand?.command?.match(/eval-autotrigger\.mjs\s+\S+\s+([^\s]+)/)?.[1];
+    if (!nextLabel || fs.existsSync(path.join(root, "docs/evals/results", `${nextLabel}.jsonl`))) {
+      fail("eval-scoreboard.mjs next command must use a fresh immutable result label");
     }
     const claudeP0 = scoreboard.rows.find((row) => row.label === "cairn-p0-matrix-claude-2.1.159-default");
     if (!claudeP0?.clearedRoutingMissIds?.includes("R11")) {
@@ -822,7 +970,7 @@ if (!missing.length) {
 
   const evalScript = read("scripts/eval-autotrigger.mjs");
   const evalDocs = read("docs/evals/auto-trigger.md");
-  for (const needle of ["p0-matrix", "answerText", "answerTail", "totalDurationMs", "slowCases", "fireMissIds", "routingMissIds", "diagnosticIds", "timeoutIds", "--out"]) {
+  for (const needle of ["p0-matrix", "infra-lens", "answerText", "answerTail", "totalDurationMs", "slowCases", "fireMissIds", "routingMissIds", "diagnosticIds", "timeoutIds", "--out", "--dry-run", "--overwrite"]) {
     if (!evalScript.includes(needle)) {
       fail(`eval runner missing expected matrix support: ${needle}`);
     }
@@ -838,6 +986,14 @@ if (!missing.length) {
       fail(`eval docs missing broad-scope case ${id}`);
     }
   }
+  for (const id of ["I1", "I2", "I3"]) {
+    if (!new RegExp(`id:\\s*["']${id}["']`).test(evalScript)) {
+      fail(`eval runner missing infra-lens case ${id}`);
+    }
+    if (!new RegExp(`\\|\\s*${id}\\s*\\|`).test(evalDocs)) {
+      fail(`eval docs missing infra-lens case ${id}`);
+    }
+  }
   try {
     const help = execSync("node scripts/eval-autotrigger.mjs --help", {
       cwd: root,
@@ -845,6 +1001,12 @@ if (!missing.length) {
     }).toString();
     if (!help.includes("--out docs/evals/results/<label>.jsonl")) {
       fail("eval runner --help missing explicit --out usage");
+    }
+    if (!help.includes("--overwrite")) {
+      fail("eval runner --help missing explicit --overwrite usage");
+    }
+    if (!help.includes("--dry-run")) {
+      fail("eval runner --help missing explicit --dry-run usage");
     }
   } catch (e) {
     fail(`eval runner --help failed: ${e.message}`);
@@ -864,6 +1026,14 @@ if (!missing.length) {
   expectEvalArgFailure("node scripts/eval-autotrigger.mjs R5,N2 --harness codex", "missing label");
   expectEvalArgFailure("node scripts/eval-autotrigger.mjs R5,N2 --out docs/evals/results/--out.jsonl", "invalid --out filename");
   expectEvalArgFailure("node scripts/eval-autotrigger.mjs R5,N2 --out /tmp/cairn-bad.jsonl", "--out must stay under docs/evals/results");
+  const overwriteProbeRel = `docs/evals/results/validate-overwrite-probe-${process.pid}.jsonl`;
+  const overwriteProbeAbs = path.join(root, overwriteProbeRel);
+  try {
+    fs.writeFileSync(overwriteProbeAbs, "{\"summary\":{\"label\":\"validate-overwrite-probe\"}}\n");
+    expectEvalArgFailure(`node scripts/eval-autotrigger.mjs R5 --dry-run --out ${overwriteProbeRel}`, "output already exists");
+  } finally {
+    fs.rmSync(overwriteProbeAbs, { force: true });
+  }
 
   // Researcher agent frontmatter.
   const agent = read("plugins/cairn/agents/cairn-researcher.md");

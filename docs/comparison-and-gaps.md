@@ -1,6 +1,6 @@
 # Comparison & Gaps
 
-Cairn (competitive snapshot as of Phase 9) vs BMAD, OpenSpec, Spec Kit, Superpowers, ECC/caveman. Anchored in
+Cairn (competitive snapshot through Phase 16) vs BMAD, OpenSpec, Spec Kit, Superpowers, ECC/caveman. Anchored in
 `docs/research/frameworks.md`. Principles: `docs/PRINCIPLES.md`. Goal: what's strong, what's
 genuinely missing, what to build next — by activation, modes/workflows, artifacts,
 deterministic automation, memory, research, token economy.
@@ -16,12 +16,14 @@ deterministic automation, memory, research, token economy.
 | File-based memory + resume | `references/memory.md`, `.cairn/changes/<slug>/` | versioned, read-first/write-incremental |
 | Scoped codebase maps | `references/artifacts.md`, `references/memory.md` | optional, area-based, P0 primitive |
 | Living spec/archive lifecycle | `references/artifacts.md`, `references/gates.md`, `.cairn/specs/` | guidance, semantic claims, and archive flow implemented |
-| Umbrella workspace + boundary guard | `scripts/cairn-boundary.mjs`, `cairn-guard.mjs` | deterministic, PreToolUse-enforced |
-| Consistency check | `scripts/cairn-analyze.mjs` | severity-bearing artifact/lifecycle/semantic-claim drift |
-| Next-step reporter | `scripts/cairn-next.mjs` | read-only change-folder state |
-| Research stages | `cairn-version.mjs`, `agents/cairn-researcher.md`, `references/research.md` | lockfile grounding, isolated subagent |
+| Umbrella workspace + boundary guard | `plugins/cairn/scripts/cairn-boundary.mjs`, `cairn-guard.mjs` | deterministic signal; Claude PreToolUse live-proven, Codex write guard best-effort |
+| Consistency check | `plugins/cairn/scripts/cairn-analyze.mjs` | severity-bearing artifact/lifecycle/semantic-claim drift |
+| Next-step reporter | `plugins/cairn/scripts/cairn-next.mjs` | read-only change-folder state |
+| Coherence Stop hook | `plugins/cairn/scripts/cairn-coherence.mjs`, `plugins/cairn/hooks/hooks.json` | end-of-turn tracked/delta folder check, adoption-gated |
+| Proportional review | `references/review.md` | self-review -> diff-vs-delta -> adversarial reviewer |
+| Research stages | `plugins/cairn/scripts/cairn-version.mjs`, `agents/cairn-researcher.md`, `references/research.md` | lockfile grounding, isolated subagent |
 | Reuse + anti-rationalization guardrails | `SKILL.md`, `framework-lessons.md`, `gates.md` | explicit advisory behavior, validator-guarded |
-| Context budget guard | `cairn-budget.mjs`, `validate-cairn.mjs` | always-on bootstrap + progressive references budgeted |
+| Context budget guard | `plugins/cairn/scripts/cairn-budget.mjs`, `validate-cairn.mjs` | always-on bootstrap + progressive references budgeted |
 | Eval scoreboard | `scripts/eval-scoreboard.mjs`, `validate-cairn.mjs` | read-only coverage/failure/slow-case/next-command surface |
 | Dual-harness from one source | `build-manifests.mjs`, both marketplaces | install verified on Codex |
 
@@ -51,34 +53,31 @@ artifacts, and any number/ID/date/path. It does not adopt the ambiguous `ultra` 
 
 ### P0 — high value, fills a real hole
 
-1. **Broader eval matrix.** Realistic/broad routing is strong on Codex default, and Claude now
-   has realistic no-fire proof plus a full realistic diagnostic run. Codex default and
-   `gpt-5.4-mini` both pass the `p0-matrix`; the mini realistic run produced focused R9/R14
-   debt that passed a route-contract retest, but the full mini realistic rerun remains pending.
-   `eval-scoreboard.mjs` converts JSONL history into current gaps, historical failures,
-   slow-case diagnostics, route-contract clears, and the next cheap command. Still missing:
-   full passing realistic/full suites on >=2 models per harness and Claude second-model P0.
-2. **Spec↔code semantic analysis v2.** `cairn-analyze.mjs` now checks claim-backed delta/spec
-   drift and infers coverage from ordinary behavior prose with code/proof candidates, without
-   trying to become a full NLP/spec engine.
-3. **Archive/apply helper.** `cairn-retention.mjs` now reports completed active changes and
-   archive/delete actions. A future helper may perform reviewed moves, but only if manual
-   cleanup repeats enough to justify mutation.
+1. **Broader eval matrix.** Realistic/broad routing is strong on Codex default. Codex
+   `gpt-5.4-mini` focused diagnostics were cleared once, but the latest full realistic rerun
+   fired 14/14 and routed 11/14 with R7/R13/R14 timeouts, so second-model realistic proof is
+   still open. Focused retests cleared R13 and R7; R14 remains a route/latency variance.
+   Claude active failures remain: `haiku` P0 misses R5/R11, and default realistic has timeouts
+   plus an uncleared R3 route miss. The scoreboard owns the next command and active gaps.
+2. **Result-history protection.** Real-model runs are expensive and JSONL summaries are proof.
+   The eval runner now refuses to overwrite existing labels unless `--overwrite` is explicit.
+3. **Domain lenses from evidence, not taxonomy.** `infra-lens` is seeded because Phase 16
+   exposed a real ops/infra bias. Other lenses (database/ui/testing/product/analyze) should
+   enter as fixtures or lazy references only after dogfood/evals prove current guidance is
+   underspecified.
 
 ### P1 — sharpens correctness & quality
 
-4. **Brainstorm gate that bites for `tracked-change`** (from Superpowers/BMAD). Still advisory.
-   A heuristic UserPromptSubmit/PreToolUse check: if mode is tracked-change and no
-   `brainstorm.md` exists, warn (not hard-block — false positives). Honest middle ground.
-5. **Run the full eval suite on Claude Code** too, and on >=2 models per harness. Claude
-   default has no-fire proof and a diagnostic realistic run; second-model P0/realistic proof
-   is still missing.
+4. **Repeat variance-sensitive evals before prompt changes.** Small-model misses are not yet
+   proven as capacity limits or promptable defects. Re-run before changing `description`,
+   bootstrap, or mode text.
+5. **Run the full eval suite on Claude Code** on current versions when cost is justified.
+   Claude default has no-fire proof and a diagnostic realistic run; second-model P0/realistic
+   proof is still missing.
 
 ### P2 — automation polish
 
-8. **`cairn-next.mjs`** — deterministic "what's the next step" over a change folder (like
-   OpenSpec `status --json`): which artifact is missing, what's unchecked. Drives resume.
-9. **Reviewed archive/apply helper** — optional mutation layer only if manual archive moves
+8. **Reviewed archive/apply helper** — optional mutation layer only if manual archive moves
    become repeated toil.
 
 ## Where Cairn already leads
@@ -93,7 +92,7 @@ artifacts, and any number/ID/date/path. It does not adopt the ambiguous `ultra` 
 
 ## Sequencing
 
-Validate first with the scoreboard, then implement P0 in order 1->2->3, each behind the same
-default-light intent gate so small cards stay cheap. Fold P1 prose/heuristics alongside when
-they are cheap. P2 only once the change-folder lifecycle has real usage. Re-run the eval suite
-after any `description`/mode change to catch regressions.
+Validate first with the scoreboard. Do not tune routing prose from a single small-model miss.
+Prefer a fresh real-model rerun, then add fixtures or a lazy lens reference only when the miss
+repeats or a dogfood incident shows the current guidance is too vague. Re-run the eval suite
+after any `description`/mode/Output-Style change.
