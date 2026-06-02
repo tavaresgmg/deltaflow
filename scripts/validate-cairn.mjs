@@ -56,6 +56,7 @@ const required = [
   "plugins/cairn/hooks/hooks.json",
   "plugins/cairn/scripts/cairn-boundary.mjs",
   "plugins/cairn/scripts/cairn-guard.mjs",
+  "plugins/cairn/scripts/cairn-coherence.mjs",
   "plugins/cairn/scripts/cairn-analyze.mjs",
   "plugins/cairn/scripts/cairn-budget.mjs",
   "plugins/cairn/scripts/cairn-next.mjs",
@@ -214,6 +215,9 @@ if (!missing.length) {
   if (!cmd.includes("PreToolUse") || !cmd.includes("cairn-guard.mjs")) {
     fail("hooks.json must register PreToolUse -> cairn-guard.mjs");
   }
+  if (!cmd.includes("Stop") || !cmd.includes("cairn-coherence.mjs")) {
+    fail("hooks.json must register Stop -> cairn-coherence.mjs");
+  }
 
   // Boundary detector smoke test: must emit valid JSON resolving this repo.
   try {
@@ -255,6 +259,48 @@ if (!missing.length) {
   if (inside !== 0) fail(`cairn-guard.mjs blocked an in-repo write (exit ${inside})`);
   if (outside !== 2) fail(`cairn-guard.mjs did not block an out-of-repo write (exit ${outside})`);
   if (outsidePatch !== 2) fail(`cairn-guard.mjs did not block an out-of-repo apply_patch (exit ${outsidePatch})`);
+
+  // Coherence Stop-hook smoke test: incoherent (declared tracked-change, no change folder in a
+  // fresh repo) blocks once (exit 2); coherent and guarded cases pass (exit 0).
+  const runCoherence = (event) => {
+    try {
+      execSync(`node plugins/cairn/scripts/cairn-coherence.mjs ${JSON.stringify(JSON.stringify(event))}`, {
+        cwd: root,
+        stdio: ["ignore", "ignore", "ignore"],
+      });
+      return 0;
+    } catch (e) {
+      return e.status ?? 1;
+    }
+  };
+  const freshRepo = fs.mkdtempSync(path.join(fs.realpathSync("/tmp"), "cairn-coh-"));
+  try {
+    execSync("git init -q", { cwd: freshRepo, stdio: ["ignore", "ignore", "ignore"] });
+    const declared = "Mode: tracked-change\n\nWork done.";
+    // No folder yet: declared mode blocks once; guard + non-folder modes still pass.
+    const incoherent = runCoherence({ hook_event_name: "Stop", last_assistant_message: declared, cwd: freshRepo });
+    if (incoherent !== 2) fail(`cairn-coherence.mjs did not block a declared mode with no change folder (exit ${incoherent})`);
+    const looped = runCoherence({ hook_event_name: "Stop", last_assistant_message: declared, cwd: freshRepo, stop_hook_active: true });
+    if (looped !== 0) fail(`cairn-coherence.mjs did not respect stop_hook_active (exit ${looped})`);
+    const directMode = runCoherence({ hook_event_name: "Stop", last_assistant_message: "Mode: direct\n\nFixed.", cwd: freshRepo });
+    if (directMode !== 0) fail(`cairn-coherence.mjs blocked a non-folder mode (direct) (exit ${directMode})`);
+    // Claude Code path: no last_assistant_message, read the Mode line from a transcript tail.
+    const transcript = path.join(freshRepo, "transcript.jsonl");
+    fs.writeFileSync(transcript, [
+      JSON.stringify({ type: "user", message: { role: "user", content: "do the migration" } }),
+      JSON.stringify({ type: "assistant", message: { role: "assistant", content: [{ type: "text", text: "Mode: tracked-change\n\nStarting." }] } }),
+    ].join("\n") + "\n");
+    const viaTranscript = runCoherence({ hook_event_name: "Stop", transcript_path: transcript, cwd: freshRepo });
+    if (viaTranscript !== 2) fail(`cairn-coherence.mjs did not read declared mode from transcript tail (exit ${viaTranscript})`);
+    // Folder present: coherent, passes.
+    fs.mkdirSync(path.join(freshRepo, ".cairn/changes/demo"), { recursive: true });
+    const coherent = runCoherence({ hook_event_name: "Stop", last_assistant_message: declared, cwd: freshRepo });
+    if (coherent !== 0) fail(`cairn-coherence.mjs blocked when a change folder exists (exit ${coherent})`);
+  } catch (e) {
+    fail(`cairn-coherence.mjs smoke test failed: ${e.message}`);
+  } finally {
+    fs.rmSync(freshRepo, { recursive: true, force: true });
+  }
 
   // Version resolver smoke test: must emit valid JSON with a found[] array.
   try {

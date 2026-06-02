@@ -454,13 +454,23 @@ CLI/MCP never trips a file-write guard, and the hook knows neither mode nor slug
 - [x] `workspace.md` — explicit: the parent HANDOFF coordinates but does **not** replace a child's
   `.cairn/changes/<slug>/`; a tracked-change in a child still scaffolds before mutating.
 
-Tracked candidate (not built): a Stop-hook coherence check (warn at turn close if a response
-declared `tracked-change`/`delta-spec` but no `.cairn/changes/<slug>/` exists). Deterministic on a
-filesystem fact, unlike prose-parsing. Needs confirmation of Codex Stop-hook support + a user
-decision; same narrow-coverage/false-positive tradeoff as the Phase 14 file-state gate.
+- [x] **Deterministic signal shipped — coherence `Stop` hook** (`scripts/cairn-coherence.mjs`).
+  Research (2026-06-02, primary-source survey of OpenSpec/BMAD/Spec Kit/Superpowers) showed **none**
+  of the four force proactive folder creation deterministically — all stop at scaffold-on-setup +
+  optional script + validate-of-structure + prose. The one lever none of them has: an **end-of-turn
+  coherence check**. Codex CLI confirmed to support `Stop` hooks (developers.openai.com/codex/hooks),
+  same as Claude Code, so it is portable from the existing `hooks/hooks.json`. The hook reads the
+  turn's declared `Mode:` (Codex `last_assistant_message`; Claude Code transcript tail) and, if it is
+  `tracked-change`/`delta-spec` with no `.cairn/changes/<slug>/`, blocks the close once (exit 2,
+  `stop_hook_active`-guarded) to force scaffolding. Promotes the signal `gates.md` reserved.
+  *Tradeoff (named):* coarse (fires on "zero folders", not "wrong folder"); transcript-tail parsing
+  is best-effort; Codex `Stop` parity is doc-supported, not live-proven — pending like the guard.
+  *Proof:* `validate-cairn.mjs` smoke test (incoherent→exit 2, transcript-tail→exit 2,
+  `stop_hook_active`→0, non-folder mode→0, folder-present→0); built dogfood — scaffolded
+  `.cairn/changes/coherence-stop-hook/` before mutating, per this phase's own contract.
 
-Exit: the create-before-mutate contract lives in flow + skill + honesty red flag; the failure is
-documented as the compounding-context lesson (Principle 9), not patched with a hook that wouldn't fire.
+Exit: the create-before-mutate contract lives in flow + skill + honesty red flag, now backed by the
+first deterministic end-of-turn signal — a lever no surveyed framework has.
 
 ## Sequencing (next cycle)
 

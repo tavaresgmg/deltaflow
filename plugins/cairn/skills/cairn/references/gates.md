@@ -10,11 +10,14 @@ advisory; only hooks and scripts enforce. This file is explicit about which is w
   event whose target is outside the active repo root — the main multi-repo footgun. Override:
   `CAIRN_ALLOW_CROSS_REPO=1`.
 - **Consistency check** — `scripts/cairn-analyze.mjs .cairn/changes/<slug>` reports internal
-  drift in a change folder with severity-bearing findings. It can also scan active changes with
-  `--all .cairn/changes`. For a finished change it emits a `verify` verdict
-  (completeness/coherence/proof → `verified`|`incomplete`|`drift`) — the spec→code loop closure,
-  aggregated from the findings, never running the proof commands. Read-only; run before
-  claiming a change is complete.
+  drift in a change folder (or `--all .cairn/changes`). For a finished change it emits a `verify`
+  verdict (completeness/coherence/proof → `verified`|`incomplete`|`drift`) — the spec→code loop
+  closure, never running the proof commands. Read-only; run before claiming a change complete.
+- **End-of-turn coherence** — `scripts/cairn-coherence.mjs`, a `Stop` hook. If the turn declared
+  `Mode: tracked-change|delta-spec` but no `.cairn/changes/<slug>/` exists, it blocks the close
+  once (exit 2 + stderr) to force scaffolding. Not a hard gate: `stop_hook_active`
+  guards looping, so a Mode line in read-only Q&A gets one nudge then closes. Codex `Stop` parity
+  doc-supported, not live-proven — pending.
 
 ## Advisory (not deterministically enforceable)
 
@@ -33,8 +36,8 @@ without false positives. They live in `AGENTS.md` / `SKILL.md` as required behav
   release, deploy, publish, or any team/customer-facing or destructive action. Cairn sees no
   tool call for these, so they cannot be hard-gated — required behavior, not an enforced gate.
 
-Do not pretend these are gates. If a deterministic signal becomes available later (e.g. a
-Stop-hook heuristic that checks for a recent proof command), promote it then.
+Do not pretend these are gates. When a deterministic signal becomes available, promote it — the
+coherence Stop-hook above is one such promotion.
 
 ## Spec ↔ code reconciliation
 

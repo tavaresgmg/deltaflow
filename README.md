@@ -54,9 +54,10 @@ Ten principles drive every decision (full text in [`docs/PRINCIPLES.md`](docs/PR
 ## One source, both harnesses
 
 Cairn ships a single canonical manifest that generates the Codex and Claude Code plugins, so the
-two never drift. A deterministic PreToolUse guard blocks writes outside the active repo — the main
-multi-repo footgun — and read-only helper scripts report facts (boundary, context readiness, drift)
-while the prose decides. What's enforced vs advisory is stated plainly, never overclaimed.
+two never drift. Two deterministic hooks run on both harnesses: a PreToolUse guard blocks writes
+outside the active repo, and an end-of-turn Stop hook nudges you to scaffold the change folder when
+a turn claims a tracked mode without one. Read-only helper scripts report facts (boundary, context
+readiness, drift) while the prose decides. What's enforced vs advisory is stated plainly, never overclaimed.
 
 ## Install
 
@@ -78,9 +79,10 @@ Full setup, memory-policy presets, and local development: [`docs/install.md`](do
 
 ## Status
 
-**Experimental.** Phases 0–14 built and locally validated (`node scripts/validate-cairn.mjs` —
-38 files green). Verified live on Codex CLI `0.136.0` and Claude Code `2.1.159`. Open items —
-real-model eval runs and Codex live PreToolUse enforcement — are tracked in the roadmap.
+**Experimental.** Phases 0–16 built and locally validated (`node scripts/validate-cairn.mjs` —
+39 files green). Verified live on Codex CLI `0.136.0` and Claude Code `2.1.159` (PreToolUse guard
+confirmed firing). Open items — real-model eval runs and Codex live hook enforcement — are tracked
+in the roadmap.
 
 - Roadmap & live proof: [`docs/roadmap.md`](docs/roadmap.md)
 - Activation evals: [`docs/evals/auto-trigger.md`](docs/evals/auto-trigger.md)
