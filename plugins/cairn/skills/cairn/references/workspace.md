@@ -48,7 +48,9 @@ is not.
 
 A task spanning 2+ repos is coordinated from the parent `.work/HANDOFF.md` and lands as
 **separate PRs/MRs per repo** — never one across repos. Each child's `.cairn/` records its own
-slice; the parent handoff records the cross-repo intent and sequencing.
+slice; the parent handoff records the cross-repo intent and sequencing. The HANDOFF coordinates;
+it does **not** replace a child's `.cairn/changes/<slug>/`. A tracked-change in a child still
+scaffolds that folder before mutating, even when a parent handoff exists.
 
 ## Templates
 

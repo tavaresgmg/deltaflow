@@ -69,8 +69,8 @@ Read these references only when needed:
 
 - Brownfield first: inspect the current system before proposing architecture.
 - Not card-only: route rough ideas, no-card tasks, greenfield-in-repo, research, cleanup,
-  simplification, implementation, SDD/spec work, and repo-pattern alignment through the same
-  proportional mode ladder.
+  implementation, SDD/spec work, and repo-pattern alignment through the same proportional
+  mode ladder.
 - Read-only repo questions are not development work by themselves: explaining a file,
   summarizing a card, listing a script, or opening a file without implementation, planning,
   diagnosis, or investigation should skip Cairn.
@@ -85,8 +85,9 @@ Read these references only when needed:
 - Do not create PRD/spec/plan artifacts for small direct work.
 - Do not implement before discovery when the request is vague and the wrong thing could be built.
 - Do not impose TDD universally. Use tests proportional to risk and local patterns.
-- Resume from state: on existing `.cairn/changes/<slug>/` work, read `tasks.md` and the
-  `decision-log.md` tail before acting; tick `tasks.md` incrementally, not at the end.
+- delta-spec/tracked-change: scaffold `.cairn/changes/<slug>/` before mutating; tick
+  `tasks.md` live, never back-fill. No folder first = not that mode.
+- Resume: on existing `.cairn/changes/<slug>/`, read `tasks.md` + `decision-log.md` tail first.
 - Before saying done, provide fresh proof and run `cairn-analyze.mjs` on any change folder.
 - A PreToolUse guard blocks writes outside the active repo; do not work around it without
   confirming the target repo is intended.

@@ -424,6 +424,44 @@ Prerequisite chain: publish real-model eval → promote release pre-release → 
 
 Exit: launched with evidence (eval numbers) rather than claims; the first impression is spent well.
 
+## Phase 16: Dogfooding fix — `.cairn/` not materialized during a tracked-change
+
+Real Codex dogfooding case (2026-06-02): Cairn classified an ops/teardown task as `tracked-change`
+but created no `.cairn/changes/<slug>/` during the work — the folder appeared only retroactively
+when prompted, with Options/Tradeoff written after the fact (process theater: asserting
+design-before-code that did not happen — violates Principle 3/10).
+
+Root cause (3 layers, not one bug):
+- **Invisible artifact.** The mode step "create durable change folder" was weak and not early,
+  and Output Shape never required *naming* the artifact — so the agent optimized for what is
+  visible and verified (`Mode:`, proof) and silently dropped the invisible folder.
+- **Ops/infra bias.** Teardown/deploy "feels like commands," so the agent labels `tracked-change`
+  but operates like `direct`.
+- **HANDOFF vs `.cairn` confusion.** Parent `.work/HANDOFF.md` was treated as if it replaced the
+  child's change folder.
+
+Fix — flow + contract + honesty, **zero new surface** (a PreToolUse hook is weak here: ops via
+CLI/MCP never trips a file-write guard, and the hook knows neither mode nor slug):
+- [x] `modes.md` — tracked-change step 2 now "scaffold `.cairn/changes/<slug>/` **before any
+  mutation**; tick `tasks.md` live, never retroactively; no folder first = not tracked-change."
+  Same early-scaffold note added to delta-spec. Cut redundant "Borrow from…" lines to bank budget
+  (attribution is owned by `framework-lessons.md`, Principle 4).
+- [x] `SKILL.md` — Required Behavior now mandates scaffold-before-mutation + live ticks + "no
+  folder first = not that mode" for delta-spec/tracked-change.
+- [x] `framework-lessons.md` — red flag: "I'll write the change folder after the work" →
+  narrative-after-code; if already mutated, record it as honest post-hoc, never stage tradeoffs
+  you never weighed (Principle 3/10).
+- [x] `workspace.md` — explicit: the parent HANDOFF coordinates but does **not** replace a child's
+  `.cairn/changes/<slug>/`; a tracked-change in a child still scaffolds before mutating.
+
+Tracked candidate (not built): a Stop-hook coherence check (warn at turn close if a response
+declared `tracked-change`/`delta-spec` but no `.cairn/changes/<slug>/` exists). Deterministic on a
+filesystem fact, unlike prose-parsing. Needs confirmation of Codex Stop-hook support + a user
+decision; same narrow-coverage/false-positive tradeoff as the Phase 14 file-state gate.
+
+Exit: the create-before-mutate contract lives in flow + skill + honesty red flag; the failure is
+documented as the compounding-context lesson (Principle 9), not patched with a hook that wouldn't fire.
+
 ## Sequencing (next cycle)
 
 Each behind the default-light intent gate:

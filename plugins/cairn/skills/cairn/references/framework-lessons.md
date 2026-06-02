@@ -39,3 +39,4 @@ stale. Reuse the existing owner before creating a new one.
 | "The map was stale but I worked around it." | Fix the context that misled you — map, spec, `AGENTS.md` — not just the code (Principle 9). Ask what context was missing, not whose prompt was wrong. |
 | "I'm confident this is right." | Name the strongest counter-case and the downside you accept before committing (Principle 10). Confidence with no named downside is the tell. |
 | "The review (or refutation) says so, so it's settled." | A critique can be as wrong as the claim — verify it against primary evidence before acting (Principle 10). A refutation is a hypothesis. |
+| "I'll write the change folder after the work." | Narrative-after-code. Scaffold `.cairn/changes/<slug>/` before acting; if already mutated, record it as post-hoc (decision-log + proof) — never stage tradeoffs you never weighed (Principle 3/10). |

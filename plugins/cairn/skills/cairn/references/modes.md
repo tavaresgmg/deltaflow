@@ -63,10 +63,7 @@ Workflow:
 4. Name the likely reuse/adapt/new decision and the reason.
 5. Create or update `.cairn/codebase/<area>.md` only when repeated observation would be costly.
 6. Produce a concise brief with options, recommendation, accepted downside,
-   and proof strategy.
-
-Borrow from BMAD's analysis phase, but stop before PRD ceremony unless the
-change is large enough to justify it.
+   and proof strategy. Stop before PRD ceremony unless the change justifies it.
 
 ## Delta Spec
 
@@ -82,7 +79,7 @@ Workflow:
 6. Implement and update the delta when reality differs.
 7. Archive or sync final behavior when done.
 
-Borrow from OpenSpec's delta model.
+Create `.cairn/changes/<slug>/` and write `delta.md` before mutating; tick `tasks.md` live.
 
 ## Tracked Change
 
@@ -97,13 +94,11 @@ Use when work crosses boundaries:
 Workflow:
 
 1. Ground on repo constraints first (`AGENTS.md`, lockfile, conventions, existing specs).
-2. Create durable change folder.
+2. Scaffold `.cairn/changes/<slug>/` **before any mutation** (infra, deploy, or edit); tick
+   `tasks.md` live, never retroactively. No folder before you act = not tracked-change.
 3. Capture evidence, scope, gates, rollback, and proof strategy.
 4. Record reuse/adapt/new decisions before implementation phases that add owners.
 5. Implement in phases.
 6. Verify each boundary.
 7. Adversarial review (mandatory) — isolated subagent, writer ≠ reviewer. See `review.md`.
 8. Archive/sync after completion.
-
-This mode can later delegate to OpenSpec or another formal framework if the
-repo already uses one.
