@@ -31,8 +31,7 @@ stay direct.
    only when a release/public claim needs them. `cairn-analyze.mjs` checks coherence; it does not
    replace executable proof.
 8. **Close and sync.** Reconcile durable learnings into the right owner: roadmap for next work,
-   `docs/research/evolution-radar.md` for source ledger updates, `docs/research/frameworks.md` for
-   framework-specific findings, principles only for durable rules, plugin references only for agent
+   `docs/RESEARCH.md` for source-ledger and framework findings, principles only for durable rules, plugin references only for agent
    operations, and eval docs/results only for measured behavior.
 
 ## Research Lenses

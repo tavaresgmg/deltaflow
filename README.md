@@ -27,17 +27,6 @@ Code from a single source**.
 - Not a magic autonomous coding framework.
 - Not a broad CLI; deterministic scripts exist only where repeated toil proves the need.
 
-## Why
-
-Most agent workflow frameworks overfit one extreme:
-
-- **Too little structure** — chat-only plans rot across sessions; reviewers can't see intent.
-- **Too much structure** — every card becomes a mini product program drowning in artifacts.
-
-Cairn's answer is **proportional depth**: tiny tasks stay tiny; research, specs, greenfield, and
-high-risk work get only the structure their risk justifies. Brownfield is the default posture —
-inspect the existing system before proposing architecture.
-
 ## The five modes
 
 | Mode | Use when | Artifacts |
@@ -48,8 +37,7 @@ inspect the existing system before proposing architecture.
 | `delta-spec` | a medium brownfield behavior change | brief, delta, plan, proof |
 | `tracked-change` | multi-phase, high-risk, cross-boundary, customer-visible | durable change folder |
 
-The loop is the same every time: **Observe → Classify → Act → Verify → Close**. Proof scales with
-risk, and artifacts are deleted, archived, or synced — never left as clutter.
+The loop is the same every time: **Observe → Classify → Act → Verify → Close**.
 
 ## Principles
 
@@ -67,13 +55,6 @@ Eleven principles drive every decision (full text in [`docs/PRINCIPLES.md`](docs
 10. Structured signals before text matching
 11. Adversarial by default
 
-## One source, both harnesses
-
-Cairn ships a single canonical manifest that generates the Codex and Claude Code plugins, so the
-two never drift. It bundles a repo-boundary guard and an end-of-turn coherence hook; read-only
-helper scripts report facts (boundary, context readiness, drift) while the prose decides. What's
-enforced vs advisory is stated plainly, never overclaimed — per-harness status below.
-
 ## Install
 
 **Codex**
@@ -90,18 +71,18 @@ codex plugin add cairn@cairn
 /plugin install cairn@cairn
 ```
 
-Full setup, memory-policy presets, and local development: [`docs/install.md`](docs/install.md).
+Full setup, memory-policy presets, and local development: [`docs/INSTALL.md`](docs/INSTALL.md).
 
 ## Status
 
 **Experimental.** Structural validation passes locally. Claude PreToolUse guard and Codex Stop hook
 are live-proven; Codex write-guard parity is pending upstream behavior. Full per-harness enforcement
-status lives in the agent integration contract (below); model-eval gaps in the eval docs.
+status lives in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) (Harness status); model-eval gaps in the eval docs.
 
 - Changelog: [`CHANGELOG.md`](CHANGELOG.md)
-- Roadmap & live proof: [`docs/roadmap.md`](docs/roadmap.md)
+- Roadmap & live proof: [`docs/ROADMAP.md`](docs/ROADMAP.md)
 - Activation evals: [`docs/evals/auto-trigger.md`](docs/evals/auto-trigger.md)
-- Agent integration contract: [`docs/architecture/agent-integration-contract.md`](docs/architecture/agent-integration-contract.md)
+- Architecture & harness status: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - Principles: [`docs/PRINCIPLES.md`](docs/PRINCIPLES.md)
 
 ## License

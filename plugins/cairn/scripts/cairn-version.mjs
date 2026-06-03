@@ -1,4 +1,4 @@
-// Resolve the LOCKFILE version of a dependency (ADR-0006: ground docs on the locked version,
+// Resolve the LOCKFILE version of a dependency (Decision 6: ground docs on the locked version,
 // not the newest). Read-only; scans common lockfiles in the repo. Prints JSON.
 //   node cairn-version.mjs <package> [dir]
 import fs from "node:fs";

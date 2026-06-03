@@ -8,6 +8,28 @@ Tagged releases: https://github.com/tavaresgmg/cairn/releases
 
 ## [Unreleased]
 
+## [0.1.12] — 2026-06-03
+
+### Changed
+- Documentation consolidated into canonical top-level files under `docs/`: `PRINCIPLES.md`,
+  `ARCHITECTURE.md`, `ROADMAP.md`, `DECISIONS.md`, `DEVELOPMENT.md`, `RESEARCH.md`, `INSTALL.md`
+  (plus `evals/`). Applies Cairn's own proportional-depth philosophy to its own docs.
+- The six per-file ADRs (`docs/decisions/`) collapsed into a single `docs/DECISIONS.md`; the
+  "ADR" term is retired in favor of numbered decisions. Code/hook/reference comments updated
+  from `ADR-000X` to `Decision N`.
+- `docs/architecture/mvp-architecture.md` → `docs/ARCHITECTURE.md`, absorbing the agent
+  integration contract (as a Harness status section) and the worked example (as an Appendix).
+- `docs/research/{frameworks,context-and-portability,evolution-radar}.md` merged into
+  `docs/RESEARCH.md`; `docs/install.md` + `docs/release-checklist.md` merged into `docs/INSTALL.md`.
+
+### Removed
+- `docs/comparison-and-gaps.md` and `docs/scope-and-workflows.md` — content re-homed to the
+  owners above; routing now lives in `SKILL.md` + `references/modes.md`.
+
+### Notes
+- `scripts/validate-cairn.mjs` updated to the new canonical doc set (required files, content
+  checks, stale-phrase guards). Structural validation passes; no plugin runtime behavior changed.
+
 ## [0.1.11] — 2026-06-03
 
 ### Changed

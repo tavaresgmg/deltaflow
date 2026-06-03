@@ -23,7 +23,7 @@ advisory; only hooks and scripts enforce. This file is explicit about which is w
 These depend on natural-language activity, not tool calls, so they cannot be hard-gated
 without false positives. They live in `AGENTS.md` / `SKILL.md` as required behavior:
 
-- Brainstorm before code when stakes warrant (ADR-0006).
+- Brainstorm before code when stakes warrant (Decision 6).
 - Fresh, executable proof before saying "done".
 - Review the diff proportional to risk before proof (`review.md`): intent, boundaries, edges,
   security. Proof says it works; review says it is right and safe.

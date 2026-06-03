@@ -1,6 +1,6 @@
 # Cairn hooks
 
-Autonomy layer 1 (ADR-0003): a single `SessionStart` hook injects `bootstrap.md` so the
+Autonomy layer 1 (Decision 3): a single `SessionStart` hook injects `bootstrap.md` so the
 agent routes through Cairn before responding — no need to invoke the skill by name.
 
 - `bootstrap.md` — the injected context (kept compact and budgeted).
@@ -16,7 +16,7 @@ Silent (exit 0, zero tokens) when no `.cairn/changes/<slug>/` is active or the s
 already emitted for the session. Same emitter contract as `session-start.sh`: Claude emits
 `additionalContext` JSON; Codex/other emits plain stdout.
 
-Autonomy layer 3 (ADR-0003): a `PreToolUse` hook runs `scripts/cairn-guard.mjs`
+Autonomy layer 3 (Decision 3): a `PreToolUse` hook runs `scripts/cairn-guard.mjs`
 on file-mutating tools and blocks (exit 2) writes outside the active repo. Logic is
 harness-neutral and unit-tested; see `skills/cairn/references/gates.md`.
 

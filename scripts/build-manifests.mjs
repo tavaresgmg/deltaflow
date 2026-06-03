@@ -1,4 +1,4 @@
-// Generates both per-harness plugin manifests from one canonical source (ADR-0002).
+// Generates both per-harness plugin manifests from one canonical source (Decision 2).
 // Codex reads .codex-plugin/plugin.json; Claude Code reads .claude-plugin/plugin.json.
 // Never hand-edit the generated files — edit plugins/cairn/plugin.manifest.json and rebuild.
 import fs from "node:fs";

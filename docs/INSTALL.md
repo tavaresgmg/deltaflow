@@ -156,4 +156,32 @@ node scripts/validate-cairn.mjs    # structural + YAML-safety + gate smoke tests
 `cairn-doctor.mjs` does not install plugins, trust hooks, run model evals, or mutate state. It only
 reports visible CLIs, manifest parity, declared hook surfaces, boundary detection, and which
 Codex/Claude guarantees are strong, proven, advisory, or pending upstream. The contract behind
-those labels is in `docs/architecture/agent-integration-contract.md`.
+those labels is in `docs/ARCHITECTURE.md (Harness status)`.
+
+## Release
+
+Run before tagging a version. Publish patterns only after real brownfield usage validates
+the core assumptions.
+
+- [ ] `node scripts/build-manifests.mjs` — regenerate; commit any manifest/marketplace diff.
+- [ ] `node scripts/validate-cairn.mjs` passes (files, parity, marketplace drift, YAML safety,
+      gate/helper smoke).
+- [ ] Confirm local harness versions against npm `latest`: `codex --version`,
+      `claude --version`, `npm view @openai/codex version`,
+      `npm view @anthropic-ai/claude-code version`.
+- [ ] `node plugins/cairn/scripts/cairn-doctor.mjs --json` reports no broken manifest, hook,
+      helper, or boundary surfaces; Codex write guard should remain `pending-upstream` until proven.
+- [ ] `node plugins/cairn/scripts/cairn-analyze.mjs --all .cairn/changes` reports no HIGH
+      findings for active release work.
+- [ ] `node plugins/cairn/scripts/cairn-retention.mjs .cairn/changes` reports no unexpected
+      actionable completed changes; use `--apply --slug <slug>` only after proof/lifecycle is set.
+- [ ] Bump `version` in `plugins/cairn/plugin.manifest.json` and rebuild.
+- [ ] Update `CHANGELOG.md` — add the new version section (Added/Changed/Fixed + known residuals),
+      sourced from the GitHub release notes; keep numbers/dates/IDs verbatim.
+- [ ] Install on Codex from the pushed repo: `SessionStart` hook fires, skill loads with no
+      YAML errors, auto-fires on a brownfield prompt.
+- [ ] Run `docs/evals/auto-trigger.md` on ≥2 models per harness; log fire-rate in that file.
+- [ ] Install on Claude Code; confirm marketplace, hooks (SessionStart + PreToolUse), skill,
+      and the `cairn-researcher` agent load.
+- [ ] Confirm no personal paths or internal artifacts shipped (public-repo hygiene).
+- [ ] Tag and push.

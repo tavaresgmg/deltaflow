@@ -1,6 +1,6 @@
 # Roadmap
 
-Forward-looking only. Shipped work → `CHANGELOG.md`; the *why* behind decisions → `docs/decisions/`;
+Forward-looking only. Shipped work → `CHANGELOG.md`; the *why* behind decisions → `docs/DECISIONS.md`;
 canonical principles → `docs/PRINCIPLES.md`.
 
 ## Sequencing (next cycle)
@@ -13,7 +13,7 @@ project evolution.
 Each behind the default-light intent gate:
 
 1. **Core operating model** — make routing judgment, artifact lifecycle, workspace ownership,
-   and token economy obvious in existing owners (`mvp-architecture.md`, `PRINCIPLES.md`,
+   and token economy obvious in existing owners (`ARCHITECTURE.md`, `PRINCIPLES.md`,
    `framework-lessons.md`). No new ceremony surface unless an owner is missing.
 2. **Dogfood one real multi-repo workspace task before more fixtures** — run the dogfood proof
    contract (`references/workspace.md`) on a task touching 2+ independent child repos. Patch only
@@ -25,7 +25,7 @@ Each behind the default-light intent gate:
    a known-bad file. Keep scoreboard as the owner of active eval gaps.
 5. **Distribution** — still gated on publishable evidence and a clean core story; no
    launch while the methodology is hard to explain.
-6. **Cairn evolution loop** — methodology changes must use `docs/development-workflow.md`:
+6. **Cairn evolution loop** — methodology changes must use `docs/DEVELOPMENT.md`:
    git/worktree preflight, rotating research aperture, `borrow / adapt / avoid / defer`, and
    close sync into roadmap/research/principles/references/evals as appropriate.
 
@@ -50,7 +50,7 @@ surface:
 - **Skill architecture gap:** keep one router skill unless evals prove a narrow secondary skill
   improves a domain lens without increasing false positives or competing with the mode ladder.
 - **Evolution gap:** keep the state-of-practice radar current across agent and non-agent lanes.
-  Use `docs/research/evolution-radar.md` before changing methodology, principles, skill shape, or
+  Use `docs/RESEARCH.md` before changing methodology, principles, skill shape, or
   public claims; do not let BMAD/OpenSpec/Spec Kit/Superpowers become the whole evidence universe.
 
 ## Distribution / public launch (deferred)

@@ -2,8 +2,7 @@
 
 Canonical source of truth for *why* Cairn behaves as it does. Modes, artifacts, gates,
 and references implement these; when they conflict, a principle wins and the reference is
-wrong. README thesis, `SKILL.md`, `scope-and-workflows.md`, and `framework-lessons.md`
-point here instead of restating.
+wrong. README thesis, `SKILL.md`, and `framework-lessons.md` point here instead of restating.
 
 **Authority order** when sources conflict: same-turn chat > global user gates
 (`~/.claude/CLAUDE.md` / Codex global `AGENTS.md`) > project `AGENTS.md`/`CLAUDE.md` > these
@@ -117,7 +116,8 @@ evidence, is the red flag.
 Borrowed lineage (where the shapes came from): BMAD (discovery/research), OpenSpec (delta
 specs, archive lifecycle), Spec Kit (phase separation, consistency analysis), Superpowers/GSD
 (verification discipline, durable state). Token economy adapts the "caveman" concise-output
-technique (JuliusBrussee/caveman, wilpel/caveman-compression). See `framework-lessons.md`.
+technique (JuliusBrussee/caveman, wilpel/caveman-compression). See `framework-lessons.md` (runtime
+shorthand) and `docs/RESEARCH.md` (full borrow/avoid evidence).
 
 Theoretical lineage (why the shapes hold): proportional depth ≈ Cynefin domains (Snowden);
 observe→classify→act→verify→close ≈ OODA (Boyd); hard gates + boundary guard ≈ Lean

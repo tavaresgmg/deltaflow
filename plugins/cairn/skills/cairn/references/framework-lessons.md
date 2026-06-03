@@ -5,13 +5,13 @@
 - Borrow: BMAD discovery; OpenSpec deltas/archive; Spec Kit analyze; Superpowers proof/review;
   GSD deterministic state.
 - Avoid: full PRDs/specs for ordinary work, mandatory TDD/subagents, duplicate board state,
-  premature CLI/runtime, and more skills than routing can reliably select.
+  premature CLI/runtime, more skills than routing can reliably select, cloning a competitor's
+  full lifecycle or CLI/state machine, and greenfield generators detached from repo proof.
 
 ## Design Rules
 
-Canonical principles: `docs/PRINCIPLES.md`. Shorthand: route first; smallest sufficient mode;
-evidence over theory; research only when useful; proof near work; delete/archive/sync artifacts.
-Reuse the existing owner before creating one. Improve judgment through dogfood before eval spend.
+Canonical principles: `docs/PRINCIPLES.md`. Reuse the existing owner before creating one.
+Improve judgment through dogfood before eval spend.
 
 ## Failure Controls
 

@@ -1,6 +1,6 @@
 # First-class stages: brainstorm, web research, official docs
 
-The three stages most frameworks treat as afterthoughts are elevated here (ADR-0006). They
+The three stages most frameworks treat as afterthoughts are elevated here (Decision 6). They
 are lightweight by default and gated by intent — a small card must stay cheap.
 
 ## Default-light intent gate

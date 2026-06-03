@@ -1,6 +1,6 @@
 # Auto-trigger evals
 
-Cairn's autonomy thesis (ADR-0003) is that the skill fires *without being named*. That is
+Cairn's autonomy thesis (Decision 3) is that the skill fires *without being named*. That is
 model-invoked and probabilistic, so it must be measured, not assumed. This file is the
 fixture: prompts that MUST fire, prompts that MUST NOT, and how to score them.
 
@@ -291,202 +291,18 @@ validate expectations in the *same* change, never a file move alone.
 
 ## Results log
 
-Historical evidence ledger. For active failures and the next command, run
-`node scripts/eval-scoreboard.mjs`.
+The immutable proof is `docs/evals/results/*.jsonl`; live failures and the next command come from
+`node scripts/eval-scoreboard.mjs`. This section keeps only the durable conclusions — not a
+run-by-run diary (the Retention rule above forbids letting reruns pile up here).
 
-Record runs here (date, harness, model, fire-rate, mis-fires, notes) as the suite is
-executed.
+Current state (Codex v0.136.0, Claude Code v2.1.159, runs 2026-06-01..02):
 
-- **2026-06-01 — Codex v0.135.0, gpt-5.5 — smoke.** A bug prompt auto-fired Cairn without
-  naming it, selected **diagnose**, returned a repro + fix plan with no edits. Fixed first:
-  unquoted `:` in `description` broke SKILL.md YAML and skipped it — now guarded by validate.
-
-- **2026-06-01 — Codex v0.135.0, gpt-5.5 — full suite (18), competing skills archived.**
-  `docs/evals/results/cairn-on-clean.jsonl`.
-  - **Trigger: 12/12 must-fire fired (100%), 0/6 must-not misfired (0%).** Clean discrimination
-    between brownfield work and Q&A/shell. Zero collision with a competing skill.
-  - **Routing: 9/12 to the expected mode (75%).** The 3 misses (F3→direct, F8→discovery,
-    F10→unparsed) are all "implement a card/feature" prompts where, in an **empty fixture**
-    with no card and no relevant code, the agent correctly declines to force a `delta-spec`
-    and degrades to an exploratory mode. So the fixture measures the **trigger** rigorously
-    but **understates routing** — fair routing measurement needs fixtures that contain the
-    real code/card. Not a Cairn defect; a harness limitation to fix (see gaps P1.7).
-  - **Baseline (Cairn removed, `baseline-off.jsonl`): 0/4 must-fire showed any structure** —
-    no mode, no routing, no output shape. Confirms Cairn's value is discipline/predictability,
-    not raw capability.
-  - At the time of this run, realistic-fixture routing, Claude Code, and ≥2 model coverage
-    were still pending. Later runs below close the Codex realistic subset and a Claude fast subset.
-
-- **2026-06-01 — Codex v0.136.0, default model — realistic routing subset (7).**
-  `docs/evals/results/cairn-realistic-codex-0.136-default.jsonl`.
-  - **Trigger: 7/7 must-fire fired (100%).**
-  - **Routing: 7/7 expected mode (100%).** Covered card feature, tax bug, auth refactor,
-    ORM migration planning, failing test diagnosis, simple greenfield-in-repo, and high-risk
-    greenfield billing subsystem.
-  - **Collision: 0 competing analyze collisions.**
-
-- **2026-06-01 — Codex v0.136.0, default model — must-not-fire after scope expansion (6).**
-  `docs/evals/results/cairn-nofire-after-scope-codex-0.136-default.jsonl`.
-  - **Misfire: 0/6 (0%).** Scope expansion to no-card/greenfield/research/cleanup did not
-    trigger on pure Q&A or one-off shell prompts in this subset.
-
-- **2026-06-01 — Codex v0.136.0, default model — fast cross-harness subset (R5,N2).**
-  `docs/evals/results/cairn-fast-codex-0.136-default.jsonl`.
-  - **Trigger: 1/1 must-fire fired (100%).**
-  - **Routing: 1/1 expected mode (100%).**
-  - **Misfire: 0/1 must-not (0%).**
-  - **Speed:** with `--jobs 2`, N2 completed in 16.3s and R5 in 41.3s.
-
-- **2026-06-01 — Claude Code v2.1.159, default model — fast cross-harness subset (R5,N2).**
-  `docs/evals/results/cairn-fast-claude-2.1.159-default.jsonl`.
-  - **Trigger: 1/1 must-fire fired (100%).**
-  - **Routing: 1/1 expected mode (100%).**
-  - **Misfire: 0/1 must-not (0%).**
-  - **Speed:** with `--jobs 2`, N2 completed in 5.5s and R5 in 31.8s.
-
-- **2026-06-01 — Codex v0.136.0, default model — broad no-card/research/cleanup subset (13).**
-  `docs/evals/results/cairn-broad-codex-0.136-default.jsonl`.
-  - **Trigger: 7/7 must-fire fired (100%).**
-  - **Routing: 7/7 expected mode (100%).** Covered no-card implementation, repo-grounded
-    research, cleanup, simplification, repo-pattern alignment, greenfield job runner, and
-    error-handling alignment.
-  - **Misfire: 0/6 must-not (0%).** Covered read-only repo Q&A, one-off file read, card
-    summary only, conceptual research, one-off test command, and conceptual cleanup.
-
-- **2026-06-01 — Claude Code v2.1.159, default model — broad fast subset (R8,R9,N7,N9,N10).**
-  `docs/evals/results/cairn-broad-fast-claude-2.1.159-default.jsonl`.
-  - **Trigger: 2/2 must-fire fired (100%).**
-  - **Routing: 2/2 expected mode (100%).**
-  - **Misfire: 0/3 must-not (0%).**
-
-- **2026-06-02 — Claude Code v2.1.159, default model — realistic must-not subset (6).**
-  `docs/evals/results/cairn-realistic-nofire-claude-2.1.159-default.jsonl`.
-  - **Misfire: 0/6 (0%).** Read-only repo Q&A, one-off file/test reads, card summary only,
-    conceptual research, and conceptual cleanup did not trigger Cairn.
-
-- **2026-06-02 — Claude Code v2.1.159, default model — realistic must-fire suite (14).**
-  `docs/evals/results/cairn-realistic-claude-2.1.159-default.jsonl`.
-  - **Trigger: 14/14 must-fire fired (100%).**
-  - **Routing: 12/14 expected mode (86%).**
-  - **Errors/timeouts: 3/14.** R3/R6/R7 hit the 180s timeout; R14 completed but did not emit
-    a parseable mode. Treat this as diagnostic evidence, not a passing gate.
-
-- **2026-06-02 — Codex v0.136.0, default model — P0 matrix (R5,R10,R11,N2,N7,N11).**
-  `docs/evals/results/cairn-p0-matrix-codex-0.136-default.jsonl`.
-  - **Trigger: 3/3 must-fire fired (100%).**
-  - **Routing: 3/3 expected mode (100%).**
-  - **Misfire: 0/3 must-not (0%).**
-  - **Slowest:** R5 54.1s, R10 53.1s, R11 37.5s.
-
-- **2026-06-02 — Claude Code v2.1.159, default model — P0 matrix (R5,R10,R11,N2,N7,N11).**
-  `docs/evals/results/cairn-p0-matrix-claude-2.1.159-default.jsonl`.
-  - **Trigger: 3/3 must-fire fired (100%).**
-  - **Routing: 2/3 expected mode (67%).** R11 fired but did not emit a parseable mode.
-  - **Misfire: 0/3 must-not (0%).**
-  - **Slowest:** R11 148.2s and R10 132.7s. This confirms `p0-matrix` is useful but still
-    near the default timeout on Claude for security-boundary simplification.
-
-- **2026-06-02 — Claude Code v2.1.159, `haiku` — fast subset (R5,N2).**
-  `docs/evals/results/cairn-fast-claude-2.1.159-haiku.jsonl`.
-  - **Trigger: 1/1 must-fire fired and routed (100%).**
-  - **Misfire: 0/1 must-not (0%).**
-
-- **2026-06-02 — Claude Code v2.1.160, `haiku` — P0 matrix (R5,R10,R11,N2,N7,N11).**
-  `docs/evals/results/cairn-p0-matrix-claude-2.1.160-haiku.jsonl`.
-  - **Trigger/routing: active failure.** See `eval-scoreboard.mjs` for current percentages and
-    next actions; this ledger preserves the result label without becoming the active-status owner.
-
-- **2026-06-02 — Codex v0.136.0, `gpt-5.4-mini` — fast subset (R5,N2).**
-  `docs/evals/results/cairn-fast-codex-0.136-gpt-5.4-mini.jsonl`.
-  - **Trigger: 1/1 must-fire fired (100%).**
-  - **Routing: 0/1 expected mode (0%).** R5 fired but did not emit a parseable mode.
-  - **Misfire: 0/1 must-not (0%).** Treat as second-model activation proof plus a routing
-    output gap for mini, not a passing route gate.
-
-- **2026-06-02 — route-output contract retest — Codex `gpt-5.4-mini` (R5,N2).**
-  `docs/evals/results/cairn-route-contract-codex-0.136-gpt-5.4-mini.jsonl`.
-  - **Trigger: 1/1 must-fire fired (100%).**
-  - **Routing: 1/1 expected mode (100%).** R5 now emits `mode=diagnose`.
-  - **Misfire: 0/1 must-not (0%).** No diagnostics emitted.
-
-- **2026-06-02 — route-output contract retest — Claude Code v2.1.159 default (R11,N7).**
-  `docs/evals/results/cairn-route-contract-claude-2.1.159-default.jsonl`.
-  - **Trigger: 1/1 must-fire fired (100%).**
-  - **Routing: 1/1 expected mode (100%).** R11 now emits `mode=delta-spec`.
-  - **Misfire: 0/1 must-not (0%).** No diagnostics emitted.
-
-- **2026-06-02 — route-output contract retest — Claude Code v2.1.159 default (R14,N8).**
-  `docs/evals/results/cairn-route-contract-claude-r14-2.1.159-default.jsonl`.
-  - **Trigger: 1/1 must-fire fired (100%).**
-  - **Routing: 1/1 expected mode (100%).** R14 now emits `mode=direct`.
-  - **Misfire: 0/1 must-not (0%).** No diagnostics emitted.
-
-- **2026-06-02 — Codex v0.136.0, default model — context-budget SKILL compactness retest.**
-  `docs/evals/results/cairn-p0-matrix-codex-0.136-context-budget.jsonl`.
-  - **Trigger: 3/3 must-fire fired (100%).**
-  - **Routing: 3/3 expected mode (100%).**
-  - **Misfire: 0/3 must-not (0%).**
-  - **Slowest:** R10 51.8s, R5 48.9s, R11 40.1s.
-
-- **2026-06-02 — Codex v0.136.0, `gpt-5.4-mini` — P0 matrix (R5,R10,R11,N2,N7,N11).**
-  `docs/evals/results/cairn-p0-matrix-codex-0.136-gpt-5.4-mini.jsonl`.
-  - **Trigger: 3/3 must-fire fired (100%).**
-  - **Routing: 3/3 expected mode (100%).**
-  - **Misfire: 0/3 must-not (0%).**
-  - **Slowest:** R10 68.5s, R11 62.2s, R5 37.4s. This closes the Codex second-model
-    P0 matrix gap; the next Codex gap is realistic must-fire coverage on a second model.
-
-- **2026-06-02 — Codex v0.136.0, `gpt-5.4-mini` — realistic must-fire diagnostic (14).**
-  `docs/evals/results/cairn-realistic-codex-0.136-gpt-5.4-mini.jsonl`.
-  - **Trigger: 13/14 must-fire fired (93%).**
-  - **Routing: 12/14 expected mode (86%).** R9 did not fire; R14 fired but routed to
-    `diagnose` instead of `direct`/`delta-spec`.
-  - **Errors/timeouts: 0/14.** Treat this as diagnostic evidence, not a passing coverage gate.
-
-- **2026-06-02 — route-output contract retest — Codex `gpt-5.4-mini` realistic gaps.**
-  `docs/evals/results/cairn-route-contract-codex-0.136-gpt-5.4-mini-realistic-gaps.jsonl`.
-  - **Trigger: 2/2 must-fire fired (100%).**
-  - **Routing: 2/2 expected mode (100%).** R9 now emits `mode=discovery`; R14 now emits
-    `mode=direct`.
-  - **Misfire: 0/2 must-not (0%).** N10/N12 stayed out of Cairn. This clears the focused
-    diagnostic debt but does not replace a future full realistic rerun.
-
-- **2026-06-02 — Codex v0.136.0, `gpt-5.4-mini` — realistic must-fire rerun (14).**
-  `docs/evals/results/cairn-realistic-codex-0.136-gpt-5.4-mini-rerun-1.jsonl`.
-  - **Trigger: 14/14 must-fire fired (100%).**
-  - **Routing: 11/14 expected mode (79%).** R7/R13/R14 timed out at 180s and emitted no
-    parseable mode.
-  - **Errors/timeouts: 3/14.** Treat this as stronger activation evidence but not a passing
-    second-model realistic gate. The next useful proof is a focused R7/R13/R14 diagnostic rerun
-    plus near-misses.
-
-- **2026-06-02 — route-output contract retest — Codex `gpt-5.4-mini` realistic gaps rerun 1.**
-  `docs/evals/results/cairn-route-contract-codex-0.136-gpt-5.4-mini-realistic-gaps-rerun-1.jsonl`.
-  - **Trigger: 3/3 must-fire fired (100%).**
-  - **Routing: 1/3 expected mode (33%).** R13 cleared as `discovery`; R7/R14 timed out at 180s.
-  - **Misfire: 0/2 must-not (0%).** N10/N12 stayed out of Cairn.
-
-- **2026-06-02 — route-output contract retest — Codex `gpt-5.4-mini` realistic gaps rerun 2, 240s timeout.**
-  `docs/evals/results/cairn-route-contract-codex-0.136-gpt-5.4-mini-realistic-gaps-rerun-2.jsonl`.
-  - **Trigger: 2/2 must-fire fired (100%).**
-  - **Routing: 1/2 expected mode (50%).** R7 cleared as `discovery`; R14 completed but routed
-    as `diagnose`, outside expected `direct`/`delta-spec`.
-  - **Misfire: 0/2 must-not (0%).** N10/N12 stayed out of Cairn. Remaining Codex mini debt:
-    R14 route/latency variance, not activation.
-
-- **2026-06-02 — route-output contract retest — Codex `gpt-5.4-mini` realistic gaps rerun 3, 240s timeout.**
-  `docs/evals/results/cairn-route-contract-codex-0.136-gpt-5.4-mini-realistic-gaps-rerun-3.jsonl`.
-  - **Trigger: 1/1 must-fire fired (100%).** R14 read Cairn but timed out before final mode.
-  - **Misfire: 0/2 must-not (0%).** N10/N12 stayed out of Cairn.
-  - **Conclusion:** R14 is stable Codex-mini route/latency diagnostic debt, not a trigger gap.
-
-- **2026-06-02 — infra-lens seed — Codex `gpt-5.4-mini`.**
-  `docs/evals/results/cairn-infra-lens-codex-0.136-gpt-5.4-mini.jsonl`.
-  - **Trigger: 2/2 must-fire fired (100%).** I1 routed as `diagnose`; I2 timed out.
-  - **Misfire: 0/1 must-not (0%).** I3 stayed out of Cairn.
-  - **Conclusion:** infra-lens activation works; the Docker fix case is latency/route-output debt.
-
-- **2026-06-02 — infra-lens I2 sandbox diagnostic — Codex `gpt-5.4-mini`, workspace-write.**
-  `docs/evals/results/cairn-infra-lens-codex-0.136-gpt-5.4-mini-workspace-write-smoke.jsonl`.
-  - **Trigger: 1/1 must-fire fired (100%).** I2 still timed out at 150s.
-  - **Conclusion:** I2 is not only read-only friction; the prompt/hook path is too slow for the small-model fast lane.
+- **Activation is solid on both harnesses:** core + realistic + broad suites fire 100% of
+  must-fire and 0% of must-not-fire; the `baseline-off` control shows 0/4 structure, confirming
+  Cairn's value is discipline, not raw capability.
+- **Routing: 86–100% to the expected mode on default models.** The empty classic fixture
+  understates routing (with no card/code the agent correctly degrades to an exploratory mode), so
+  the realistic fixtures are the fair routing measure.
+- **Known debt (see scoreboard for live %):** Codex `gpt-5.4-mini` R14 is route/latency variance,
+  not an activation gap; `infra-lens` I2 is too slow for the small-model fast lane; Claude
+  v2.1.160 `haiku` P0 matrix is an active failure tracked by the scoreboard.

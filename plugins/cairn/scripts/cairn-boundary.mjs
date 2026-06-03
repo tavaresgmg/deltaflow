@@ -1,4 +1,4 @@
-// Deterministic boundary detection (ADR-0005). Read-only: run BEFORE any mutation to
+// Deterministic boundary detection (Decision 5). Read-only: run BEFORE any mutation to
 // confirm which repo owns the cwd, whether it is a linked worktree, and whether it sits
 // inside an umbrella workspace with sibling repos. Also reports context readiness so the
 // model can calibrate autonomy to how well the repo is documented (Principle 9 / METR 2025:

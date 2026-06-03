@@ -1,4 +1,4 @@
-// Deterministic mutation-boundary gate (ADR-0005). Used as a PreToolUse hook:
+// Deterministic mutation-boundary gate (Decision 5). Used as a PreToolUse hook:
 // blocks file mutations whose target is outside the active repo (the #1 multi-repo footgun).
 // Reads the harness tool event as JSON on stdin (or argv[2] for testing); exit 2 = block.
 //   node cairn-guard.mjs '{"tool_name":"Edit","tool_input":{"file_path":"..."},"cwd":"..."}'

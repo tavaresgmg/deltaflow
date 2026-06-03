@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Cairn SessionStart hook — injects the routing bootstrap (ADR-0003, autonomy layer 1).
+# Cairn SessionStart hook — injects the routing bootstrap (Decision 3, autonomy layer 1).
 # Portable across Claude Code and Codex from one script. The exact stdout contract per
 # harness is verified empirically (see docs/evals/auto-trigger.md), so this stays minimal and
 # dependency-free.

@@ -38,18 +38,14 @@ const required = [
   "README.md",
   "AGENTS.md",
   "CLAUDE.md",
-  "docs/research/frameworks.md",
-  "docs/research/evolution-radar.md",
-  "docs/research/context-and-portability.md",
-  "docs/architecture/mvp-architecture.md",
-  "docs/architecture/agent-integration-contract.md",
-  "docs/decisions/README.md",
-  "docs/roadmap.md",
-  "docs/development-workflow.md",
-  "docs/install.md",
-  "docs/release-checklist.md",
+  "docs/PRINCIPLES.md",
+  "docs/ARCHITECTURE.md",
+  "docs/ROADMAP.md",
+  "docs/DECISIONS.md",
+  "docs/DEVELOPMENT.md",
+  "docs/RESEARCH.md",
+  "docs/INSTALL.md",
   "docs/evals/auto-trigger.md",
-  "docs/examples/brownfield-card-eval-harness.md",
   "scripts/eval-scoreboard.mjs",
   "plugins/cairn/plugin.manifest.json",
   "plugins/cairn/.codex-plugin/plugin.json",
@@ -126,12 +122,7 @@ if (!missing.length) {
   }
   const staleDocPhrases = [
     {
-      file: "docs/comparison-and-gaps.md",
-      phrase: "semantic sync pending",
-      message: "comparison doc still says semantic sync is pending",
-    },
-    {
-      file: "docs/roadmap.md",
+      file: "docs/ROADMAP.md",
       phrase: "- [ ] Worked examples proving that maps reduce repeated observe cost without becoming stale docs.",
       message: "roadmap still marks worked examples as pending",
     },
@@ -248,20 +239,20 @@ if (!missing.length) {
   for (const needle of ["## Now", "## Next", "## Later", "## Closed recent", "origin:", "priority:", "status:", "decision:", "proof:"]) {
     if (!queueTemplate.includes(needle)) fail(`queue.md template missing expected field: ${needle}`);
   }
-  const install = read("docs/install.md");
+  const install = read("docs/INSTALL.md");
   if (!install.includes(".cairn/queue.md")) fail("install.md hybrid preset missing .cairn/queue.md");
   const boundaryScript = read("plugins/cairn/scripts/cairn-boundary.mjs");
   if (!boundaryScript.includes("queue\\.md")) fail("cairn-boundary.mjs memoryPolicy detection missing queue.md");
-  const developmentWorkflow = read("docs/development-workflow.md");
+  const developmentWorkflow = read("docs/DEVELOPMENT.md");
   for (const needle of ["research aperture", "borrow / adapt / avoid / defer", "non-agent", "state of practice", "git status --short --branch", ".cairn/queue.md", "triage it into now, enqueue, replace priority, or drop", "adversarial challenge"]) {
-    if (!developmentWorkflow.includes(needle)) fail(`development-workflow.md missing expected evolution discipline: ${needle}`);
+    if (!developmentWorkflow.includes(needle)) fail(`DEVELOPMENT.md missing expected evolution discipline: ${needle}`);
   }
-  const evolutionRadar = read("docs/research/evolution-radar.md");
+  const evolutionRadar = read("docs/RESEARCH.md");
   for (const needle of ["Source Ledger", "DORA", "METR", "SPACE", "Kanban", "Shape Up", "Wardley", "Building effective agents", "borrow / adapt / avoid / defer"]) {
     if (!evolutionRadar.includes(needle)) fail(`evolution-radar.md missing expected source lane: ${needle}`);
   }
   const agents = read("AGENTS.md");
-  if (!agents.includes("docs/development-workflow.md") || !agents.includes("research aperture")) {
+  if (!agents.includes("docs/DEVELOPMENT.md") || !agents.includes("research aperture")) {
     fail("AGENTS.md missing Cairn development workflow pointer");
   }
 
@@ -292,9 +283,9 @@ if (!missing.length) {
     fail("user-prompt-submit.sh uses bare PLUGIN_ROOT (use ${CLAUDE_PLUGIN_ROOT})");
   }
 
-  const integrationContract = read("docs/architecture/agent-integration-contract.md");
+  const integrationContract = read("docs/ARCHITECTURE.md");
   for (const needle of ["Strong", "Proven", "Advisory", "Pending upstream", "cairn-doctor.mjs", "Codex", "Claude Code"]) {
-    if (!integrationContract.includes(needle)) fail(`agent integration contract missing expected text: ${needle}`);
+    if (!integrationContract.includes(needle)) fail(`ARCHITECTURE.md missing harness-status text: ${needle}`);
   }
 
   // Doctor smoke test: read-only JSON output should classify both harnesses and key surfaces.

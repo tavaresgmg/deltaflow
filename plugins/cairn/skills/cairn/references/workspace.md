@@ -1,6 +1,6 @@
 # Workspace (umbrella)
 
-ADR-0005: one parent folder can hold N independent repos; not a monorepo. Each level has one owner.
+Decision 5: one parent folder can hold N independent repos; not a monorepo. Each level has one owner.
 
 - Marked workspace: owns scope, cross-repo safety, repo map, workflow state:
   `AGENTS.md`, `.cairn/state/HANDOFF.md`, `.cairn/docs/`, `.cairn/worktrees/`.
