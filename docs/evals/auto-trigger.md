@@ -43,6 +43,9 @@ node scripts/eval-autotrigger.mjs realistic-nofire cairn-realistic-nofire-<harne
 node scripts/eval-autotrigger.mjs broad cairn-broad-<harness>-<model>
 node scripts/eval-autotrigger.mjs p0-matrix cairn-p0-matrix-<harness>-<model>
 node scripts/eval-autotrigger.mjs infra-lens cairn-infra-lens-<harness>-<model>
+node scripts/eval-autotrigger.mjs skill-architecture cairn-skill-architecture-<harness>-<model>
+node scripts/eval-autotrigger.mjs workflow-discipline cairn-workflow-discipline-<harness>-<model>
+node scripts/eval-autotrigger.mjs evolution-discipline cairn-evolution-discipline-<harness>-<model>
 ```
 
 `p0-matrix` is the cheap recurring regression matrix: `R5,R10,R11,N2,N7,N11`. It covers
@@ -59,6 +62,17 @@ Cross-harness and fast subset examples:
 node scripts/eval-autotrigger.mjs R5,N2 cairn-fast-codex-0.136-default --jobs 2 --timeout-ms 120000
 node scripts/eval-autotrigger.mjs R5,N2 cairn-fast-claude-2.1.159-default --harness claude --jobs 2 --timeout-ms 120000
 ```
+
+Fail-fast smoke runs should not enter the scoreboard. Use cheap models, low timeout, and
+`--no-save` to print the summary and remove the temporary JSONL:
+
+```bash
+node scripts/eval-autotrigger.mjs skill-architecture tmp-skill-architecture-codex-mini gpt-5.4-mini --harness codex --jobs 3 --timeout-ms 45000 --no-save
+node scripts/eval-autotrigger.mjs skill-architecture tmp-skill-architecture-claude-haiku haiku --harness claude --jobs 3 --timeout-ms 45000 --no-save
+```
+
+Treat these as local review signal only. Promote a result to `docs/evals/results/` only when the
+timeout/model/harness are stable enough to compare across releases.
 
 The runner is strict: unknown flags fail before any harness starts, labels cannot begin with
 `-` or `.`, a label or `--out` is required, and `--out` must point under
@@ -186,6 +200,53 @@ language so failed or suspicious answer tails can be reviewed before Cairn adds 
 | I1 | en | deploy failure + rollback planning, no deploy | `diagnose`, `tracked-change`, or `discovery` |
 | I2 | en | Dockerfile/start-script mismatch fix | `diagnose`, `direct`, or `delta-spec` |
 | I3 | en | Docker healthchecks in general | must not fire |
+
+## Skill Architecture / Lens Seed
+
+These cases test whether Cairn should stay a single router with lazy lenses or split into
+additional skills. They intentionally mix domain-specific work with a direct architecture-audit
+prompt and one conceptual near-miss. A split is only justified if these cases improve without
+regressing existing suites.
+
+| # | Lang | Prompt focus | Expected mode |
+| --- | --- | --- | --- |
+| L1 | en | invoice tenant-key database migration planning | `discovery`, `delta-spec`, or `tracked-change` |
+| L2 | en | responsive table fix with visual proof | `diagnose`, `direct`, or `delta-spec` |
+| L3 | en | flaky export tests and test strategy | `diagnose`, `discovery`, or `delta-spec` |
+| L4 | en | product decision: admin audit dashboard | `discovery` |
+| L5 | en | database indexes in general | must not fire |
+| L6 | en | eval-backed router-skill split assessment | `discovery`, `tracked-change`, or `delta-spec` |
+
+## Workflow Discipline
+
+These cases test whether Cairn makes the user's desired workflow visible: specs, Git/worktree
+preflight, brainstorm, research, tradeoffs, review/proof, and close sync. Some cases include
+`expectText` checks in the runner, so route correctness alone is not enough.
+Failures are summarized in `textMissIds`.
+
+| # | Lang | Prompt focus | Expected mode |
+| --- | --- | --- | --- |
+| W1 | en | durable export behavior with existing spec and final sync | `delta-spec`, `tracked-change`, or `discovery` |
+| W2 | en | auth cleanup preflight with git/worktree and tradeoff | `delta-spec`, `tracked-change`, or `discovery` |
+| W3 | en | current-docs research plus local package state | `discovery` or `delta-spec` |
+| W4 | en | brainstorm options plus adversarial/disproof path | `discovery`, `tracked-change`, or `delta-spec` |
+| W5 | en | lightweight typo fix, proof without ceremony | `direct`, `diagnose`, or `delta-spec` |
+| W6 | en | git worktree concept in general | must not fire |
+
+## Evolution Discipline
+
+These cases test Cairn's internal product-development loop: broad research aperture, source
+ledger, state-of-practice awareness, non-agent software methodology, git/worktree preflight,
+adversarial tradeoffs, and close sync. They exist to prevent Cairn from overfitting to the same
+competitor set while still avoiding a new always-on skill.
+
+| # | Lang | Prompt focus | Expected mode |
+| --- | --- | --- | --- |
+| E1 | en | broad Cairn evolution assessment with source ledger and `borrow/adapt/avoid/defer` | `discovery`, `tracked-change`, or `delta-spec` |
+| E2 | en | Cairn development preflight plus human/software methodology lens | `discovery`, `tracked-change`, or `delta-spec` |
+| E3 | en | keep up with agent research without skill bloat; sync owners | `discovery`, `tracked-change`, or `delta-spec` |
+| E4 | en | current source categories for brainstorming/product/methodology gaps | `discovery` or `delta-spec` |
+| E5 | en | Agile Manifesto principles in general | must not fire |
 
 ## Near-miss notes
 

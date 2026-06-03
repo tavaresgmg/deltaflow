@@ -43,12 +43,15 @@ Use for discovery and ambiguous planning. Template: `templates/brief.md`.
 
 Use for medium brownfield behavior changes. Template: `templates/delta.md`.
 
-Use `Semantic Claims` only when drift would matter. Keep claims explicit and checkable: one
-behavior claim, one code path, one proof command. `cairn-analyze.mjs` validates that claims have
-`code:` references, `proof:` commands, and existing code paths. It also infers coverage from
-`Proposed Behavior` when the prose has behavior verbs plus code/proof candidates; missing code,
-proof, or referenced paths become findings. Explicit `Semantic Claims` remain preferred for durable
-behavior.
+Use `Semantic Claims` only when drift would matter: one behavior claim, one code path, one proof
+command. `cairn-analyze.mjs` checks `code:`, `proof:`, and existing paths, and infers simple
+coverage from `Proposed Behavior`. Explicit claims remain preferred for durable behavior.
+
+## Spec
+
+Use `.cairn/specs/<capability>.md` only for durable behavior. Template: `templates/spec.md`.
+Specs use `Semantic Claims` so `cairn-analyze.mjs` can check code/proof refs. Read existing specs
+before changing a durable capability; no specs for tiny transient fixes.
 
 ## Plan
 

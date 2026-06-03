@@ -1,6 +1,6 @@
 # Cairn Modes
 
-Route: mode/owner/evidence/artifact/proof/residue. Existing state; no card file.
+Route: mode/owner/evidence/artifact/proof/residue. Shared checklist: `workflow.md`.
 
 ## Context readiness
 

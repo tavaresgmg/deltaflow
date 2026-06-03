@@ -51,6 +51,9 @@ function runType(label = "") {
   if (label.includes("route-contract")) return "route-contract";
   if (label.includes("p0-matrix")) return "p0-matrix";
   if (label.includes("infra-lens")) return "infra-lens";
+  if (label.includes("skill-architecture")) return "skill-architecture";
+  if (label.includes("workflow-discipline")) return "workflow-discipline";
+  if (label.includes("evolution-discipline")) return "evolution-discipline";
   if (label.includes("realistic-nofire") || label.includes("nofire-after-scope")) return "realistic-nofire";
   if (label.includes("realistic")) return "realistic";
   if (label.includes("broad")) return "broad";

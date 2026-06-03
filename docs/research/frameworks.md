@@ -5,6 +5,55 @@ verificação adversarial das alegações que sustentam decisões. Este document
 destilado da frente 1 (frameworks + harness + práticas). Idioma pt-BR por ser
 rationale interno; ver `docs/decisions/` para as decisões derivadas.
 
+Scope note (2026-06-03): this file is the agent-framework/harness lane only. Broader
+software-methodology and state-of-practice tracking lives in `docs/research/evolution-radar.md`;
+new Cairn methodology changes should start from `docs/development-workflow.md` and translate
+sources into `borrow / adapt / avoid / defer` instead of re-running this same competitor set.
+
+## 2026-06-03 current-source refresh: skill architecture
+
+Question: is Cairn getting worse by concentrating too much behavior in one skill?
+
+Finding: current evidence does not support a blind split. The installed plugin reports about
+657 always-on tokens, while detailed references remain lazy-loaded. The stronger risk is not token
+load; it is that one broad router can hide domain-specific gaps or selection failures. The right
+next move is an eval-backed architecture audit, not a new skill tree by assumption.
+
+Current external signals:
+
+- **OpenSpec** shifted further toward artifact-guided workflow: `/opsx:propose`, `/opsx:apply`,
+  `/opsx:archive`, explicit proposal/spec/design/tasks folders, and archive/sync. It now presents
+  itself as brownfield-friendly, fluid rather than rigid, and latest GitHub release visible as
+  `v1.4.1` on 2026-06-03. Source: https://github.com/Fission-AI/OpenSpec
+- **BMAD** v6 positions itself as specialized agents + guided workflows + context management, with
+  Quick Dev, adversarial review, project context, and ecosystem modules. Source:
+  https://docs.bmad-method.org/
+- **Spec Kit** is much more ecosystem-shaped than Cairn: Spec -> Plan -> Tasks -> Implement, 30
+  integrations, 105 extensions, 22 presets, and organization-hosted extension catalogs. Source:
+  https://github.github.com/spec-kit/
+- **Superpowers** is the strongest contrary case to Cairn's one-router shape: it uses composable
+  skills, design-before-code, worktrees, and subagent-driven development after approval. Source:
+  https://github.com/obra/superpowers
+- **Claude Code** subagents now make isolated work more attractive, but the docs still show tradeoffs:
+  subagents get fresh context, selected preloaded skills, persistent transcripts, and separate
+  compaction; they do not automatically solve shared-rule propagation. Source:
+  https://code.claude.com/docs/en/sub-agents
+- **Codex** guidance remains conservative: AGENTS.md first, reusable workflow as plugin/skill, MCP
+  for external systems, subagents when ready to delegate noisy or specialized tasks. Source:
+  https://developers.openai.com/codex/concepts/customization#next-step
+
+Decision pressure:
+
+- Keep one **router** skill by default. Splitting the mode ladder (`direct`, `diagnose`,
+  `discovery`, `delta-spec`, `tracked-change`) would create competing routers and likely hurt
+  selection.
+- Add sharper **lens coverage** first: database, UI, testing, product, infra, and skill architecture
+  prompts in eval fixtures.
+- Split only a narrow lens into a secondary skill if it beats the current baseline with no must-fire
+  regression, no no-fire regression, and acceptable always-on/token cost.
+- Use subagents for competitive research, adversarial review, long logs, and isolated domain
+  inspection. Do not use subagents for normal routing or as a substitute for local proof.
+
 ## Matriz comparativa
 
 | Sistema | Gatilho | Artefatos | Stop conditions | Autonomia | Memória |

@@ -58,6 +58,7 @@ Read these references only when needed:
 
 - `references/modes.md` for detailed mode selection and workflow steps.
 - `references/artifacts.md` for artifact templates and retention rules.
+- `references/workflow.md` for start/middle/close discipline.
 - `references/research.md` for the brainstorm / web-research / docs-grounding stages.
 - `references/review.md` for the proportional review ladder (self-review to adversarial).
 - `references/memory.md` for the `.cairn/` state layout and the resume protocol.
@@ -77,6 +78,8 @@ Read these references only when needed:
 - Evidence first: do not invent IDs, dates, owners, card facts, API behavior, or runtime status.
 - Reuse before inventing: search existing symbols, helpers, docs, specs, and local patterns
   before adding a new path. If you do not reuse the obvious owner, name why.
+- Non-trivial work starts with workflow preflight and closes with review, proof, lifecycle, and
+  analysis; see `references/workflow.md`.
 - Research first when external truth can change the plan. Brainstorm, web research, and
   official-docs grounding are first-class but intent-gated (see `references/research.md`):
   skip them on small clear work; ground new libs on the lockfile version, not the newest.

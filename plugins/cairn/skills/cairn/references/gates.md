@@ -40,17 +40,14 @@ coherence Stop-hook above is one such promotion.
 
 ## Spec ↔ code reconciliation
 
-OpenSpec-style delta drift is by-design and has no native command in 2026, so Cairn does it
-explicitly. When a `delta.md` exists and code has moved:
+When `delta.md` exists and code has moved:
 
 1. Read `delta.md` proposed behavior and the affected capabilities/contracts.
 2. Compare against current code and tests (the live source of truth).
-3. List drift: behavior in code not in the delta, and vice versa.
-4. Sync — update `delta.md` to match reality, or fix code to match intent; record the choice
-   in `.cairn/decision-log.md`.
-5. Re-run `cairn-analyze.mjs` to confirm the folder is internally consistent.
-6. On close, make the lifecycle decision (`artifacts.md` Retention): sync to spec, delegate,
-   archive, or delete.
+3. Sync: update `delta.md`, fix code, or update/delegate the living spec; record the choice in
+   `.cairn/decision-log.md`.
+4. Re-run `cairn-analyze.mjs`.
+5. Close with lifecycle (`artifacts.md`): sync, delegate, archive, or delete.
 
 `cairn-analyze.mjs` checks consistency: lifecycle, claims, code refs, and proof refs.
 It does not run tests, inspect runtime, prove security, or decide product intent.

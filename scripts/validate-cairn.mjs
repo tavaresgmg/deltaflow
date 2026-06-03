@@ -39,11 +39,13 @@ const required = [
   "AGENTS.md",
   "CLAUDE.md",
   "docs/research/frameworks.md",
+  "docs/research/evolution-radar.md",
   "docs/research/context-and-portability.md",
   "docs/architecture/mvp-architecture.md",
   "docs/architecture/agent-integration-contract.md",
   "docs/decisions/README.md",
   "docs/roadmap.md",
+  "docs/development-workflow.md",
   "docs/install.md",
   "docs/release-checklist.md",
   "docs/evals/auto-trigger.md",
@@ -72,6 +74,7 @@ const required = [
   "plugins/cairn/agents/cairn-researcher.md",
   "plugins/cairn/skills/cairn/SKILL.md",
   "plugins/cairn/skills/cairn/references/modes.md",
+  "plugins/cairn/skills/cairn/references/workflow.md",
   "plugins/cairn/skills/cairn/references/review.md",
   "plugins/cairn/skills/cairn/references/artifacts.md",
   "plugins/cairn/skills/cairn/references/memory.md",
@@ -79,6 +82,7 @@ const required = [
   "plugins/cairn/skills/cairn/references/workspace.md",
   "plugins/cairn/skills/cairn/references/gates.md",
   "plugins/cairn/skills/cairn/references/framework-lessons.md",
+  "plugins/cairn/skills/cairn/templates/spec.md",
 ];
 
 const missing = required.filter((f) => !fs.existsSync(path.join(root, f)));
@@ -226,6 +230,22 @@ if (!missing.length) {
   const modes = read("plugins/cairn/skills/cairn/references/modes.md");
   if (!modes.includes("reuse/adapt/new")) {
     fail("modes.md missing reuse/adapt/new decision guidance");
+  }
+  const workflow = read("plugins/cairn/skills/cairn/references/workflow.md");
+  for (const needle of ["git status --short --branch", "cairn/<slug>", "Semantic Claims", "adversarial challenge", "cairn-analyze.mjs"]) {
+    if (!workflow.includes(needle)) fail(`workflow.md missing expected discipline: ${needle}`);
+  }
+  const developmentWorkflow = read("docs/development-workflow.md");
+  for (const needle of ["research aperture", "borrow / adapt / avoid / defer", "non-agent", "state of practice", "git status --short --branch", "adversarial challenge"]) {
+    if (!developmentWorkflow.includes(needle)) fail(`development-workflow.md missing expected evolution discipline: ${needle}`);
+  }
+  const evolutionRadar = read("docs/research/evolution-radar.md");
+  for (const needle of ["Source Ledger", "DORA", "METR", "SPACE", "Kanban", "Shape Up", "Wardley", "Building effective agents", "borrow / adapt / avoid / defer"]) {
+    if (!evolutionRadar.includes(needle)) fail(`evolution-radar.md missing expected source lane: ${needle}`);
+  }
+  const agents = read("AGENTS.md");
+  if (!agents.includes("docs/development-workflow.md") || !agents.includes("research aperture")) {
+    fail("AGENTS.md missing Cairn development workflow pointer");
   }
 
   // Hook portability.
@@ -807,6 +827,19 @@ if (!missing.length) {
     if (!badSpec.findings.some((f) => f.code === "SEMANTIC_REF_MISSING" && /missing\/spec-code\.js/.test(f.message))) {
       fail("cairn-analyze.mjs did not flag a missing semantic code reference in a living spec");
     }
+    const syncNoSpec = path.join(tmp, ".cairn/changes/sync-no-spec");
+    fs.mkdirSync(syncNoSpec, { recursive: true });
+    fs.writeFileSync(path.join(syncNoSpec, "delta.md"), "# Delta\n");
+    fs.writeFileSync(path.join(syncNoSpec, "tasks.md"), "# Tasks\n\n- [x] step — proof: demo\n");
+    fs.writeFileSync(path.join(syncNoSpec, "proof.md"), "# Proof\n\nLifecycle decision: sync — demo\n");
+    const syncNoSpecOut = execSync(`node ${JSON.stringify(path.join(root, "plugins/cairn/scripts/cairn-analyze.mjs"))} --spec-root ${JSON.stringify(path.join(tmp, ".cairn/empty-specs"))} ${JSON.stringify(syncNoSpec)}`, {
+      cwd: root,
+      stdio: ["ignore", "pipe", "ignore"],
+    }).toString();
+    const syncNoSpecJson = JSON.parse(syncNoSpecOut);
+    if (!syncNoSpecJson.findings.some((f) => f.code === "SYNC_WITHOUT_LIVING_SPEC")) {
+      fail("cairn-analyze.mjs did not flag Lifecycle decision: sync without a living spec");
+    }
     const nextOut = execSync(`node ${JSON.stringify(path.join(root, "plugins/cairn/scripts/cairn-next.mjs"))} ${JSON.stringify(change)}`, {
       cwd: root,
       stdio: ["ignore", "pipe", "ignore"],
@@ -1193,7 +1226,7 @@ if (!missing.length) {
 
   const evalScript = read("scripts/eval-autotrigger.mjs");
   const evalDocs = read("docs/evals/auto-trigger.md");
-  for (const needle of ["p0-matrix", "infra-lens", "answerText", "answerTail", "totalDurationMs", "slowCases", "fireMissIds", "routingMissIds", "diagnosticIds", "timeoutIds", "--out", "--dry-run", "--overwrite"]) {
+  for (const needle of ["p0-matrix", "infra-lens", "skill-architecture", "workflow-discipline", "evolution-discipline", "expectText", "textMissIds", "answerText", "answerTail", "totalDurationMs", "slowCases", "fireMissIds", "routingMissIds", "diagnosticIds", "timeoutIds", "--out", "--dry-run", "--overwrite", "--no-save"]) {
     if (!evalScript.includes(needle)) {
       fail(`eval runner missing expected matrix support: ${needle}`);
     }
@@ -1215,6 +1248,30 @@ if (!missing.length) {
     }
     if (!new RegExp(`\\|\\s*${id}\\s*\\|`).test(evalDocs)) {
       fail(`eval docs missing infra-lens case ${id}`);
+    }
+  }
+  for (const id of ["L1", "L2", "L3", "L4", "L5", "L6"]) {
+    if (!new RegExp(`id:\\s*["']${id}["']`).test(evalScript)) {
+      fail(`eval runner missing skill-architecture case ${id}`);
+    }
+    if (!new RegExp(`\\|\\s*${id}\\s*\\|`).test(evalDocs)) {
+      fail(`eval docs missing skill-architecture case ${id}`);
+    }
+  }
+  for (const id of ["W1", "W2", "W3", "W4", "W5", "W6"]) {
+    if (!new RegExp(`id:\\s*["']${id}["']`).test(evalScript)) {
+      fail(`eval runner missing workflow-discipline case ${id}`);
+    }
+    if (!new RegExp(`\\|\\s*${id}\\s*\\|`).test(evalDocs)) {
+      fail(`eval docs missing workflow-discipline case ${id}`);
+    }
+  }
+  for (const id of ["E1", "E2", "E3", "E4", "E5"]) {
+    if (!new RegExp(`id:\\s*["']${id}["']`).test(evalScript)) {
+      fail(`eval runner missing evolution-discipline case ${id}`);
+    }
+    if (!new RegExp(`\\|\\s*${id}\\s*\\|`).test(evalDocs)) {
+      fail(`eval docs missing evolution-discipline case ${id}`);
     }
   }
   try {

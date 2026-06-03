@@ -10,6 +10,7 @@ const SURFACES = [
   { name: "bootstrap", file: "plugins/cairn/hooks/bootstrap.md", maxWords: 220, maxChars: 1400, alwaysOn: true },
   { name: "skill", file: "plugins/cairn/skills/cairn/SKILL.md", maxWords: 1100, maxChars: 7200, alwaysOn: false },
   { name: "references/artifacts", file: "plugins/cairn/skills/cairn/references/artifacts.md", maxWords: 700, maxChars: 4500, alwaysOn: false },
+  { name: "references/workflow", file: "plugins/cairn/skills/cairn/references/workflow.md", maxWords: 420, maxChars: 3000, alwaysOn: false },
   { name: "references/framework-lessons", file: "plugins/cairn/skills/cairn/references/framework-lessons.md", maxWords: 450, maxChars: 3200, alwaysOn: false },
   { name: "references/gates", file: "plugins/cairn/skills/cairn/references/gates.md", maxWords: 550, maxChars: 3800, alwaysOn: false },
   { name: "references/memory", file: "plugins/cairn/skills/cairn/references/memory.md", maxWords: 650, maxChars: 4200, alwaysOn: false },

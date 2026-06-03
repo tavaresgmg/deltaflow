@@ -11,4 +11,7 @@
 - Keep artifacts minimal, brownfield-first. Do not copy BMAD/OpenSpec/Spec Kit/GSD/Superpowers
   wholesale.
 - Test any workflow claim on a real or realistic brownfield card; record the result.
+- For non-trivial Cairn product evolution, use `docs/development-workflow.md`: start with repo
+  preflight, choose a rotating research aperture, translate sources into `borrow / adapt / avoid /
+  defer`, then sync durable learnings to the right owner.
 - Validate plugin changes: `node scripts/validate-cairn.mjs`.

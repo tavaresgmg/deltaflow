@@ -196,9 +196,15 @@ function markdownFiles(dir) {
   return out;
 }
 
+function lifecycleDecision(markdown) {
+  return markdown.match(/^Lifecycle decision:\s*(sync|delegate|archive|delete)\b/im)?.[1]?.toLowerCase() || null;
+}
+
 function analyzeOne(dir) {
   const abs = path.resolve(dir);
   const findings = [];
+  const resolvedSpecRoot = path.resolve(root, specRoot);
+  const specFiles = markdownFiles(resolvedSpecRoot);
 
   if (has(abs, "delta.md") && !has(abs, "plan.md")) {
     findings.push(finding("HIGH", "DELTA_WITHOUT_PLAN", "delta.md exists without plan.md", path.join(abs, "delta.md")));
@@ -255,7 +261,8 @@ function analyzeOne(dir) {
   const allDone = stats && stats.items.length > 0 && stats.open.length === 0;
   if (allDone && has(abs, "delta.md")) {
     const proof = has(abs, "proof.md") ? read(path.join(abs, "proof.md")) : "";
-    if (!/^Lifecycle decision:\s*(sync|delegate|archive|delete)\b/im.test(proof)) {
+    const lifecycle = lifecycleDecision(proof);
+    if (!lifecycle) {
       findings.push(finding(
         "MEDIUM",
         "DONE_DELTA_WITHOUT_LIFECYCLE_DECISION",
@@ -263,13 +270,21 @@ function analyzeOne(dir) {
         path.join(abs, "delta.md"),
       ));
     }
+    if (lifecycle === "sync" && specFiles.length === 0) {
+      findings.push(finding(
+        "MEDIUM",
+        "SYNC_WITHOUT_LIVING_SPEC",
+        `Lifecycle decision is sync but no living spec markdown exists under ${specRoot}`,
+        path.join(abs, "proof.md"),
+      ));
+    }
   }
 
-  if (has(abs, "delta.md") && !fs.existsSync(path.resolve(root, specRoot))) {
+  if (has(abs, "delta.md") && !fs.existsSync(resolvedSpecRoot)) {
     findings.push(finding("LOW", "SPEC_ROOT_MISSING", `spec root does not exist: ${specRoot}`, specRoot));
   }
 
-  for (const spec of markdownFiles(path.resolve(root, specRoot))) {
+  for (const spec of specFiles) {
     validateSemanticClaims(spec, read(spec), findings, { missingCodeSeverity: "HIGH" });
   }
 

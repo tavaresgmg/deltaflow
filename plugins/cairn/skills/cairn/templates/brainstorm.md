@@ -6,4 +6,8 @@
 
 ## Chosen Direction
 
+## Adversarial Challenge
+
+## Disproof Path
+
 ## Open Questions

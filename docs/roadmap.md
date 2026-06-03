@@ -19,11 +19,15 @@ Each behind the default-light intent gate:
    contract (`references/workspace.md`) on a task touching 2+ independent child repos. Patch only
    `workspace.md`/`modes.md` if this exposes friction; do not add a new template first.
 3. **Domain lenses** — start with manual brownfield evidence. `infra-lens` is seeded,
-   but do not edit `SKILL.md` until the vague guidance is confirmed outside eval churn.
+   and `skill-architecture` now seeds database/UI/testing/product/split-risk coverage, but do
+   not edit `SKILL.md` or add skills until the vague guidance is confirmed outside eval churn.
 4. **Protect eval history** — result labels are immutable by default; use `--overwrite` only for
    a known-bad file. Keep scoreboard as the owner of active eval gaps.
 5. **Distribution** — still gated on publishable evidence and a clean core story; no
    launch while the methodology is hard to explain.
+6. **Cairn evolution loop** — methodology changes must use `docs/development-workflow.md`:
+   git/worktree preflight, rotating research aperture, `borrow / adapt / avoid / defer`, and
+   close sync into roadmap/research/principles/references/evals as appropriate.
 
 ## Gap closure targets
 
@@ -43,11 +47,16 @@ surface:
   multi-repo task before adding any multi-repo template.
 - **Automation gap:** keep Node/MJS scripts split by role. Extract common helpers only when a
   script keeps growing because of repeated production logic, not for aesthetic symmetry.
+- **Skill architecture gap:** keep one router skill unless evals prove a narrow secondary skill
+  improves a domain lens without increasing false positives or competing with the mode ladder.
+- **Evolution gap:** keep the state-of-practice radar current across agent and non-agent lanes.
+  Use `docs/research/evolution-radar.md` before changing methodology, principles, skill shape, or
+  public claims; do not let BMAD/OpenSpec/Spec Kit/Superpowers become the whole evidence universe.
 
 ## Distribution / public launch (deferred)
 
 Deferred by user (2026-06-02): hold public promotion until there is real-model eval proof to show.
-Current release state: **v0.1.4 is Latest** (2026-06-03); v0.1.0 and v0.1.1 stay pre-release
+Current release state: **v0.1.5 is Latest** (2026-06-03); v0.1.0 and v0.1.1 stay pre-release
 milestone markers. Per-version changes live in `CHANGELOG.md`.
 
 Prerequisite chain: publish real-model eval → **announce**. The GitHub Release is already promoted
@@ -88,3 +97,22 @@ Candidate lenses to analyze and fold into references/evals:
 Entry rule: add a lens only with a concrete fixture or dogfood incident showing current Cairn
 guidance is underspecified. Prefer a short lazy reference or eval fixture over inflating
 `SKILL.md`.
+
+## Skill architecture audit
+
+Default: keep `cairn` as the single router. Competitors prove different useful shapes, but not that
+Cairn should split blindly: OpenSpec and Spec Kit center artifacts/workflows; BMAD and Superpowers
+use specialized agents/skills; Codex and Claude both support subagents for isolated or noisy work.
+
+Decision rule:
+
+- First improve lens fixtures and lazy references.
+- Split a secondary skill only for a narrow domain with eval proof.
+- Never split the five modes into separate skills; that would create competing routers.
+- Use subagents for research/review/log-heavy work, not ordinary routing.
+
+Next evidence:
+
+- Run `node scripts/eval-autotrigger.mjs skill-architecture cairn-skill-architecture-<harness>-<model>`.
+- Compare results against current `p0-matrix`, `infra-lens`, and realistic suites before changing
+  `SKILL.md`.

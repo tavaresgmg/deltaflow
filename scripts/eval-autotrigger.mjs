@@ -5,8 +5,8 @@
 //
 //   node scripts/eval-autotrigger.mjs <subset> <label> [model] [--harness codex|claude] [--jobs N]
 //   node scripts/eval-autotrigger.mjs <subset> --out docs/evals/results/<label>.jsonl [--model MODEL]
-//     subset: "all" | "fire" | "nofire" | "realistic" | "p0-matrix" | "infra-lens" | comma-separated ids
-//     label:  output file name under docs/evals/results/<label>.jsonl
+//     subset: "all" | "fire" | "nofire" | "realistic" | "p0-matrix" | "infra-lens" | "skill-architecture" | "workflow-discipline" | "evolution-discipline" | comma-separated ids
+//     label:  output file name under docs/evals/results/<label>.jsonl unless --no-save
 //     model:  optional, passed to codex exec -m or claude --model
 //
 // Detection is deliberately multi-signal and conservative; the report is honest about
@@ -25,7 +25,7 @@ const USAGE = `Usage:
   node scripts/eval-autotrigger.mjs <subset> --out docs/evals/results/<label>.jsonl [--model MODEL]
 
 Subsets:
-  all | fire | nofire | realistic | realistic-nofire | broad | p0-matrix | infra-lens | comma-separated ids
+  all | fire | nofire | realistic | realistic-nofire | broad | p0-matrix | infra-lens | skill-architecture | workflow-discipline | evolution-discipline | comma-separated ids
 
 Options:
   --harness codex|claude
@@ -36,7 +36,8 @@ Options:
   --model MODEL
   --out docs/evals/results/<label>.jsonl
   --dry-run
-  --overwrite`;
+  --overwrite
+  --no-save`;
 
 function failCli(err) {
   console.error(err?.message || String(err));
@@ -247,7 +248,159 @@ const INFRA_LENS_CASES = [
   },
 ];
 
-const ALL_CASES = [...CASES, ...REALISTIC_CASES, ...REALISTIC_MUST_NOT_CASES, ...INFRA_LENS_CASES];
+const SKILL_ARCHITECTURE_CASES = [
+  {
+    id: "L1",
+    lang: "en",
+    realistic: true,
+    expectFire: true,
+    expectMode: ["discovery", "delta-spec", "tracked-change"],
+    prompt: "Plan the invoice tenant-key database migration in MIGRATION-invoices.md. Name rollback and proof. Do not edit files yet.",
+  },
+  {
+    id: "L2",
+    lang: "en",
+    realistic: true,
+    expectFire: true,
+    expectMode: ["diagnose", "direct", "delta-spec"],
+    prompt: "Fix the responsive table issue described in UI-table.md and name the browser or screenshot proof you would run.",
+  },
+  {
+    id: "L3",
+    lang: "en",
+    realistic: true,
+    expectFire: true,
+    expectMode: ["diagnose", "discovery", "delta-spec"],
+    prompt: "Investigate why export tests are flaky and propose the smallest test strategy/proof path before changing production code.",
+  },
+  {
+    id: "L4",
+    lang: "en",
+    realistic: true,
+    expectFire: true,
+    expectMode: ["discovery"],
+    prompt: "Decide whether this repo should build the admin audit dashboard described in PRODUCT-audit-dashboard.md. Do not code.",
+  },
+  {
+    id: "L5",
+    lang: "en",
+    expectFire: false,
+    expectMode: [],
+    prompt: "Explain database indexes in general. Do not inspect this repo.",
+  },
+  {
+    id: "L6",
+    lang: "en",
+    realistic: true,
+    expectFire: true,
+    expectMode: ["discovery", "tracked-change", "delta-spec"],
+    prompt: "Assess whether this workflow plugin should split its router skill into separate domain skills. Use eval evidence and current agent capabilities; do not implement.",
+  },
+];
+
+const WORKFLOW_DISCIPLINE_CASES = [
+  {
+    id: "W1",
+    lang: "en",
+    realistic: true,
+    expectFire: true,
+    expectMode: ["delta-spec", "tracked-change", "discovery"],
+    expectText: ["spec", "Semantic Claims|lifecycle|sync"],
+    prompt: "Plan the durable export behavior change described in WORKFLOW-export.md. Read existing specs first, do not edit files, and name the final sync/check you would require.",
+  },
+  {
+    id: "W2",
+    lang: "en",
+    realistic: true,
+    expectFire: true,
+    expectMode: ["delta-spec", "tracked-change", "discovery"],
+    expectText: ["git status|worktree|branch", "tradeoff|downside"],
+    prompt: "Before implementing WORKFLOW-auth-cleanup.md, show the workflow preflight and plan. Include git/worktree checks and the main tradeoff.",
+  },
+  {
+    id: "W3",
+    lang: "en",
+    realistic: true,
+    expectFire: true,
+    expectMode: ["discovery", "delta-spec"],
+    expectText: ["research|official docs|current", "lockfile|package"],
+    prompt: "Research whether this repo should adopt Vitest instead of node:test. Use current docs and local package state; do not edit files.",
+  },
+  {
+    id: "W4",
+    lang: "en",
+    realistic: true,
+    expectFire: true,
+    expectMode: ["discovery", "tracked-change", "delta-spec"],
+    expectText: ["brainstorm|option", "adversarial|disproof|tradeoff"],
+    prompt: "Brainstorm the smallest safe approach for the new audit workflow in WORKFLOW-audit.md. Do not implement.",
+  },
+  {
+    id: "W5",
+    lang: "en",
+    realistic: true,
+    expectFire: true,
+    expectMode: ["direct", "diagnose", "delta-spec"],
+    expectText: ["proof|test"],
+    prompt: "Fix the typo in WORKFLOW-typo.md if it exists; keep it lightweight and name proof.",
+  },
+  {
+    id: "W6",
+    lang: "en",
+    realistic: true,
+    expectFire: false,
+    expectMode: [],
+    prompt: "Explain what a git worktree is in general. Do not inspect this repo.",
+  },
+];
+
+const EVOLUTION_DISCIPLINE_CASES = [
+  {
+    id: "E1",
+    lang: "en",
+    realistic: true,
+    expectFire: true,
+    expectMode: ["discovery", "tracked-change", "delta-spec"],
+    expectText: ["research aperture|source ledger|state of practice", "borrow|adapt|avoid|defer"],
+    prompt: "Assess the Cairn evolution idea in EVOLUTION-cairn.md. Use a rotating research aperture beyond agent frameworks, include one non-agent software methodology lane, and translate findings into borrow/adapt/avoid/defer. Do not edit files.",
+  },
+  {
+    id: "E2",
+    lang: "en",
+    realistic: true,
+    expectFire: true,
+    expectMode: ["discovery", "tracked-change", "delta-spec"],
+    expectText: ["git status|worktree|branch", "non-agent|human|software"],
+    prompt: "Before changing this workflow plugin, show the Cairn development preflight and plan. Include git/worktree checks and at least one human/software methodology lens.",
+  },
+  {
+    id: "E3",
+    lang: "en",
+    realistic: true,
+    expectFire: true,
+    expectMode: ["discovery", "tracked-change", "delta-spec"],
+    expectText: ["adversarial|tradeoff|downside", "roadmap|research|principles|eval"],
+    prompt: "Plan how Cairn should keep up with new agent research and software-engineering practice without bloating the skill. Include adversarial review, tradeoffs, and where durable learnings should sync.",
+  },
+  {
+    id: "E4",
+    lang: "en",
+    realistic: true,
+    expectFire: true,
+    expectMode: ["discovery", "delta-spec"],
+    expectText: ["DORA|METR|SPACE|Kanban|Shape Up|Wardley|Agile", "source ledger|current"],
+    prompt: "Research whether the current Cairn docs underweight brainstorming, product framing, and methodology evidence. Use current source categories and local docs; do not implement.",
+  },
+  {
+    id: "E5",
+    lang: "en",
+    expectFire: false,
+    expectMode: [],
+    prompt: "Explain the Agile Manifesto principles in general. Do not inspect or modify this repo.",
+  },
+];
+
+const ALL_CASES = [...CASES, ...REALISTIC_CASES, ...REALISTIC_MUST_NOT_CASES, ...INFRA_LENS_CASES, ...SKILL_ARCHITECTURE_CASES, ...WORKFLOW_DISCIPLINE_CASES, ...EVOLUTION_DISCIPLINE_CASES];
 const P0_MATRIX_IDS = ["R5", "R10", "R11", "N2", "N7", "N11"];
 const DIAGNOSTIC_LOG_BYTES = 1200;
 
@@ -441,6 +594,118 @@ function setupFixture(fixture, realistic = false, caseId = null) {
         "",
       ].join("\n"));
     }
+    if (/^L[12346]$/.test(caseId || "")) {
+      fs.mkdirSync(path.join(fixture, "src/db"), { recursive: true });
+      fs.writeFileSync(path.join(fixture, "src/db/schema.sql"), [
+        "CREATE TABLE invoices (",
+        "  id TEXT PRIMARY KEY,",
+        "  customer_id TEXT NOT NULL,",
+        "  total_cents INTEGER NOT NULL",
+        ");",
+        "",
+      ].join("\n"));
+      fs.writeFileSync(path.join(fixture, "MIGRATION-invoices.md"), [
+        "# Migration: invoice tenant key",
+        "",
+        "Add `account_id` to invoices, backfill from customer ownership, and enforce not-null after verification.",
+        "Plan rollback, data proof, and query compatibility before editing.",
+        "",
+      ].join("\n"));
+      fs.writeFileSync(path.join(fixture, "UI-table.md"), [
+        "# UI: responsive table",
+        "",
+        "The report table overflows on mobile and hides action buttons.",
+        "Use existing CSS patterns; name browser/screenshot proof.",
+        "",
+      ].join("\n"));
+      fs.writeFileSync(path.join(fixture, "src/table.css"), [
+        ".report-table { width: 100%; }",
+        ".report-table td { white-space: nowrap; }",
+        "",
+      ].join("\n"));
+      fs.writeFileSync(path.join(fixture, "PRODUCT-audit-dashboard.md"), [
+        "# Product: admin audit dashboard",
+        "",
+        "Admins want an audit dashboard, but support can already export audit events.",
+        "Decide whether to build now, defer, or slice smaller based on current repo evidence.",
+        "",
+      ].join("\n"));
+      fs.writeFileSync(path.join(fixture, "PLUGIN-architecture.md"), [
+        "# Plugin architecture note",
+        "",
+        "The workflow currently uses one router skill plus lazy references.",
+        "Evaluate whether domain skills would improve routing without adding selection collisions.",
+        "",
+      ].join("\n"));
+    }
+    if (/^W[12345]$/.test(caseId || "")) {
+      fs.mkdirSync(path.join(fixture, ".cairn/specs"), { recursive: true });
+      fs.writeFileSync(path.join(fixture, ".cairn/specs/export.md"), [
+        "# Spec: Export",
+        "",
+        "## Semantic Claims",
+        "",
+        "- Export preserves row order; code: `src/export.js`; proof: `node --test test/export.test.js`",
+        "",
+      ].join("\n"));
+      fs.writeFileSync(path.join(fixture, "WORKFLOW-export.md"), [
+        "# Workflow: export behavior",
+        "",
+        "CSV export should gain headers and escaping while preserving row order.",
+        "This is durable behavior; reconcile delta/spec/code/proof at close.",
+        "",
+      ].join("\n"));
+      fs.writeFileSync(path.join(fixture, "WORKFLOW-auth-cleanup.md"), [
+        "# Workflow: auth cleanup",
+        "",
+        "Simplify duplicated owner checks in `src/auth.js` without changing behavior.",
+        "Use a branch/worktree preflight because auth is a trust boundary.",
+        "",
+      ].join("\n"));
+      fs.writeFileSync(path.join(fixture, "WORKFLOW-audit.md"), [
+        "# Workflow: audit",
+        "",
+        "Support wants a new audit workflow, but `src/audit.js` already records events.",
+        "Brainstorm build/defer/slice options before planning implementation.",
+        "",
+      ].join("\n"));
+      fs.writeFileSync(path.join(fixture, "WORKFLOW-typo.md"), [
+        "# Workflow: typo",
+        "",
+        "The README says 'Small internal toll' but should say 'Small internal tool'.",
+        "",
+      ].join("\n"));
+    }
+    if (/^E[1234]$/.test(caseId || "")) {
+      fs.mkdirSync(path.join(fixture, "docs/research"), { recursive: true });
+      fs.writeFileSync(path.join(fixture, "docs/PRINCIPLES.md"), [
+        "# Principles",
+        "",
+        "- Brownfield-first.",
+        "- Proportional ceremony.",
+        "- Evidence over claims.",
+        "",
+      ].join("\n"));
+      fs.writeFileSync(path.join(fixture, "docs/roadmap.md"), [
+        "# Roadmap",
+        "",
+        "- Keep one router skill unless eval evidence says otherwise.",
+        "",
+      ].join("\n"));
+      fs.writeFileSync(path.join(fixture, "docs/research/frameworks.md"), [
+        "# Framework lane",
+        "",
+        "Existing comparison covers BMAD, OpenSpec, Spec Kit, and Superpowers.",
+        "",
+      ].join("\n"));
+      fs.writeFileSync(path.join(fixture, "EVOLUTION-cairn.md"), [
+        "# Evolution: Cairn methodology",
+        "",
+        "Concern: the project keeps reviewing the same agent frameworks and may miss broader software methodology, product shaping, and empirical AI evidence.",
+        "Goal: keep Cairn current without adding a heavyweight framework or bloating the always-on skill.",
+        "",
+      ].join("\n"));
+    }
   }
   execFileSync("git", ["init", "-q"], { cwd: fixture });
   execFileSync("git", ["add", "-A"], { cwd: fixture });
@@ -480,6 +745,7 @@ function diagnosticFor(c, sig, status, log, answerText) {
   const reasons = [];
   if (sig.firedStrong !== c.expectFire) reasons.push("fire-mismatch");
   if (c.expectFire && !c.expectMode.includes(sig.modeDetected)) reasons.push("route-mismatch");
+  if (c.expectText && sig.textCorrect === false) reasons.push("text-mismatch");
   if (status !== "ok") reasons.push(status);
   if (!reasons.length) return null;
   return {
@@ -489,6 +755,12 @@ function diagnosticFor(c, sig, status, log, answerText) {
     answerTail: answerText.slice(-DIAGNOSTIC_LOG_BYTES),
     logTail: log.slice(-DIAGNOSTIC_LOG_BYTES),
   };
+}
+
+function expectedTextCorrect(c, log, answerText) {
+  if (!c.expectText) return null;
+  const haystack = `${answerText}\n${log}`;
+  return c.expectText.every((pattern) => new RegExp(pattern, "i").test(haystack));
 }
 
 function harnessVersion(harness) {
@@ -588,6 +860,7 @@ async function runCase(c, { harness, model, timeoutMs, sandbox, safeLabel }) {
   if (res.signal) status = "timeout";
   else if (res.error) status = "error";
   const sig = detect(log, answerText);
+  sig.textCorrect = expectedTextCorrect(c, log, answerText);
   const fireCorrect = sig.firedStrong === c.expectFire;
   const modeCorrect = !c.expectFire ? null : c.expectMode.includes(sig.modeDetected);
   const diagnostic = diagnosticFor(c, sig, status, log, answerText);
@@ -625,6 +898,7 @@ function parseArgs(argv) {
     else if (arg.startsWith("--out=")) explicitOut = arg.split("=", 2)[1];
     else if (arg === "--dry-run") opts.dryRun = true;
     else if (arg === "--overwrite") opts.overwrite = true;
+    else if (arg === "--no-save") opts.noSave = true;
     else if (arg.startsWith("--")) throw new Error(`unknown option: ${arg}\n\n${USAGE}`);
     else positional.push(arg);
   }
@@ -645,6 +919,8 @@ function parseArgs(argv) {
   if (!/^[a-zA-Z0-9_.-]+$/.test(label) || label.startsWith(".") || label.startsWith("-")) {
     throw new Error(`invalid label: ${label}; use only letters, numbers, dot, underscore, and dash, and do not start with dot or dash`);
   }
+  if (opts.noSave && explicitOut) throw new Error("use either --no-save or --out, not both");
+  if (opts.noSave && opts.overwrite) throw new Error("use either --no-save or --overwrite, not both");
   return { ...opts, subsetArg: positional[0] || "all", label, model: explicitModel || positional[2] || null, outFile };
 }
 
@@ -691,7 +967,7 @@ function promoteOutput(outTmp, outFile, overwrite) {
 }
 
 // main
-const { subsetArg, label, model, harness, jobs, timeoutMs, sandbox, outFile: parsedOutFile, dryRun, overwrite, help } = parseArgs(process.argv.slice(2));
+const { subsetArg, label, model, harness, jobs, timeoutMs, sandbox, outFile: parsedOutFile, dryRun, overwrite, noSave, help } = parseArgs(process.argv.slice(2));
 if (help) {
   console.log(USAGE);
   process.exit(0);
@@ -704,6 +980,9 @@ else if (subsetArg === "realistic") subset = REALISTIC_CASES;
 else if (subsetArg === "realistic-nofire") subset = REALISTIC_MUST_NOT_CASES;
 else if (subsetArg === "p0-matrix") subset = selectCases(P0_MATRIX_IDS);
 else if (subsetArg === "infra-lens") subset = INFRA_LENS_CASES;
+else if (subsetArg === "skill-architecture") subset = SKILL_ARCHITECTURE_CASES;
+else if (subsetArg === "workflow-discipline") subset = WORKFLOW_DISCIPLINE_CASES;
+else if (subsetArg === "evolution-discipline") subset = EVOLUTION_DISCIPLINE_CASES;
 else if (subsetArg === "broad") subset = [
   ...REALISTIC_CASES.filter((c) => ["R8", "R9", "R10", "R11", "R12", "R13", "R14"].includes(c.id)),
   ...REALISTIC_MUST_NOT_CASES,
@@ -719,7 +998,7 @@ else if (subsetArg !== "all") {
 const outDir = RESULTS_DIR;
 fs.mkdirSync(outDir, { recursive: true });
 const outFile = parsedOutFile || path.join(outDir, `${label}.jsonl`);
-if (!overwrite && fs.existsSync(outFile)) {
+if (!overwrite && !noSave && fs.existsSync(outFile)) {
   throw new Error(`output already exists: ${path.relative(ROOT, outFile)}; use a fresh label or pass --overwrite`);
 }
 if (dryRun) {
@@ -731,6 +1010,7 @@ if (dryRun) {
     sandbox,
     outFile: path.relative(ROOT, outFile),
     overwrite: Boolean(overwrite),
+    noSave: Boolean(noSave),
   }, null, 2));
   process.exit(0);
 }
@@ -742,7 +1022,7 @@ const version = harnessVersion(harness);
 await runPool(subset, { harness, model, jobs, timeoutMs, sandbox, safeLabel }, (r) => {
   results.push(r);
   fs.appendFileSync(outTmp, JSON.stringify(r) + "\n");
-  console.log(`${r.id} [${r.status}] ${r.durationMs}ms fired=${r.firedStrong} (expect ${r.expectFire}) mode=${r.modeDetected} ok=${r.fireCorrect}${r.expectFire ? ` modeOk=${r.modeCorrect}` : ""} collideAnalyze=${r.collidedAnalyze}`);
+  console.log(`${r.id} [${r.status}] ${r.durationMs}ms fired=${r.firedStrong} (expect ${r.expectFire}) mode=${r.modeDetected} ok=${r.fireCorrect}${r.expectFire ? ` modeOk=${r.modeCorrect}` : ""}${r.textCorrect !== null ? ` textOk=${r.textCorrect}` : ""} collideAnalyze=${r.collidedAnalyze}`);
 });
 
 const fires = results.filter((r) => r.expectFire);
@@ -770,9 +1050,11 @@ const summary = {
   slowCases: sortedSlow.map((r) => ({ id: r.id, durationMs: r.durationMs })),
   fireMissIds: results.filter((r) => !r.fireCorrect).map((r) => r.id),
   routingMissIds: fires.filter((r) => !r.modeCorrect).map((r) => r.id),
+  textMissIds: results.filter((r) => r.textCorrect === false).map((r) => r.id),
   diagnosticIds: results.filter((r) => r.diagnostic).map((r) => r.id),
   timeoutIds: results.filter((r) => r.status === "timeout").map((r) => r.id),
 };
 fs.appendFileSync(outTmp, JSON.stringify({ summary }) + "\n");
-promoteOutput(outTmp, outFile, overwrite);
+if (noSave) fs.rmSync(outTmp, { force: true });
+else promoteOutput(outTmp, outFile, overwrite);
 console.log("\nSUMMARY", JSON.stringify(summary, null, 2));

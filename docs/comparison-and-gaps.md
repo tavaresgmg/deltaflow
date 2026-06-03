@@ -14,6 +14,7 @@ agent behavior lives in `plugins/cairn/skills/cairn/references/`.
 | Workspace | Umbrella parent workspace with deterministic boundary/state-root detection. | `references/workspace.md` |
 | Consistency analysis | `cairn-analyze.mjs` reports change-folder drift; it does not execute proof. | `references/gates.md` |
 | Evaluation state | Scoreboard owns active eval gaps and next commands. | `scripts/eval-scoreboard.mjs` |
+| Skill architecture | One router skill plus lazy references; lens splitting is eval-gated, not assumed. | `docs/research/frameworks.md`, `docs/roadmap.md` |
 
 ## What Cairn Borrows
 
@@ -32,6 +33,8 @@ These are intentionally tracked in one place: `docs/roadmap.md`.
 - Clearer explanation of what `cairn-analyze.mjs` covers and what it cannot prove.
 - Real multi-repo dogfood proof using the workspace contract.
 - Broader eval proof only after the core operating story is easy to explain.
+- Skill/lens architecture proof: show whether domain lenses need separate skills or only sharper
+  lazy references.
 
 ## Where Cairn Is Distinct
 
@@ -39,6 +42,8 @@ These are intentionally tracked in one place: `docs/roadmap.md`.
 - One source builds both Codex and Claude plugin surfaces.
 - Workspace ownership is explicit; parent workflow state and child repo code are separate.
 - Determinism is labeled honestly: scripts/hooks enforce narrow facts; prose handles judgment.
+- It resists both extremes: one giant prompt and many competing routers. The router stays single
+  until evals prove a narrow secondary skill is better.
 
 Do not add a new framework layer from this file. If a gap becomes actionable, update
 `docs/roadmap.md` or the relevant `references/*.md` owner.
