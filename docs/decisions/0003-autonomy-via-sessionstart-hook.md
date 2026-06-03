@@ -19,10 +19,11 @@ Superpowers resolve isso com um hook SessionStart que injeta um bootstrap a cada
 ## Decisão
 
 Camada de **disparo determinístico**: um único script bash de hook SessionStart detecta o
-harness (`${CLAUDE_PLUGIN_ROOT}` vs Codex) e injeta um bootstrap enxuto que ordena rotear
+harness (`${CLAUDE_PLUGIN_ROOT}` vs Codex) e injeta um bootstrap mínimo que ordena rotear
 pelo Cairn antes de responder. Camada de **descoberta**: `description` reescrita —
-`[domínio] + [diretiva ALWAYS] + [trigger phrases reais] + [fronteira negativa]`,
-front-loaded, 3ª pessoa, `when_to_use` pt-BR+en com keywords duplicadas na description.
+`[domínio] + [diretiva ALWAYS] + [fronteira negativa]`, front-loaded e em 3ª pessoa.
+Termos concretos podem ajudar descoberta probabilística de skill, mas não são gate nem
+política runtime.
 Camada de **enforcement**: o gate duro inicial é limite de mutação fora do repo via
 PreToolUse hook (Claude) / command hook `exit 2` (Codex quando entrega live estiver
 provada). Brainstorm e prova fresca antes de "done" seguem obrigatórios no workflow, mas
@@ -30,12 +31,13 @@ não são determinísticos até existirem sinais de Stop/UserPromptSubmit confi�
 
 ## Tradeoff
 
-O bootstrap injeta tokens em toda sessão (custo fixo, manter <2k). Command hooks repo-local
+O bootstrap injeta tokens em toda sessão (custo fixo, manter pequeno). Command hooks repo-local
 no Codex podem não disparar em sessões interativas (#17532); a ordem SessionStart→
 UserPromptSubmit é instável no 1º turno (#15266); colocação errada no `config.toml`
 (top-level, não `[features]`) quebra silenciosamente. Bootstrap verboso/coercitivo (CAPS)
 briga com a precedência do AGENTS.md do usuário. Mitigação: bootstrap curto, sob autoridade
-explícita, `/comando` como fallback. **Validar empiricamente no Codex antes de travar.**
+explícita, `/comando` como fallback, e UserPromptSubmit orientado por estado/hash em vez de
+prompt text. **Validar empiricamente no Codex antes de travar.**
 Bug #22345: `disable-model-invocation` é ignorado para skills via plugin no Claude — não
 confiar nesse campo para gate de side-effect.
 

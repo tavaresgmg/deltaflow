@@ -67,6 +67,7 @@ const required = [
   "plugins/cairn/scripts/cairn-retention.mjs",
   "plugins/cairn/scripts/cairn-version.mjs",
   "plugins/cairn/scripts/cairn-anchor.mjs",
+  "plugins/cairn/scripts/cairn-anchor-policy.mjs",
   "plugins/cairn/scripts/cairn-scaffold.mjs",
   "plugins/cairn/agents/cairn-researcher.md",
   "plugins/cairn/skills/cairn/SKILL.md",
@@ -420,24 +421,32 @@ if (!missing.length) {
     fs.rmSync(scaffoldRepo, { recursive: true, force: true });
   }
 
-  // UserPromptSubmit smoke test: silent with no active change (zero token cost), emits the
-  // anchor when a change folder exists; Claude branch wraps it as additionalContext JSON.
+  // UserPromptSubmit smoke test: silent with no active change, emits once when active-change
+  // state appears, dedupes the same anchor, and re-emits when state changes. Prompt text is not
+  // part of the policy; session/cwd + anchor hash are.
   const upsRepo = fs.mkdtempSync(path.join(fs.realpathSync("/tmp"), "cairn-ups-"));
+  const upsState = fs.mkdtempSync(path.join(fs.realpathSync("/tmp"), "cairn-ups-state-"));
   try {
     execSync("git init -q", { cwd: upsRepo, stdio: ["ignore", "ignore", "ignore"] });
     const hookPath = path.join(root, "plugins/cairn/hooks/user-prompt-submit.sh");
-    const runUps = (claude) =>
+    const baseEnv = { ...process.env, CAIRN_ANCHOR_STATE_DIR: upsState };
+    const runUps = (claude, input = { session_id: "ups-session", prompt: "ignored prompt text" }) =>
       execSync(`bash ${JSON.stringify(hookPath)}`, {
         cwd: upsRepo,
-        env: claude ? { ...process.env, CLAUDE_PLUGIN_ROOT: path.join(root, "plugins/cairn") } : (() => { const e = { ...process.env }; delete e.CLAUDE_PLUGIN_ROOT; return e; })(),
-        stdio: ["ignore", "pipe", "pipe"],
+        env: claude ? { ...baseEnv, CLAUDE_PLUGIN_ROOT: path.join(root, "plugins/cairn") } : (() => { const e = { ...baseEnv }; delete e.CLAUDE_PLUGIN_ROOT; return e; })(),
+        input: JSON.stringify(input),
+        stdio: ["pipe", "pipe", "pipe"],
       }).toString();
     if (runUps(false).trim() !== "") fail("user-prompt-submit.sh must be silent with no active change");
     fs.mkdirSync(path.join(upsRepo, ".cairn/changes/ups-slug"), { recursive: true });
     fs.writeFileSync(path.join(upsRepo, ".cairn/changes/ups-slug/tasks.md"), "- [ ] open step\n");
     const codexOut = runUps(false);
     if (!codexOut.includes("ups-slug")) fail("user-prompt-submit.sh did not emit the active change (Codex branch)");
-    const claudeOut = JSON.parse(runUps(true));
+    if (runUps(false).trim() !== "") fail("user-prompt-submit.sh must dedupe an unchanged anchor");
+    fs.writeFileSync(path.join(upsRepo, ".cairn/changes/ups-slug/tasks.md"), "- [ ] open step\n- [ ] second step\n");
+    const changedOut = runUps(false);
+    if (!changedOut.includes("second step")) fail("user-prompt-submit.sh must re-emit when the anchor changes");
+    const claudeOut = JSON.parse(runUps(true, { session_id: "ups-claude-session", prompt: "also ignored" }));
     if (claudeOut.hookSpecificOutput?.hookEventName !== "UserPromptSubmit") {
       fail("user-prompt-submit.sh Claude branch must emit hookEventName UserPromptSubmit");
     }
@@ -448,6 +457,7 @@ if (!missing.length) {
     fail(`user-prompt-submit smoke test failed: ${e.message}`);
   } finally {
     fs.rmSync(upsRepo, { recursive: true, force: true });
+    fs.rmSync(upsState, { recursive: true, force: true });
   }
 
   const guardWorkspaceTmp = fs.mkdtempSync(path.join(fs.realpathSync("/tmp"), "cairn-guard-workspace-"));

@@ -29,7 +29,7 @@ cleanup, complexity reduction, and alignment with existing repository patterns.
 
 ## How Cairn wins
 
-See `docs/PRINCIPLES.md` — the 10 canonical principles (why Cairn behaves as it does). This doc
+See `docs/PRINCIPLES.md` — the 11 canonical principles (why Cairn behaves as it does). This doc
 covers *which work routes where*; principles cover *why*.
 
 ## Official-doc implications checked 2026-06-01

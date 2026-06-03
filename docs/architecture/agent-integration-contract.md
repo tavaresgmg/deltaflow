@@ -18,7 +18,7 @@ status copy do not overclaim.
 | Plugin manifest | Strong | Generated from `plugins/cairn/plugin.manifest.json`. |
 | Skill loading | Proven | The `cairn` skill routes brownfield work by activation text. |
 | `SessionStart` | Strong | Injects `hooks/bootstrap.md`; resume/compact also append `cairn-anchor.mjs`. |
-| `UserPromptSubmit` anchor | Strong | `user-prompt-submit.sh` re-injects `cairn-anchor.mjs` per turn; smoke-tested both branches. |
+| `UserPromptSubmit` anchor | Strong | `user-prompt-submit.sh` injects the anchor only when active-change state appears or changes; smoke-tested both branches. |
 | `PreToolUse` mutation guard | Strong | `hooks/hooks.json` routes edit/write tools to `cairn-guard.mjs`. |
 | `Stop` coherence hook | Strong | `cairn-coherence.mjs` nudges missing durable state for declared durable modes. |
 | Project agent | Advisory | `agents/cairn-researcher.md` keeps external research isolated and read-only. |
@@ -32,7 +32,7 @@ status copy do not overclaim.
 | Skill loading | Proven | The `cairn` skill loads from `skills/` and can auto-route brownfield work. |
 | `SessionStart` | Proven | `session-start.sh` emits the bootstrap as plain text when no Claude JSON contract is present. |
 | `Stop` coherence hook | Proven | Used for end-of-turn missing-state nudges. |
-| `UserPromptSubmit` anchor | Pending upstream | Mirrors the proven `SessionStart` plain-text path; per-turn delivery not yet live-verified on Codex. |
+| `UserPromptSubmit` anchor | Pending upstream | Mirrors the proven `SessionStart` plain-text path; state-change delivery not yet live-verified on Codex. |
 | `PreToolUse` mutation guard | Pending upstream | Upstream fixed `apply_patch` emission (PR #18391) and docs now list it as a target, but runtime delivery via the installed plugin is not yet confirmed locally. |
 | Write protection | Advisory | The prose contract still requires boundary checks before mutation; enforcement is best-effort. |
 

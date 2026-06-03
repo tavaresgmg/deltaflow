@@ -52,6 +52,9 @@ explicitly. When a `delta.md` exists and code has moved:
 6. On close, make the lifecycle decision (`artifacts.md` Retention): sync to spec, delegate,
    archive, or delete.
 
+`cairn-analyze.mjs` checks consistency: lifecycle, claims, code refs, and proof refs.
+It does not run tests, inspect runtime, prove security, or decide product intent.
+
 ## Cross-harness parity & validation status
 
 The guard *logic* is harness-neutral and unit-tested, including `apply_patch` patch-header

@@ -53,7 +53,7 @@ risk, and artifacts are deleted, archived, or synced — never left as clutter.
 
 ## Principles
 
-Ten principles drive every decision (full text in [`docs/PRINCIPLES.md`](docs/PRINCIPLES.md)):
+Eleven principles drive every decision (full text in [`docs/PRINCIPLES.md`](docs/PRINCIPLES.md)):
 
 1. Proportional depth
 2. Brownfield first
@@ -64,7 +64,8 @@ Ten principles drive every decision (full text in [`docs/PRINCIPLES.md`](docs/PR
 7. No stale artifacts
 8. Token economy / concise comms
 9. Compounding context
-10. Adversarial by default
+10. Structured signals before text matching
+11. Adversarial by default
 
 ## One source, both harnesses
 

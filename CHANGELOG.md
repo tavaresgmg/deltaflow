@@ -8,9 +8,23 @@ Tagged releases: https://github.com/tavaresgmg/cairn/releases
 
 ## [Unreleased]
 
+## [0.1.4] — 2026-06-03
+
+### Changed
+- `UserPromptSubmit` anchor injection is now state-change gated: it ignores prompt text, emits only
+  when active-change state appears or changes, and dedupes repeated anchors by session/cwd + hash.
+- Session bootstrap reduced to the minimum routing contract, and principles now make structured
+  signals before text matching explicit.
+- Documentation ownership tightened: `comparison-and-gaps.md` is now a short snapshot, roadmap owns
+  gap closure, ADR-0004 explicitly marks the old versioned-change-folder rule as superseded, and
+  `cairn-analyze.mjs` is documented as consistency analysis rather than executable proof.
+
 ## [0.1.3] — 2026-06-02
 
 Adds per-turn routing context, deterministic scaffolding, and a single-owner docs pass.
+
+Compatibility note: this section describes the tagged v0.1.3 behavior. Current `Unreleased`
+changes replace unconditional per-turn anchor emission with state-change-gated anchor emission.
 
 ### Added
 - `UserPromptSubmit` hook (`hooks/user-prompt-submit.sh`): re-injects the resume anchor (active change,
@@ -99,7 +113,8 @@ First tagged milestone. Experimental.
 - Pre-release because real-model eval runs (≥2 models per harness) were not yet published, and Codex live
   PreToolUse enforcement needs manual hook registration until the upstream `plugin_hooks` flag is GA.
 
-[Unreleased]: https://github.com/tavaresgmg/cairn/compare/v0.1.3...HEAD
+[Unreleased]: https://github.com/tavaresgmg/cairn/compare/v0.1.4...HEAD
+[0.1.4]: https://github.com/tavaresgmg/cairn/releases/tag/v0.1.4
 [0.1.3]: https://github.com/tavaresgmg/cairn/releases/tag/v0.1.3
 [0.1.2]: https://github.com/tavaresgmg/cairn/releases/tag/v0.1.2
 [0.1.1]: https://github.com/tavaresgmg/cairn/releases/tag/v0.1.1

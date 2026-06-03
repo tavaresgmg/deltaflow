@@ -88,7 +88,17 @@ was missing, not whose prompt was wrong. The decision-log records *why* a choice
 this records *what the system now knows*.
 *Reinforced by:* close-step hygiene (`references/memory.md`); red flag (`framework-lessons.md`).
 
-## 10. Adversarial by default
+## 10. Structured signals before text matching
+
+Prompt text is weak evidence. Do not treat regexes, keywords, or phrasing as deterministic
+truth, a gate, or "smart" runtime policy. Prefer structural signals first: hook event source,
+active change state, artifact hash, owner boundary, executable status, and recorded proof.
+Text can help skill discovery and eval fixtures, but any text-derived route remains advisory
+and must stay cheap, explicit, and near-miss tested.
+*Enforced by:* `user-prompt-submit.sh` + `cairn-anchor-policy.mjs` ignoring prompt text for
+anchor injection; *reinforced by:* auto-trigger eval near-misses.
+
+## 11. Adversarial by default
 
 Load-bearing decisions earn their place by surviving the opposite case, not by sounding right.
 Before committing a non-trivial choice — design, spec, principle, or a claim others act on —
@@ -113,7 +123,8 @@ Theoretical lineage (why the shapes hold): proportional depth ≈ Cynefin domain
 observe→classify→act→verify→close ≈ OODA (Boyd); hard gates + boundary guard ≈ Lean
 jidoka/poka-yoke; smallest change ≈ XP YAGNI; decision-log ≈ ADRs (Nygard); concise comms +
 context budget ≈ cognitive-load theory (Sweller); compounding context ≈ kaizen + blameless
-postmortems; single-threaded coding + adversarial review ≈ Theory of Constraints (human
-review, not code generation, is the real bottleneck — METR 2025, DORA 2025); adversarial by
-default ≈ Popperian falsification + red-team review (a claim is only as strong as the contrary
-case it survives, and the contrary case must itself be evidence-checked).
+postmortems; structured signals before text matching ≈ typed boundaries and observability over
+stringly heuristics; single-threaded coding + adversarial review ≈ Theory of Constraints
+(human review, not code generation, is the real bottleneck — METR 2025, DORA 2025);
+adversarial by default ≈ Popperian falsification + red-team review (a claim is only as strong
+as the contrary case it survives, and the contrary case must itself be evidence-checked).

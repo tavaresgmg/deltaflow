@@ -2,6 +2,11 @@
 
 Status: Aceito (2026-06-01)
 
+Current note: the original decision below says `.cairn/changes/` should be versioned. That
+specific detail is superseded by the 2026-06-02 hybrid commit policy at the end of this ADR.
+Keep the original text as historical rationale; use `references/artifacts.md` for the current
+operational rule.
+
 ## Contexto
 
 O Cairn precisa de memória. As memórias nativas são inadequadas como estado canônico:
@@ -45,10 +50,11 @@ code.claude.com/docs/en/memory; dev.to/ac12644 (MemGuard). Ver `docs/research/fr
 ## Update 2026-06-02 — hybrid commit policy
 
 The "work state is the one shareable layer, so version it" stance is refined: `.cairn/` is now
-HYBRID. Commit durable knowledge (`specs/`, `codebase/` maps — living documentation); keep
+HYBRID, superseding the original "version `.cairn/changes/`" rule above. Commit durable
+knowledge (`specs/`, `codebase/` maps — living documentation); keep
 process local/gitignored (`changes/`, `decision-log.md`). Durable findings sync from a change
 into `specs/`/`codebase/` at close, so they survive; the planning folder itself does not enter
 the repo. Trade-off: cross-machine/team resume of in-progress work is lost — acceptable, since
 local same-machine resume via the anchor and `tasks.md` is unaffected and durable knowledge
 still travels. Rule owner: `references/artifacts.md`. This repo (plugin source) keeps its whole
-`.cairn/` local. Supersedes the "versioned `.cairn/changes/`" detail above.
+`.cairn/` local.

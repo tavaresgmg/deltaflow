@@ -3,17 +3,18 @@
 Autonomy layer 1 (ADR-0003): a single `SessionStart` hook injects `bootstrap.md` so the
 agent routes through Cairn before responding — no need to invoke the skill by name.
 
-- `bootstrap.md` — the injected context (kept under ~2k tokens).
+- `bootstrap.md` — the injected context (kept compact and budgeted).
 - `session-start.sh` — harness-detecting emitter. Uses `${CLAUDE_PLUGIN_ROOT}` as the
   cross-harness root var. Claude sets it natively; Codex has native `${PLUGIN_ROOT}` and
   also exposes `${CLAUDE_PLUGIN_ROOT}` for compatibility. On Claude it emits `SessionStart`
   `additionalContext` JSON; elsewhere (Codex) it emits plain text.
 
-Autonomy layer 1 (per-turn): a `UserPromptSubmit` hook runs `user-prompt-submit.sh`, which
-re-injects the resume anchor (`cairn-anchor.mjs`: active change, open tasks, recent decisions)
-at the start of each turn so routing state survives without relying on model memory. Silent
-(exit 0, zero tokens) when no `.cairn/changes/<slug>/` is active. Same emitter contract as
-`session-start.sh`: Claude emits `additionalContext` JSON; Codex/other emits plain stdout.
+Autonomy layer 1 (state-change): a `UserPromptSubmit` hook runs `user-prompt-submit.sh`, which
+uses `cairn-anchor-policy.mjs` to inject the resume anchor only when active-change state appears
+or changes. It ignores prompt text: no regex or keyword matching is used for runtime policy.
+Silent (exit 0, zero tokens) when no `.cairn/changes/<slug>/` is active or the same anchor was
+already emitted for the session. Same emitter contract as `session-start.sh`: Claude emits
+`additionalContext` JSON; Codex/other emits plain stdout.
 
 Autonomy layer 3 (ADR-0003): a `PreToolUse` hook runs `scripts/cairn-guard.mjs`
 on file-mutating tools and blocks (exit 2) writes outside the active repo. Logic is
@@ -50,8 +51,8 @@ harness-neutral and unit-tested; see `skills/cairn/references/gates.md`.
 ## Validation status
 
 The bootstrap content and the script logic are versioned and locally testable
-(`node scripts/validate-cairn.mjs`), including a smoke test of both `user-prompt-submit.sh`
-branches and its silent-when-idle case. Claude Code live hook behavior is confirmed.
+(`node scripts/validate-cairn.mjs`), including smoke tests of both `user-prompt-submit.sh`
+branches, silent-when-idle behavior, dedupe, and re-emission after anchor changes. Claude Code live hook behavior is confirmed.
 Codex `SessionStart`/`Stop` behavior is confirmed through evals.
 
 Codex `PreToolUse` guard delivery remains an explicit live-harness gap. Upstream has since fixed

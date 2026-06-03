@@ -25,10 +25,29 @@ Each behind the default-light intent gate:
 5. **Distribution** — still gated on publishable evidence and a clean core story; no
    launch while the methodology is hard to explain.
 
+## Gap closure targets
+
+Use these as the next methodology checks before adding scripts, templates, or a new framework
+surface:
+
+- **OpenSpec gap:** dogfood one real close that shows final sync among delta/spec, code, proof,
+  and retention. `cairn-analyze.mjs` should be part of the close, but executable proof still
+  owns "passes".
+- **BMAD gap:** record one quick-vs-full story from real usage: why a task stayed `direct` or
+  escalated to `delta-spec`/`tracked-change`, what evidence changed the mode, and what ceremony
+  was avoided.
+- **Spec Kit gap:** keep `cairn-analyze.mjs` described as consistency analysis only. It covers
+  lifecycle/semantic/proof-reference drift; it does not run tests, inspect runtime, or validate
+  product intent.
+- **Workspace gap:** run the dogfood proof contract in `references/workspace.md` on a real
+  multi-repo task before adding any multi-repo template.
+- **Automation gap:** keep Node/MJS scripts split by role. Extract common helpers only when a
+  script keeps growing because of repeated production logic, not for aesthetic symmetry.
+
 ## Distribution / public launch (deferred)
 
 Deferred by user (2026-06-02): hold public promotion until there is real-model eval proof to show.
-Current release state: **v0.1.3 is Latest** (2026-06-02); v0.1.0 and v0.1.1 stay pre-release
+Current release state: **v0.1.4 is Latest** (2026-06-03); v0.1.0 and v0.1.1 stay pre-release
 milestone markers. Per-version changes live in `CHANGELOG.md`.
 
 Prerequisite chain: publish real-model eval → **announce**. The GitHub Release is already promoted

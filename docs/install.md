@@ -4,10 +4,10 @@ Cairn ships one plugin from this repo, for both Codex and Claude Code, from one 
 
 ## Version Check
 
-Last checked: 2026-06-02.
+Last checked: 2026-06-03.
 
 - Local Codex: `codex-cli 0.136.0`; npm `@openai/codex` `latest=0.136.0`.
-- Local Claude Code: `2.1.160`; npm `@anthropic-ai/claude-code` `latest=2.1.160`.
+- Local Claude Code: `2.1.161`; npm `@anthropic-ai/claude-code` `latest=2.1.161`.
 
 Use the `latest` channel for normal validation.
 
@@ -54,7 +54,7 @@ upstream, not Cairn (verified 2026-06-02 against `openai/codex`):
 Check `plugin_hooks` status in `config.schema.json` on `openai/codex` main before relying on
 plugin-delivered enforcement.
 
-## Claude Code (validated on v2.1.159; local now v2.1.160)
+## Claude Code (validated on v2.1.159; local now v2.1.161)
 
 ```bash
 /plugin marketplace add tavaresgmg/cairn

@@ -73,7 +73,7 @@ Limites oficiais: corpo <500 linhas / <5000 tokens; metadata `name`+`description
 Frontmatter **portável = só `name` + `description`**:
 - `name`: max 64 chars, `[a-z0-9-]`, não inicia/termina com hífen, sem `--`, DEVE bater com o diretório (`cairn` OK), e **proibido conter `claude`/`anthropic`**.
 - `description`: max 1024 chars (authoring).
-- `when_to_use`: extensão Claude Code (Codex ignora); conta junto com `description` no cap de **listing 1536 chars** do Claude. Usar para trigger phrases pt-BR+en, MAS duplicar as mesmas trigger words DENTRO da `description` (ambos harnesses leem `description`; só o Claude lê `when_to_use`).
+- `when_to_use`: extensão Claude Code (Codex ignora); conta junto com `description` no cap de **listing 1536 chars** do Claude. Usar para exemplos pt-BR+en de descoberta probabilística. Runtime hooks não leem prompt text nem duplicam essa lógica.
 - Campos Claude-only (`user-invocable`, `argument-hint`, `context`, `agent`) e Codex-only (`agents/openai.yaml`) ficam FORA do core portável.
 
 `references/` por domínio mutuamente exclusivo, one-level-deep, TOC em >100 linhas.
@@ -103,7 +103,7 @@ Diferenças que o build precisa emitir:
    `${CLAUDE_PLUGIN_ROOT}`/`${CLAUDE_PLUGIN_DATA}` por compatibilidade.
 6. **Codex hooks:** flag canônica `[features] hooks=true` (`codex_hooks` é alias DEPRECATED). `PreToolUse` matcher filtra Bash, `apply_patch`, MCP tool names.
 
-Check de paridade no validate script: os dois `plugin.json` batem em `name/version/description/skills`; `description` ≤1024 e trigger words nos primeiros ~250 chars; nenhum diretório dentro de `.codex-plugin/`//`.claude-plugin/`; symlinks resolvem. Documentar que portabilidade é por GERAÇÃO e que instalação pública NÃO depende de nada em `~/.codex` ou `~/.claude` do autor.
+Check de paridade no validate script: os dois `plugin.json` batem em `name/version/description/skills`; `description` ≤1024 e comunica intenção/boundary cedo; nenhum diretório dentro de `.codex-plugin/`//`.claude-plugin/`; symlinks resolvem. Documentar que portabilidade é por GERAÇÃO e que instalação pública NÃO depende de nada em `~/.codex` ou `~/.claude` do autor.
 
 ## Auto-trigger
 
@@ -115,14 +115,15 @@ modelo achar que já sabe fazer e EXECUTAR MANUALMENTE ignorando a skill. A fron
 negativa "Do not X directly" é estruturalmente importante, não cosmética.
 
 Estrutura vencedora da `description`: `[domínio/identidade] + [diretiva imperativa ALWAYS]
-+ [trigger phrases concretas que o usuário diz] + [fronteira negativa]`. Rascunho atual
-(<1024 chars, front-loaded):
++ [fronteira negativa] + [exemplos mínimos de escopo]`. Rascunho atual (<1024 chars,
+front-loaded):
 
 > Routes brownfield software work to the lightest safe workflow. ALWAYS invoke when the user asks to build, change, fix, refactor, plan, investigate, or implement in an existing repo, or starts from a card/issue/link/screenshot/bug/rough idea. Do not start coding, planning, or speccing brownfield work directly without routing through Cairn first. Skip for pure Q&A with no repo work, one-off shell commands, or tasks owned by a more specific active skill.
 
-Regras: **front-load** (caso de uso + trigger words no início — sob pressão de budget a
-description é truncada pelo fim); terceira pessoa; `when_to_use` com trigger phrases pt-BR+en
-e keywords duplicadas na `description`; fronteira negativa contra colisão com `analyze`/`product`/`harness`.
+Regras: **front-load** (caso de uso + fronteira negativa no início — sob pressão de budget a
+description é truncada pelo fim); terceira pessoa; `when_to_use` pode listar exemplos pt-BR+en
+para descoberta probabilística, mas runtime hooks não usam regex/keywords. Fronteira negativa
+contra colisão com `analyze`/`product`/`harness`.
 
 Controle de invocação: para o router autônomo, NÃO setar `disable-model-invocation` nem
 `allow_implicit_invocation=false` — usar default nos dois. **Bug #22345:**
@@ -132,7 +133,7 @@ determinístico ou skill standalone.
 
 Números de ativação (~100% diretivo vs ~50-87% passivo) são de blogs de campo, atribuição
 confusa, NÃO oficiais — tratar como **direção forte, nunca SLA**. A direção (3ª pessoa +
-keywords + diretiva + especificidade) é oficial.
+diretiva + especificidade) é oficial.
 
 Ativação ≠ step-following: mesmo disparando, o modelo pode pular Observe/Classify/Verify.
 Usar linguagem forte ("MUST", checklist copiável) só nos passos de prova/verificação.
@@ -145,7 +146,7 @@ inspecionando se a tool Skill foi chamada nos logs, em Opus e Sonnet.
 
 1. **Menor conjunto de tokens de alto sinal** — Anthropic, *Effective context engineering* ("find the smallest possible set of high-signal tokens"). → always-on minúsculo; detalhe pesado em references on-demand.
 2. **Progressive disclosure em 3 camadas** — Anthropic Agent Skills + agentskills.io. → SKILL.md router mínimo; one-level-deep; TOC em >100 linhas.
-3. **Auto-trigger vive 100% na description** — Anthropic best-practices + Codex docs. → description diretiva, trigger words front-loaded, fronteira negativa.
+3. **Auto-trigger de skill vive na description; runtime vive em sinais estruturais** — Anthropic best-practices + Codex docs. → description diretiva e fronteira negativa para descoberta; hooks não tratam palavra solta como verdade.
 4. **Verificação é a trava do "done"** — Huang et al. arXiv:2310.01798; Reflexion (Shinn arXiv:2303.11366). Self-correction de raciocínio sem feedback externo não melhora e às vezes piora. → todo workflow de mutação termina com check executável; proibir auto-revisão introspectiva como prova.
 5. **AGENTS.md/CLAUDE.md são advisory, não enforcement** — Claude Code best-practices ("Unlike CLAUDE.md... hooks are deterministic"). → gate duro via hook/execpolicy, sem acoplar setup pessoal ao pacote público.
 6. **Config inchada faz o modelo IGNORAR instruções reais** — Claude Code best-practices. Estudo de 138 repos: AGENTS.md escrito à mão melhora sucesso ~4% e reduz bugs 35-55%; gerado por LLM PIORA. → gatilho always-on minúsculo, escrito à mão.
