@@ -54,6 +54,7 @@ const required = [
   "plugins/cairn/.claude-plugin/plugin.json",
   "plugins/cairn/hooks/bootstrap.md",
   "plugins/cairn/hooks/session-start.sh",
+  "plugins/cairn/hooks/user-prompt-submit.sh",
   "plugins/cairn/hooks/hooks.json",
   "plugins/cairn/scripts/cairn-boundary.mjs",
   "plugins/cairn/scripts/cairn-workspace.mjs",
@@ -244,6 +245,14 @@ if (!missing.length) {
   if (!cmd.includes("Stop") || !cmd.includes("cairn-coherence.mjs")) {
     fail("hooks.json must register Stop -> cairn-coherence.mjs");
   }
+  if (!cmd.includes("UserPromptSubmit") || !cmd.includes("hooks/user-prompt-submit.sh")) {
+    fail("hooks.json must register UserPromptSubmit -> user-prompt-submit.sh");
+  }
+  const ups = read("plugins/cairn/hooks/user-prompt-submit.sh");
+  if (!ups.includes("${CLAUDE_PLUGIN_ROOT")) fail("user-prompt-submit.sh must use ${CLAUDE_PLUGIN_ROOT}");
+  if (/\bPLUGIN_ROOT\b/.test(ups.replace(/CLAUDE_PLUGIN_ROOT/g, ""))) {
+    fail("user-prompt-submit.sh uses bare PLUGIN_ROOT (use ${CLAUDE_PLUGIN_ROOT})");
+  }
 
   const integrationContract = read("docs/architecture/agent-integration-contract.md");
   for (const needle of ["Strong", "Proven", "Advisory", "Pending upstream", "cairn-doctor.mjs", "Codex", "Claude Code"]) {
@@ -409,6 +418,36 @@ if (!missing.length) {
     fail(`scaffold smoke test failed: ${e.message}`);
   } finally {
     fs.rmSync(scaffoldRepo, { recursive: true, force: true });
+  }
+
+  // UserPromptSubmit smoke test: silent with no active change (zero token cost), emits the
+  // anchor when a change folder exists; Claude branch wraps it as additionalContext JSON.
+  const upsRepo = fs.mkdtempSync(path.join(fs.realpathSync("/tmp"), "cairn-ups-"));
+  try {
+    execSync("git init -q", { cwd: upsRepo, stdio: ["ignore", "ignore", "ignore"] });
+    const hookPath = path.join(root, "plugins/cairn/hooks/user-prompt-submit.sh");
+    const runUps = (claude) =>
+      execSync(`bash ${JSON.stringify(hookPath)}`, {
+        cwd: upsRepo,
+        env: claude ? { ...process.env, CLAUDE_PLUGIN_ROOT: path.join(root, "plugins/cairn") } : (() => { const e = { ...process.env }; delete e.CLAUDE_PLUGIN_ROOT; return e; })(),
+        stdio: ["ignore", "pipe", "pipe"],
+      }).toString();
+    if (runUps(false).trim() !== "") fail("user-prompt-submit.sh must be silent with no active change");
+    fs.mkdirSync(path.join(upsRepo, ".cairn/changes/ups-slug"), { recursive: true });
+    fs.writeFileSync(path.join(upsRepo, ".cairn/changes/ups-slug/tasks.md"), "- [ ] open step\n");
+    const codexOut = runUps(false);
+    if (!codexOut.includes("ups-slug")) fail("user-prompt-submit.sh did not emit the active change (Codex branch)");
+    const claudeOut = JSON.parse(runUps(true));
+    if (claudeOut.hookSpecificOutput?.hookEventName !== "UserPromptSubmit") {
+      fail("user-prompt-submit.sh Claude branch must emit hookEventName UserPromptSubmit");
+    }
+    if (!claudeOut.hookSpecificOutput?.additionalContext?.includes("ups-slug")) {
+      fail("user-prompt-submit.sh Claude branch must inject the anchor as additionalContext");
+    }
+  } catch (e) {
+    fail(`user-prompt-submit smoke test failed: ${e.message}`);
+  } finally {
+    fs.rmSync(upsRepo, { recursive: true, force: true });
   }
 
   const guardWorkspaceTmp = fs.mkdtempSync(path.join(fs.realpathSync("/tmp"), "cairn-guard-workspace-"));
