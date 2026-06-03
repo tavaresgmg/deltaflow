@@ -9,6 +9,12 @@ agent routes through Cairn before responding — no need to invoke the skill by 
   also exposes `${CLAUDE_PLUGIN_ROOT}` for compatibility. On Claude it emits `SessionStart`
   `additionalContext` JSON; elsewhere (Codex) it emits plain text.
 
+Autonomy layer 1 (per-turn): a `UserPromptSubmit` hook runs `user-prompt-submit.sh`, which
+re-injects the resume anchor (`cairn-anchor.mjs`: active change, open tasks, recent decisions)
+at the start of each turn so routing state survives without relying on model memory. Silent
+(exit 0, zero tokens) when no `.cairn/changes/<slug>/` is active. Same emitter contract as
+`session-start.sh`: Claude emits `additionalContext` JSON; Codex/other emits plain stdout.
+
 Autonomy layer 3 (ADR-0003): a `PreToolUse` hook runs `scripts/cairn-guard.mjs`
 on file-mutating tools and blocks (exit 2) writes outside the active repo. Logic is
 harness-neutral and unit-tested; see `skills/cairn/references/gates.md`.
@@ -44,8 +50,13 @@ harness-neutral and unit-tested; see `skills/cairn/references/gates.md`.
 ## Validation status
 
 The bootstrap content and the script logic are versioned and locally testable
-(`node scripts/validate-cairn.mjs`). Claude Code live hook behavior is confirmed.
-Codex `SessionStart` behavior is confirmed through evals, but `PreToolUse` guard
-behavior remains an explicit live-harness gap: Codex CLI v0.136.0 `exec` file changes did
-not trigger a captured `PreToolUse` event in local smoke, so do not claim Codex mutation
-guard parity until that changes.
+(`node scripts/validate-cairn.mjs`), including a smoke test of both `user-prompt-submit.sh`
+branches and its silent-when-idle case. Claude Code live hook behavior is confirmed.
+Codex `SessionStart`/`Stop` behavior is confirmed through evals.
+
+Codex `PreToolUse` guard delivery remains an explicit live-harness gap. Upstream has since fixed
+`apply_patch` hook emission (openai/codex PR #18391) and current Codex docs list `apply_patch` as a
+`PreToolUse` target, but local runtime delivery via the installed plugin is not yet confirmed — so
+do not claim Codex mutation-guard parity until an interactive run shows the guard firing. (Note: the
+Codex hook system is enabled by the `hooks` feature flag and reads the plugin-bundled `hooks.json`;
+inline `[[hooks.PreToolUse]]` in a `config.toml` conflicts with the `hooks = true` flag.)

@@ -8,15 +8,36 @@ Tagged releases: https://github.com/tavaresgmg/cairn/releases
 
 ## [Unreleased]
 
+## [0.1.3] — 2026-06-02
+
+Adds per-turn routing context, deterministic scaffolding, and a single-owner docs pass.
+
+### Added
+- `UserPromptSubmit` hook (`hooks/user-prompt-submit.sh`): re-injects the resume anchor (active change,
+  open tasks, recent decisions) at the start of each turn, so routing state survives without relying on
+  model memory. Silent and zero-token when no `.cairn/changes/<slug>/` is active. Claude emits
+  `additionalContext` JSON; Codex/other emits plain stdout. Reuses `cairn-anchor.mjs`.
+- Deterministic scaffolding: `cairn-scaffold.mjs` copies only the templates a mode justifies into
+  `.cairn/changes/<slug>/` and seeds the repo-level `decision-log.md` (idempotent). Artifact skeletons now
+  live as files in `skills/cairn/templates/`, one owner each.
+
 ### Changed
 - Boundary guard acts only in repos that adopted Cairn (a `.cairn/` dir exists) and allowlists the agent
   config dirs (`~/.claude`, `~/.codex`), so it no longer blocks edits outside the active repo in
   un-adopted projects. Adoption check shared via `cairn-workspace.mjs` `hasCairnDir`.
 
 ### Docs
-- Roadmap is now forward-looking only; shipped history lives in this changelog. Honest-determinism labels
-  relabeled in `PRINCIPLES.md`; Output Style demoted to a pointer to Principle 8; cross-doc duplication and
-  orphaned phase references removed.
+- Single-owner cleanup: each fact owned by one doc. Roadmap is forward-looking only (shipped history lives
+  here); ADR-restating duplication in `mvp-architecture.md` collapsed to pointers; harness-status copy
+  points to `agent-integration-contract.md`; orphan roadmap "Phase N" references removed from hooks/scripts.
+  Honest-determinism labels relabeled in `PRINCIPLES.md`; Output Style demoted to a pointer to Principle 8.
+
+### Known residuals
+- Codex `UserPromptSubmit` per-turn delivery mirrors the proven `SessionStart` plain-text path but is not
+  yet live-verified on Codex.
+- Codex `PreToolUse` mutation-guard parity still pending. The upstream `apply_patch` hook fix
+  (openai/codex PR #18391) and current Codex docs list `apply_patch` as a `PreToolUse` target, but local
+  runtime delivery via the installed plugin is not yet confirmed; the guard logic itself is validated locally.
 
 ## [0.1.2] — 2026-06-02
 
@@ -78,7 +99,8 @@ First tagged milestone. Experimental.
 - Pre-release because real-model eval runs (≥2 models per harness) were not yet published, and Codex live
   PreToolUse enforcement needs manual hook registration until the upstream `plugin_hooks` flag is GA.
 
-[Unreleased]: https://github.com/tavaresgmg/cairn/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/tavaresgmg/cairn/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/tavaresgmg/cairn/releases/tag/v0.1.3
 [0.1.2]: https://github.com/tavaresgmg/cairn/releases/tag/v0.1.2
 [0.1.1]: https://github.com/tavaresgmg/cairn/releases/tag/v0.1.1
 [0.1.0]: https://github.com/tavaresgmg/cairn/releases/tag/v0.1.0
