@@ -108,5 +108,5 @@ blocker and the next concrete action.
 
 ## Output Style
 
-Concise per Principle 8 (`docs/PRINCIPLES.md`, the owner) — caveman-full for agent output. Never
-compress safety warnings, irreversible confirmations, public artifacts, or any number/ID/date/path.
+Concise per Principle 8 (token economy) — caveman-full for agent output. Never compress safety
+warnings, irreversible confirmations, public artifacts, or any number/ID/date/path.

@@ -10,7 +10,7 @@
 
 ## Design Rules
 
-Canonical principles: `docs/PRINCIPLES.md`. Reuse the existing owner before creating one.
+Canonical principles are repo-only (`PRINCIPLES.md`). Reuse the existing owner before creating one.
 Improve judgment through dogfood before eval spend.
 
 ## Failure Controls

@@ -8,6 +8,15 @@ Tagged releases: https://github.com/tavaresgmg/cairn/releases
 
 ## [Unreleased]
 
+## [0.1.13] — 2026-06-03
+
+### Fixed
+- The installed plugin no longer points at repo-only `docs/` files that don't ship with it.
+  `SKILL.md` and `references/framework-lessons.md` cited `docs/PRINCIPLES.md` (a dead path for
+  installed users, since only `plugins/cairn/` ships). The runtime is now self-contained:
+  principles are noted as repo-only, and maintainer comments in `cairn-doctor.mjs` /
+  `hooks/session-start.sh` are explicitly attributed to the repo. No runtime behavior changed.
+
 ## [0.1.12] — 2026-06-03
 
 ### Changed
