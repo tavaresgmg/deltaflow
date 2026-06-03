@@ -81,8 +81,8 @@ Workflow:
 6. Implement and update the delta when reality differs.
 7. Archive or sync final behavior when done.
 
-Scaffold `.cairn/changes/<slug>/` (+ `delta.md`) before mutating; tick `tasks.md` live; no
-folder first = not delta-spec.
+Scaffold via `cairn-scaffold.mjs` before mutating; tick `tasks.md` live; no folder first = not
+delta-spec.
 
 ## Tracked Change
 
@@ -97,8 +97,8 @@ Use when work crosses boundaries:
 Workflow:
 
 1. Ground on repo constraints (`AGENTS.md`, lockfile, conventions, specs).
-2. Scaffold `.cairn/changes/<slug>/` before mutation; tick `tasks.md` live. No folder first =
-   not tracked-change.
+2. Scaffold via `cairn-scaffold.mjs` before mutation; tick `tasks.md` live. No folder first = not
+   tracked-change.
 3. Capture evidence, scope, gates, rollback, proof, and reuse/adapt/new decisions.
 4. Infra lens: for deploy/runtime, name env, health/log signal, rollback, and local/no-deploy
    proof before commands.

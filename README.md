@@ -69,11 +69,9 @@ Ten principles drive every decision (full text in [`docs/PRINCIPLES.md`](docs/PR
 ## One source, both harnesses
 
 Cairn ships a single canonical manifest that generates the Codex and Claude Code plugins, so the
-two never drift. It bundles a repo-boundary guard and an end-of-turn coherence hook. Claude
-PreToolUse guard is live-proven; Codex Stop hook is live-proven; Codex write-guard parity remains
-best-effort until upstream PreToolUse/plugin-hook behavior is fully reliable. Read-only helper
-scripts report facts (boundary, context readiness, drift) while the prose decides. What's enforced
-vs advisory is stated plainly, never overclaimed.
+two never drift. It bundles a repo-boundary guard and an end-of-turn coherence hook; read-only
+helper scripts report facts (boundary, context readiness, drift) while the prose decides. What's
+enforced vs advisory is stated plainly, never overclaimed — per-harness status below.
 
 ## Install
 
@@ -95,10 +93,9 @@ Full setup, memory-policy presets, and local development: [`docs/install.md`](do
 
 ## Status
 
-**Experimental.** Structural validation passes locally. Live harness behavior and model-eval gaps
-are tracked in the roadmap/eval docs. Claude PreToolUse guard is live-proven; Codex Stop hook is
-live-proven; Codex write-guard parity remains best-effort pending upstream PreToolUse/plugin-hook
-behavior.
+**Experimental.** Structural validation passes locally. Claude PreToolUse guard and Codex Stop hook
+are live-proven; Codex write-guard parity is pending upstream behavior. Full per-harness enforcement
+status lives in the agent integration contract (below); model-eval gaps in the eval docs.
 
 - Changelog: [`CHANGELOG.md`](CHANGELOG.md)
 - Roadmap & live proof: [`docs/roadmap.md`](docs/roadmap.md)

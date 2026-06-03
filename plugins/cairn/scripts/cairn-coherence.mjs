@@ -1,4 +1,4 @@
-// End-of-turn coherence check (Phase 16). Used as a Stop hook on both Codex and Claude Code:
+// End-of-turn coherence check. Used as a Stop hook on both Codex and Claude Code:
 // if the turn declared `Mode: tracked-change|delta-spec` but no `.cairn/changes/<slug>/`
 // folder exists under the repo, surface a one-shot corrective (exit 2 + stderr) so the agent
 // scaffolds before closing — the deterministic signal gates.md reserved. Never a hard gate:

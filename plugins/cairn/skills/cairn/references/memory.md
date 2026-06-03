@@ -64,22 +64,15 @@ deploy/runtime state, and versions.
 
 ## decision-log.md
 
-Append-only. One line per load-bearing decision, written when made, never rewritten:
-
-```text
-2026-06-01 — chose X over Y because <evidence>; tradeoff: <named downside>
-```
-
-It records *why*, not *what happened*. No narrative logs — code, tests, and specs carry the rest.
+Append-only, repo-level, written when each load-bearing decision is made, never rewritten. Records
+*why*, not *what happened* — code, tests, and specs carry the rest. Template + retention owned by
+`artifacts.md`.
 
 ## Hygiene
 
-Retention rules live in `artifacts.md`: keep specs that describe durable behavior; archive or
-delete transient plans after completion; never leave stale clutter. Completed `delta-spec` and
-`tracked-change` work must end with an explicit choice: sync to living spec, delegate to the
-repo's existing spec system, archive, or delete. Use `cairn-retention.mjs` to find completed
-active changes before cleanup. Memory is a hint, not authority — revalidate drift-prone
-external facts before acting on a recalled summary.
+Retention is owned by `artifacts.md` (lifecycle decision at close, archive/sync/delete,
+`cairn-retention.mjs`). Memory is a hint, not authority — revalidate drift-prone external facts
+before acting on a recalled summary.
 
 Learn from failure (Principle 9): when work reveals context was missing, wrong, or stale,
 update the owning context doc (codebase map, spec, `AGENTS.md`) at close — not just the code.

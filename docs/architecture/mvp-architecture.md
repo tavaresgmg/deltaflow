@@ -2,9 +2,8 @@
 
 Cairn is a development workflow **router** — autonomous, memory- and workspace-aware —
 that picks the lightest workflow that still protects correctness. It is brownfield-first
-when a repo exists, but it is not card-only: no-card tasks, research, greenfield-in-repo,
-cleanup, SDD-style deltas, and repo-pattern alignment all route through the same mode
-ladder. It targets OpenAI Codex and Claude Code from one portable source.
+when a repo exists, not card-only (`scope-and-workflows.md` owns what routes where). It targets
+OpenAI Codex and Claude Code from one portable source.
 
 Decisions live in `docs/decisions/` (ADRs); the evidence behind them is in
 `docs/research/{frameworks,context-and-portability}.md`.
@@ -40,19 +39,11 @@ Public install must not depend on anything under the author's `~/.codex` or `~/.
 
 ## Autonomy (ADR-0003)
 
-Auto-trigger by description is model-invoked and probabilistic in both harnesses, so it is
-reinforced in three layers:
-
-1. **Dispatch** — a single bash SessionStart hook detects the harness and injects a small
-   bootstrap that tells the agent to route through Cairn before responding.
-2. **Discovery** — a directive `description`: `[domain] + [ALWAYS directive] + [real trigger
-   phrases] + [negative boundary]`, front-loaded, third person; `when_to_use` carries pt-BR+en
-   trigger phrases with the same keywords duplicated in `description`.
-3. **Enforcement** — mutation-boundary gates via PreToolUse hook are live-proven on Claude;
-   Codex write-guard parity remains best-effort until upstream hook behavior is reliable.
-   The coherence Stop hook is live-proven on Codex and adoption-gated to repos that already
-   use `.cairn/`. Brainstorm and proof-before-done remain advisory unless promoted to a
-   deterministic, low-blast-radius signal. Prose in `AGENTS.md` is advisory.
+Auto-trigger by description is model-invoked and probabilistic, so it is reinforced in three
+layers — **dispatch** (SessionStart bootstrap detects harness + injects routing), **discovery**
+(directive front-loaded `description` + bilingual `when_to_use`), **enforcement** (PreToolUse guard
++ coherence Stop hook). Rationale in ADR-0003; per-surface enforcement status (Claude vs Codex,
+strong/proven/advisory/pending) is owned by `agent-integration-contract.md`.
 
 Context budget is enforced by `plugins/cairn/scripts/cairn-budget.mjs` and
 `node scripts/validate-cairn.mjs`: the always-on bootstrap, the selected `SKILL.md`, each
@@ -120,52 +111,27 @@ plugin.manifest.json
 | Durable state | `.cairn/changes`, `.cairn/specs`, `.cairn/codebase` | `cairn-analyze.mjs`, `cairn-retention.mjs` |
 | Regression proof | `docs/evals/results/*.jsonl` | `eval-scoreboard.mjs` |
 
-Modes (classified by size/risk, lowest ceremony wins):
-
-- `direct`: small, reversible, clear edit.
-- `diagnose`: concrete broken behavior needing repro.
-- `discovery`: ambiguous product/domain/architecture question.
-- `delta-spec`: medium brownfield change needing durable intent.
-- `tracked-change`: high-risk or multi-phase change needing explicit gates.
+The five modes (size/risk-classified, lowest ceremony wins) are defined in `references/modes.md`.
 
 ## First-class stages (ADR-0006)
 
-Brainstorm (hard-gate: design before code, scales with stakes), web research (Phase 0
-subagent that returns a distilled summary and writes a reusable `research/<topic>.md`),
-and official-docs grounding (always-on rule; ground on the **lockfile** version, not the
-newest). Lightweight by default, gated by intent so a small card stays cheap.
+Brainstorm, web research (Phase 0, isolated subagent), and official-docs grounding at the lockfile
+version — lightweight by default, intent-gated so a small card stays cheap. Defined in
+`references/research.md`; rationale in ADR-0006.
 
 ## Memory (ADR-0004)
 
-Layered, file-based, versioned in the repo — not any harness's native memory as canonical
-state:
-
-```text
-AGENTS.md                      # human/project guidance; plugin bootstrap carries Cairn routing
-.cairn/changes/<slug>/
-  brainstorm.md
-  research/<topic>.md
-  delta.md                     # ADDED / MODIFIED / REMOVED (brownfield)
-  plan.md
-  tasks.md                     # [ ]/[x] checkboxes, updated live for resume
-  proof.md
-.cairn/codebase/<area>.md      # optional scoped map for non-obvious repo knowledge
-.cairn/specs/<capability>.md   # optional living truth for durable behavior
-.cairn/decision-log.md         # append-only, written DURING the work
-```
-
-Spec↔code reconciliation is handled by `cairn-analyze.mjs` verify/drift checks. It names
-missing claims, refs, proof, and lifecycle decisions; it does not run proof commands.
+Layered, file-based, versioned in the repo — not any harness's native memory as canonical state.
+The `.cairn/` layout and resume protocol are owned by `references/memory.md`; templates by
+`references/artifacts.md`. Spec↔code reconciliation runs through `cairn-analyze.mjs` verify/drift
+checks (names missing claims, refs, proof, and lifecycle decisions; does not run proof commands).
 
 ## Workspace model (ADR-0005)
 
-Umbrella workspace with explicit owner per level: parent `AGENTS.md` = scope + cross-repo
-safety + repo map (not a monorepo); parent `.work/HANDOFF.md` coordinates cross-repo work;
-child repos own git/code/tests and their own `.cairn/changes` state unless the boundary
-detector reports workspace-scoped Cairn state. `HANDOFF.md` coordinates; it never replaces
-Cairn state. Workspace-scoped state lives in the parent `.cairn/changes/<slug>/`; repo-scoped
-state lives in each touched child repo. Run deterministic boundary detection before mutation;
-multi-repo tasks still close with separate proof and PR/MR boundaries per repo.
+Umbrella workspace with an explicit owner per level (parent `AGENTS.md` = scope + cross-repo safety
++ repo map, not a monorepo; child repos own git/code/tests). Boundary detection, state ownership,
+the `HANDOFF.md`-coordinates-but-never-replaces rule, and the separate-proof/PR-per-repo close are
+owned by `references/workspace.md`; rationale in ADR-0005.
 
 ## Why plugin, not CLI first
 

@@ -1,7 +1,7 @@
 // Local structural validation for the Cairn plugin. Run from the repo root:
 //   node scripts/validate-cairn.mjs
 // Validates everything we can check without a live harness; auto-trigger and hook I/O
-// are validated empirically per docs/evals/auto-trigger.md (Phase 1 exit).
+// are validated empirically per docs/evals/auto-trigger.md.
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -66,6 +66,7 @@ const required = [
   "plugins/cairn/scripts/cairn-retention.mjs",
   "plugins/cairn/scripts/cairn-version.mjs",
   "plugins/cairn/scripts/cairn-anchor.mjs",
+  "plugins/cairn/scripts/cairn-scaffold.mjs",
   "plugins/cairn/agents/cairn-researcher.md",
   "plugins/cairn/skills/cairn/SKILL.md",
   "plugins/cairn/skills/cairn/references/modes.md",
@@ -380,6 +381,34 @@ if (!missing.length) {
     if (freshOutside !== 0) fail(`cairn-guard.mjs policed a non-Cairn repo with no .cairn/ (exit ${freshOutside})`);
   } finally {
     fs.rmSync(guardFresh, { recursive: true, force: true });
+  }
+
+  // Scaffold smoke test: copies the mode's templates into .cairn/changes/<slug>/, idempotent,
+  // seeds the repo-level decision-log, and rejects non-scaffolding modes.
+  const scaffoldRepo = fs.mkdtempSync(path.join(fs.realpathSync("/tmp"), "cairn-scaffold-"));
+  try {
+    execSync("git init -q", { cwd: scaffoldRepo, stdio: ["ignore", "ignore", "ignore"] });
+    const runScaffold = (args) =>
+      execSync(`node plugins/cairn/scripts/cairn-scaffold.mjs ${args}`, { stdio: ["ignore", "pipe", "ignore"] }).toString();
+    const out = JSON.parse(runScaffold(`delta-spec my-slug ${scaffoldRepo}`));
+    for (const f of ["delta.md", "plan.md", "tasks.md", "proof.md"]) {
+      if (!fs.existsSync(path.join(scaffoldRepo, ".cairn/changes/my-slug", f))) {
+        fail(`cairn-scaffold.mjs did not create ${f}`);
+      }
+    }
+    if (!fs.existsSync(path.join(scaffoldRepo, ".cairn/decision-log.md"))) {
+      fail("cairn-scaffold.mjs did not seed .cairn/decision-log.md");
+    }
+    if (out.created.length !== 5) fail(`cairn-scaffold.mjs created ${out.created.length} files, expected 5`);
+    const rerun = JSON.parse(runScaffold(`delta-spec my-slug ${scaffoldRepo}`));
+    if (rerun.created.length !== 0) fail(`cairn-scaffold.mjs re-run was not idempotent (created ${rerun.created.length})`);
+    let rejectedMode = 0;
+    try { runScaffold(`direct nope ${scaffoldRepo}`); } catch { rejectedMode = 1; }
+    if (rejectedMode !== 1) fail("cairn-scaffold.mjs did not reject a non-scaffolding mode");
+  } catch (e) {
+    fail(`scaffold smoke test failed: ${e.message}`);
+  } finally {
+    fs.rmSync(scaffoldRepo, { recursive: true, force: true });
   }
 
   const guardWorkspaceTmp = fs.mkdtempSync(path.join(fs.realpathSync("/tmp"), "cairn-guard-workspace-"));

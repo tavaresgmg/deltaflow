@@ -15,11 +15,9 @@ Each behind the default-light intent gate:
 1. **Core operating model** — make routing judgment, artifact lifecycle, workspace ownership,
    and token economy obvious in existing owners (`mvp-architecture.md`, `PRINCIPLES.md`,
    `framework-lessons.md`). No new ceremony surface unless an owner is missing.
-2. **Dogfood one real multi-repo workspace task before more fixtures** — pick a task that touches
-   2+ independent child repos under one parent workspace. Success means: boundary output captured
-   for parent + children, one `HANDOFF.md` repo map, one correct Cairn state owner based on
-   `cairnStateScope`, separate proof/PR/MR boundary per repo, and a closeout lifecycle decision.
-   Patch only `workspace.md`/`modes.md` if this exposes friction; do not add a new template first.
+2. **Dogfood one real multi-repo workspace task before more fixtures** — run the dogfood proof
+   contract (`references/workspace.md`) on a task touching 2+ independent child repos. Patch only
+   `workspace.md`/`modes.md` if this exposes friction; do not add a new template first.
 3. **Domain lenses** — start with manual brownfield evidence. `infra-lens` is seeded,
    but do not edit `SKILL.md` until the vague guidance is confirmed outside eval churn.
 4. **Protect eval history** — result labels are immutable by default; use `--overwrite` only for

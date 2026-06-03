@@ -49,8 +49,8 @@ explicitly. When a `delta.md` exists and code has moved:
 4. Sync — update `delta.md` to match reality, or fix code to match intent; record the choice
    in `.cairn/decision-log.md`.
 5. Re-run `cairn-analyze.mjs` to confirm the folder is internally consistent.
-6. On close, sync durable behavior into `.cairn/specs/<capability>.md`, delegate to an existing
-   spec system such as OpenSpec, archive the change folder, or delete transient planning.
+6. On close, make the lifecycle decision (`artifacts.md` Retention): sync to spec, delegate,
+   archive, or delete.
 
 ## Cross-harness parity & validation status
 

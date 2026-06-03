@@ -140,7 +140,8 @@ function buildReport() {
     // NOTE: surface statuses below mix live-derived (pluginManifest from manifestParity,
     // stopCoherence/sessionStart/preToolUseGuard from hookDeclarations) with KNOWN evidence
     // verdicts that are literals (skillLoading "proven", Codex preToolUseGuard "pending-upstream",
-    // writeProtection "advisory") — see docs/roadmap.md Phase 8 + references/gates.md. Not probes.
+    // writeProtection "advisory") — see docs/architecture/agent-integration-contract.md +
+    // references/gates.md. Not probes.
     harnesses: {
       codex: {
         cli: codexCli,

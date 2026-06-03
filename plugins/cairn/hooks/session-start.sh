@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Cairn SessionStart hook — injects the routing bootstrap (ADR-0003, autonomy layer 1).
 # Portable across Claude Code and Codex from one script. The exact stdout contract per
-# harness is verified empirically (Phase 1 exit), so this stays minimal and dependency-free.
+# harness is verified empirically (see docs/evals/auto-trigger.md), so this stays minimal and
+# dependency-free.
 set -euo pipefail
 
 # ${CLAUDE_PLUGIN_ROOT} is the cross-harness root var used by this package. Claude sets it
@@ -14,8 +15,8 @@ BOOTSTRAP="$DIR/hooks/bootstrap.md"
 if [ -n "${CLAUDE_PLUGIN_ROOT:-}" ]; then
   # Claude Code SessionStart: emit JSON with additionalContext. node ships with both repos.
   # On compact/resume, append the read-only resume anchor (active change state) so the active
-  # route survives compaction — long-context survival (Phase 10). Codex has no equivalent
-  # injection; resume there re-reads the on-disk tasks.md/decision-log.md (Phase 8 matrix).
+  # route survives compaction. Codex has no equivalent injection; resume there re-reads the
+  # on-disk tasks.md/decision-log.md.
   ANCHOR="$DIR/scripts/cairn-anchor.mjs"
   node -e '
     const fs = require("node:fs");

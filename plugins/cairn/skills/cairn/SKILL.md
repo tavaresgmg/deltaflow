@@ -85,7 +85,7 @@ Read these references only when needed:
 - Do not create PRD/spec/plan artifacts for small direct work.
 - Do not implement before discovery when the request is vague and the wrong thing could be built.
 - Do not impose TDD universally. Use tests proportional to risk and local patterns.
-- delta-spec/tracked-change: scaffold `.cairn/changes/<slug>/` before mutating; tick
+- delta-spec/tracked-change: scaffold via `cairn-scaffold.mjs <mode> <slug>` before mutating; tick
   `tasks.md` live, never back-fill. No folder first = not that mode.
 - Resume: on existing `.cairn/changes/<slug>/`, read `tasks.md` + `decision-log.md` tail first.
 - Before saying done, provide fresh proof and run `cairn-analyze.mjs` on any change folder.
@@ -103,6 +103,5 @@ blocker and the next concrete action.
 
 ## Output Style
 
-Concise per Principle 8 (`docs/PRINCIPLES.md`, the owner): caveman-full for agent output —
-fragments ok, active voice, present tense, one idea per line; keep code/terms exact. Never
+Concise per Principle 8 (`docs/PRINCIPLES.md`, the owner) — caveman-full for agent output. Never
 compress safety warnings, irreversible confirmations, public artifacts, or any number/ID/date/path.
