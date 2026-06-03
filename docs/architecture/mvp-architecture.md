@@ -128,10 +128,10 @@ checks (names missing claims, refs, proof, and lifecycle decisions; does not run
 
 ## Workspace model (ADR-0005)
 
-Umbrella workspace with an explicit owner per level (parent `AGENTS.md` = scope + cross-repo safety
-+ repo map, not a monorepo; child repos own git/code/tests). Boundary detection, state ownership,
-the `HANDOFF.md`-coordinates-but-never-replaces rule, and the separate-proof/PR-per-repo close are
-owned by `references/workspace.md`; rationale in ADR-0005.
+Umbrella workspace with an explicit owner per level (parent `AGENTS.md` + `.cairn/` = scope,
+cross-repo safety, repo map, not a monorepo; child repos own git/code/tests). Boundary detection,
+state ownership, the handoff-coordinates-but-never-replaces rule, and separate proof/PR per repo
+are owned by `references/workspace.md`; rationale in ADR-0005. `.work/` is legacy migration input.
 
 ## Why plugin, not CLI first
 

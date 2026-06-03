@@ -310,7 +310,7 @@ if (!missing.length) {
   const appRepo = path.join(workspace, "app");
   const apiRepo = path.join(workspace, "api");
   try {
-    fs.mkdirSync(path.join(workspace, ".work"), { recursive: true });
+    fs.mkdirSync(path.join(workspace, ".cairn"), { recursive: true });
     fs.writeFileSync(path.join(workspace, "AGENTS.md"), "# Workspace\n");
     fs.mkdirSync(appRepo, { recursive: true });
     fs.mkdirSync(apiRepo, { recursive: true });
@@ -328,6 +328,18 @@ if (!missing.length) {
     if (fromParent.workspaceRoot !== workspace || fromParent.cairnStateRoot !== workspace || fromParent.cairnStateScope !== "workspace") {
       fail("workspace boundary did not use the marked parent as Cairn state root");
     }
+    if (fromParent.workspaceMarker !== "cairn" || fromParent.legacyWorkRoot !== null) {
+      fail("workspace boundary did not prefer the .cairn workspace marker");
+    }
+    if (fromParent.cairnWorktreeRoot !== path.join(workspace, ".cairn/worktrees")) {
+      fail("workspace boundary did not report the canonical .cairn worktree root");
+    }
+    if (fromParent.cairnTmpRoot !== path.join(workspace, ".cairn/tmp")) {
+      fail("workspace boundary did not report the canonical .cairn tmp root");
+    }
+    if (fromParent.cairnWorkspaceDocsRoot !== path.join(workspace, ".cairn/docs")) {
+      fail("workspace boundary did not report the canonical .cairn docs root");
+    }
     if (fromParent.siblingRepos.length !== 2) fail("workspace boundary did not list child repos from parent");
     if (fromParent.memoryPolicy !== "local") fail("workspace boundary did not mark workspace state as local");
     if (fromChild.repoRoot !== appRepo || fromChild.workspaceRoot !== workspace || fromChild.cairnStateRoot !== workspace) {
@@ -336,9 +348,28 @@ if (!missing.length) {
     if (fromChild.cairnStateScope !== "workspace" || fromChild.memoryPolicy !== "local") {
       fail("workspace boundary from child repo did not report workspace/local state");
     }
+    const legacyWorkspace = path.join(tmpWorkspace, "legacy-workspace");
+    const legacyApp = path.join(legacyWorkspace, "app");
+    const legacyApi = path.join(legacyWorkspace, "api");
+    fs.mkdirSync(path.join(legacyWorkspace, ".work"), { recursive: true });
+    fs.mkdirSync(legacyApp, { recursive: true });
+    fs.mkdirSync(legacyApi, { recursive: true });
+    execSync("git init -q", { cwd: legacyApp, stdio: ["ignore", "ignore", "ignore"] });
+    execSync("git init -q", { cwd: legacyApi, stdio: ["ignore", "ignore", "ignore"] });
+    const legacy = JSON.parse(execSync(`node ${JSON.stringify(path.join(root, "plugins/cairn/scripts/cairn-boundary.mjs"))} ${JSON.stringify(legacyApp)}`, {
+      cwd: root,
+      stdio: ["ignore", "pipe", "ignore"],
+    }).toString());
+    if (legacy.workspaceRoot !== legacyWorkspace || legacy.workspaceMarker !== "work-legacy") {
+      fail("workspace boundary did not read legacy .work workspaces");
+    }
+    if (legacy.legacyWorkRoot !== path.join(legacyWorkspace, ".work")) {
+      fail("workspace boundary did not report legacyWorkRoot for .work migration");
+    }
     const gitParent = path.join(tmpWorkspace, "git-parent");
     const nestedRepo = path.join(gitParent, "nested");
     fs.mkdirSync(path.join(gitParent, ".work"), { recursive: true });
+    fs.mkdirSync(path.join(gitParent, ".cairn"), { recursive: true });
     execSync("git init -q", { cwd: gitParent, stdio: ["ignore", "ignore", "ignore"] });
     fs.mkdirSync(nestedRepo, { recursive: true });
     execSync("git init -q", { cwd: nestedRepo, stdio: ["ignore", "ignore", "ignore"] });
@@ -347,7 +378,7 @@ if (!missing.length) {
       stdio: ["ignore", "pipe", "ignore"],
     }).toString());
     if (nested.cairnStateScope !== "repo" || nested.cairnStateRoot !== nestedRepo || nested.workspaceRoot !== null) {
-      fail("workspace boundary treated a Git repo parent with .work/ as a marked workspace");
+      fail("workspace boundary treated a Git repo parent marker as a marked workspace");
     }
   } catch (e) {
     fail(`workspace boundary smoke test failed: ${e.message}`);
@@ -367,21 +398,28 @@ if (!missing.length) {
       return e.status ?? 1;
     }
   };
-  const inside = runGuard({ tool_name: "Edit", tool_input: { file_path: path.join(root, "README.md") }, cwd: root });
-  const outside = runGuard({ tool_name: "Edit", tool_input: { file_path: "/tmp/cairn-outside.txt" }, cwd: root });
-  const outsidePatch = runGuard({
-    tool_name: "apply_patch",
-    tool_input: { patch: "*** Begin Patch\n*** Add File: ../cairn-outside.txt\n+blocked\n*** End Patch\n" },
-    cwd: root,
-  });
-  if (inside !== 0) fail(`cairn-guard.mjs blocked an in-repo write (exit ${inside})`);
-  if (outside !== 2) fail(`cairn-guard.mjs did not block an out-of-repo write (exit ${outside})`);
-  if (outsidePatch !== 2) fail(`cairn-guard.mjs did not block an out-of-repo apply_patch (exit ${outsidePatch})`);
+  const guardAdopted = fs.mkdtempSync(path.join(fs.realpathSync("/tmp"), "cairn-guard-adopted-"));
+  try {
+    execSync("git init -q", { cwd: guardAdopted, stdio: ["ignore", "ignore", "ignore"] });
+    fs.mkdirSync(path.join(guardAdopted, ".cairn"), { recursive: true });
+    const inside = runGuard({ tool_name: "Edit", tool_input: { file_path: path.join(guardAdopted, "README.md") }, cwd: guardAdopted });
+    const outside = runGuard({ tool_name: "Edit", tool_input: { file_path: "/tmp/cairn-outside.txt" }, cwd: guardAdopted });
+    const outsidePatch = runGuard({
+      tool_name: "apply_patch",
+      tool_input: { patch: "*** Begin Patch\n*** Add File: ../cairn-outside.txt\n+blocked\n*** End Patch\n" },
+      cwd: guardAdopted,
+    });
+    if (inside !== 0) fail(`cairn-guard.mjs blocked an in-repo write (exit ${inside})`);
+    if (outside !== 2) fail(`cairn-guard.mjs did not block an out-of-repo write (exit ${outside})`);
+    if (outsidePatch !== 2) fail(`cairn-guard.mjs did not block an out-of-repo apply_patch (exit ${outsidePatch})`);
 
-  // Allowlist: harness/agent config (~/.claude) is an intended cross-repo edit, allowed even
-  // from inside an adopted repo.
-  const allowConfig = runGuard({ tool_name: "Edit", tool_input: { file_path: path.join(os.homedir(), ".claude/CLAUDE.md") }, cwd: root });
-  if (allowConfig !== 0) fail(`cairn-guard.mjs blocked an allowlisted ~/.claude edit (exit ${allowConfig})`);
+    // Allowlist: harness/agent config (~/.claude) is an intended cross-repo edit, allowed even
+    // from inside an adopted repo.
+    const allowConfig = runGuard({ tool_name: "Edit", tool_input: { file_path: path.join(os.homedir(), ".claude/CLAUDE.md") }, cwd: guardAdopted });
+    if (allowConfig !== 0) fail(`cairn-guard.mjs blocked an allowlisted ~/.claude edit (exit ${allowConfig})`);
+  } finally {
+    fs.rmSync(guardAdopted, { recursive: true, force: true });
+  }
 
   // Adoption gate: a repo with no .cairn/ is not policed — outside edits pass (mirrors coherence).
   const guardFresh = fs.mkdtempSync(path.join(fs.realpathSync("/tmp"), "cairn-guard-fresh-"));
@@ -465,7 +503,6 @@ if (!missing.length) {
   const guardChild = path.join(guardWorkspace, "app");
   const guardSibling = path.join(guardWorkspace, "api");
   try {
-    fs.mkdirSync(path.join(guardWorkspace, ".work"), { recursive: true });
     fs.mkdirSync(path.join(guardWorkspace, ".cairn"), { recursive: true }); // workspace adopted Cairn → guard active
     fs.mkdirSync(guardChild, { recursive: true });
     fs.mkdirSync(guardSibling, { recursive: true });
@@ -564,13 +601,14 @@ if (!missing.length) {
   const cohChild = path.join(cohWorkspace, "app");
   const cohSibling = path.join(cohWorkspace, "api");
   try {
-    fs.mkdirSync(path.join(cohWorkspace, ".work"), { recursive: true });
+    fs.mkdirSync(cohWorkspace, { recursive: true });
+    fs.writeFileSync(path.join(cohWorkspace, "AGENTS.md"), "# Workspace\n");
     fs.mkdirSync(cohChild, { recursive: true });
     fs.mkdirSync(cohSibling, { recursive: true });
     execSync("git init -q", { cwd: cohChild, stdio: ["ignore", "ignore", "ignore"] });
     execSync("git init -q", { cwd: cohSibling, stdio: ["ignore", "ignore", "ignore"] });
     const declared = "Mode: tracked-change\n\nWork done.";
-    // Parent not adopted yet and no misplaced child state: stays silent.
+    // Parent is a marked workspace but has no .cairn state yet: stays silent.
     const workspaceNotAdopted = runCoherence({ hook_event_name: "Stop", last_assistant_message: declared, cwd: cohChild });
     if (workspaceNotAdopted !== 0) fail(`cairn-coherence.mjs nagged a clean non-adopted workspace (exit ${workspaceNotAdopted})`);
     // Misplaced child .cairn in a marked workspace is always a declared-mode error.

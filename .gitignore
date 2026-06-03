@@ -2,13 +2,10 @@
 node_modules/
 .deltaflow/
 .codex-log/
-.work/
-.worktrees/
 dist/
 coverage/
 *.log
 
-# This repo's own .cairn/ is local dev scratchpad (evolution log, planning, internal maps for
-# BUILDING the plugin) — not consumed by plugin users. Projects that USE Cairn should commit
-# their .cairn/ as durable memory; this repo is the plugin source, not an example project.
+# This repo's own .cairn/ is local dev scratchpad for building the plugin. Projects that use
+# Cairn can choose hybrid/commit policies; this repo is the plugin source, not an example project.
 .cairn/

@@ -2,6 +2,10 @@
 
 Status: Aceito (2026-06-01)
 
+Current note: the umbrella model remains accepted, but `.work/` as the active workspace-state
+folder is legacy. Current Cairn-owned workspace state lives under `.cairn/`; see
+`plugins/cairn/skills/cairn/references/workspace.md`.
+
 ## Contexto
 
 O dono trabalha em workspaces guarda-chuva: uma pasta (ex.: `~/Developer/erictech`) com

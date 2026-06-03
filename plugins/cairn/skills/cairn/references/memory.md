@@ -24,6 +24,10 @@ each file are in `artifacts.md`.
 .cairn/
   codebase/<area>.md     # optional non-obvious repo map; scoped and revalidated
   specs/<capability>.md  # optional living truth for durable behavior
+  docs/<topic>.md         # durable workspace docs
+  state/HANDOFF.md        # active cross-repo map/sequence/blockers
+  tmp/                    # scratch; report-first cleanup
+  worktrees/<repo>/<slug>/ # linked worktrees, never parent worktrees
   changes/<slug>/
     brainstorm.md          # tracked-change / when stakes warrant design-before-code
     research/<topic>.md     # distilled research summary (local; sync durable bits at close)
@@ -37,8 +41,9 @@ each file are in `artifacts.md`.
   decision-log.md           # append-only, one line per decision, written DURING the work
 ```
 
-Commit policy is hybrid: durable knowledge (`specs/`, `codebase/`) committed; process
-(`changes/`, `decision-log.md`) local/gitignored. `.work/` is always gitignored. See `artifacts.md`.
+Commit policy is hybrid: durable knowledge (`specs/`, `codebase/`, `docs/`) committed; process
+(`changes/`, `decision-log.md`, `state/`, `tmp/`, `worktrees/`) local/gitignored. See
+`artifacts.md`.
 
 ## Codebase maps
 

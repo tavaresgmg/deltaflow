@@ -40,14 +40,15 @@ function contextReadiness(root) {
     tests: hasTests(root),
     codebaseMaps: countMd(path.join(root, ".cairn/codebase")),
     specs: countMd(path.join(root, ".cairn/specs")),
+    workspaceDocs: countMd(path.join(root, ".cairn/docs")),
   };
-  const score = [signals.agents, signals.readme, signals.tests, signals.codebaseMaps > 0, signals.specs > 0]
+  const score = [signals.agents, signals.readme, signals.tests, signals.codebaseMaps > 0, signals.specs > 0, signals.workspaceDocs > 0]
     .filter(Boolean).length;
   return { ...signals, readiness: score >= 4 ? "strong" : score >= 2 ? "partial" : "thin" };
 }
 
 // The local-vs-versioned choice IS the repo's .gitignore — read it, don't invent a config.
-// local = whole .cairn/ ignored; hybrid = process (changes/decision-log) ignored; commit = none.
+// local = whole .cairn/ ignored; hybrid = process state ignored; commit = none.
 function memoryPolicy(root) {
   let lines;
   try {
@@ -57,7 +58,7 @@ function memoryPolicy(root) {
     return "commit";
   }
   if (lines.some((l) => l === ".cairn" || l === ".cairn/" || l === ".cairn/*")) return "local";
-  if (lines.some((l) => /^\.cairn\/(changes|decision-log)/.test(l))) return "hybrid";
+  if (lines.some((l) => /^\.cairn\/(changes|decision-log|state|tmp|worktrees)/.test(l))) return "hybrid";
   return "commit";
 }
 

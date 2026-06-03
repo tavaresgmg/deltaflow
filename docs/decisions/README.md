@@ -11,7 +11,7 @@ historical and stay in pt-BR.
 | [0002](0002-portable-single-source.md) | Single portable source for Codex + Claude, validate Codex first | Accepted |
 | [0003](0003-autonomy-via-sessionstart-hook.md) | Autonomy via SessionStart hook + directive description | Accepted |
 | [0004](0004-file-based-layered-memory.md) | Layered file-based memory, versioned in the repo | Accepted |
-| [0005](0005-umbrella-workspace-model.md) | Umbrella workspace model (folder → N repos → `.work/`) | Accepted |
+| [0005](0005-umbrella-workspace-model.md) | Umbrella workspace model (folder → N repos; `.work/` legacy) | Accepted |
 | [0006](0006-first-class-research-stages.md) | Brainstorm / web research / official docs as first-class stages | Accepted |
 
 Evidence base: `docs/research/frameworks.md` and `docs/research/context-and-portability.md`.

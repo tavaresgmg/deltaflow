@@ -1,26 +1,20 @@
 # Workspace (umbrella)
 
-The umbrella model (ADR-0005): one parent folder holds N **independent** repos, not a monorepo.
-Each level has one owner.
+ADR-0005: one parent folder can hold N independent repos; not a monorepo. Each level has one owner.
 
-## Owner per level
+- Marked workspace: owns scope, cross-repo safety, repo map, workflow state:
+  `AGENTS.md`, `.cairn/state/HANDOFF.md`, `.cairn/docs/`, `.cairn/worktrees/`.
+- Child repo: owns Git, code, tests, build, runtime, commits, PRs. Repo-local `.cairn/` only
+  when no marked parent exists.
 
-| Level | Owns | State |
-| --- | --- | --- |
-| Marked workspace | scope, cross-repo safety, repo map, workflow state | `AGENTS.md`, `.work/HANDOFF.md`, workspace `.cairn/` |
-| Child repo | git, code, tests, build, runtime | repo-local `.cairn/` only when no marked parent exists |
-
-A marked workspace is a non-repo parent with `.work/`, or `AGENTS.md` plus multiple immediate
-child Git repos. If `cairnStateScope` is `"workspace"`, scaffold all Cairn state under
-`cairnStateRoot/.cairn/`, never under a child repo. Child repos still own code, Git, build,
-tests, runtime, commits, and PRs.
-
-Repo-local Cairn state follows that repo's `.gitignore`. Workspace Cairn state is local by
-default because the parent is not the Git owner; `.work/` remains ephemeral active state.
+A marked workspace is a non-repo parent with `.cairn/`, legacy `.work/`, or `AGENTS.md` plus
+multiple immediate child Git repos. If `cairnStateScope=workspace`, scaffold state under
+`cairnStateRoot/.cairn/`, never under a child repo. `.work/` is legacy input; new state goes only
+under `.cairn/`.
 
 ## Boundary check
 
-Before any mutation:
+Before mutation:
 
 ```bash
 node ${CLAUDE_PLUGIN_ROOT}/scripts/cairn-boundary.mjs
@@ -28,47 +22,48 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/cairn-boundary.mjs
 
 Key fields:
 
-- `repoRoot`: code, Git, build, and tests.
-- `cairnStateRoot`: `.cairn/changes/<slug>/`, specs, decision-log, workflow state.
-- `cairnStateScope`: `workspace` means `repoRoot/.cairn/**` is wrong.
-- `siblingRepos`: independent repos under the workspace/umbrella.
+- `repoRoot`: code/Git/build/tests owner.
+- `cairnStateRoot`: `.cairn/changes/<slug>/`, specs, decision-log.
+- `cairnWorktreeRoot`: `.cairn/worktrees/`.
+- `cairnTmpRoot`: `.cairn/tmp/`.
+- `cairnStateScope=workspace`: `repoRoot/.cairn/**` is wrong.
+- `legacyWorkRoot`: old `.work/` root, if present.
+- `siblingRepos`: independent repos in the umbrella.
 
 ## Branches & worktrees
 
-One change <-> one branch. `delta-spec` and `tracked-change` run on `cairn/<slug>`; `direct` and
-`diagnose` may stay on the current branch for trivial reversible fixes.
+Default for non-trivial mutation: **branch + worktree**. Current tree is allowed only for tiny
+`direct`/`diagnose` fixes when clean and no user work can mix in.
 
-Use a worktree only to isolate a risky long change or to run independent tasks that must not
-share one working tree. Anchor it under `<workspace>/.work/worktrees/<repo>.<slug>` — not as a
-repo sibling, which the umbrella detector would miscount as another repo. The detector resolves
-`mainWorktree`; in a marked workspace, `.cairn/` state still lands in the parent workspace.
-Never make a worktree of the parent.
+Preflight before creating/reusing: boundary output; `git status --short --branch`; remotes; current
+branch; `git worktree list`; fetch/prune; base (`origin/main`, `origin/master`, or upstream);
+local-vs-remote divergence. If dirty, behind, ambiguous, or slug exists, choose reuse/new slug.
+
+Use branch `cairn/<slug>` and worktree path `.cairn/worktrees/<repo>/<slug>`, not a repo sibling.
+Attach existing branch or create from checked base. Detector resolves `mainWorktree`; workspace
+state still lands in the parent. Never make a worktree of the parent.
 
 ## Multi-repo tasks
 
-A task spanning 2+ repos is parent-coordinated and lands as **separate PRs/MRs per repo**.
-`.work/HANDOFF.md` records handoff/map/sequence/blockers; never replaces Cairn state. If
+Tasks spanning 2+ repos are parent-coordinated and land as separate PRs/MRs per child repo.
+`.cairn/state/HANDOFF.md` records map/sequence/blockers; it never replaces Cairn state. If
 `cairnStateScope=workspace`, parent `.cairn/changes/<slug>/` owns state; child duplicates are
 wrong. If `repo`, each touched child owns its `.cairn/changes/<slug>`.
 
 ## Dogfood proof contract
 
-A public-quality proof is one real task across 2+ child repos. Show: parent + child boundary
-output; `HANDOFF.md` map; correct state owner; no duplicate child state; separate branch/proof/PR/MR
-per child; one lifecycle decision. No new template: use `HANDOFF.md`, change folder, repo proofs.
+One real task across 2+ child repos. Show: boundary output; `.cairn/state/HANDOFF.md` map;
+correct state owner; no duplicate child state; separate branch/worktree/proof/PR per child; one
+lifecycle decision. Use handoff, change folder, repo proofs.
 
-## Templates
+## HANDOFF template
 
 ```md
-# HANDOFF — <workspace>
-
-## Goal (cross-repo)
-
+# HANDOFF - <workspace>
+## Goal
 ## Repo map
 - <repo>: <role> — <branch/worktree>
-
 ## Sequencing
 1. <repo>: <step>
-
 ## Open / blocked
 ```

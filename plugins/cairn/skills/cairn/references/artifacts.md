@@ -79,11 +79,12 @@ load-bearing decision; never rewritten. Template: `templates/decision-log.md`.
 - Rotate `decision-log.md` past ~200 lines: move older entries to
   `.cairn/changes/archive/decision-log-<YYYY-MM>.md`, keep the recent tail. The anchor reads only
   the last entries, so the live log stays small.
-- Commit policy is hybrid by default: commit durable knowledge (`specs/`, `codebase/` maps); keep
-  process local and gitignored (`changes/`, `decision-log.md`). At close, sync a change's durable
-  findings into `specs/`/`codebase/` so they survive — the planning folder itself stays local.
+- Commit policy is hybrid by default: commit durable knowledge (`specs/`, `codebase/`, `docs/`);
+  keep process local and gitignored (`changes/`, `decision-log.md`, `state/`, `tmp/`,
+  `worktrees/`). At close, sync durable findings into committed docs so they survive.
   User-overridable per repo via `.gitignore` (presets in `install.md`); the boundary detector
   reports the effective `memoryPolicy` so the choice is read, not guessed.
 - Do not keep execution logs as durable docs. Prefer code, tests, and concise specs over narrative.
+- Cleanup is report-first: list stale tmp/worktrees/changes, then remove only by explicit command.
 - `node plugins/cairn/scripts/cairn-retention.mjs .cairn/changes` reports completed active changes
   and the next retention action (read-only; move/archive/delete deliberately after reviewing JSON).

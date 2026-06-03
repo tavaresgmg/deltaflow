@@ -52,20 +52,31 @@ export function childGitRepos(dir) {
   return repos;
 }
 
-export function hasWorkspaceMarker(dir) {
-  if (isGitRepoDir(dir)) return false;
+function dirExists(dir) {
   try {
-    if (fs.statSync(path.join(dir, ".work")).isDirectory()) return true;
+    return fs.statSync(dir).isDirectory();
   } catch {
-    /* no .work marker */
+    return false;
   }
-  return fs.existsSync(path.join(dir, "AGENTS.md")) && childGitRepos(dir).length >= 2 && !isGitRepoDir(dir);
+}
+
+export function workspaceMarker(dir) {
+  if (isGitRepoDir(dir)) return false;
+  if (dirExists(path.join(dir, ".cairn"))) return "cairn";
+  if (dirExists(path.join(dir, ".work"))) return "work-legacy";
+  if (fs.existsSync(path.join(dir, "AGENTS.md")) && childGitRepos(dir).length >= 2) return "agents-child-repos";
+  return null;
+}
+
+export function hasWorkspaceMarker(dir) {
+  return Boolean(workspaceMarker(dir));
 }
 
 export function findMarkedWorkspace(startDir) {
   let current = path.resolve(startDir);
   while (true) {
-    if (hasWorkspaceMarker(current)) return current;
+    const marker = workspaceMarker(current);
+    if (marker) return { root: current, marker };
     const parent = path.dirname(current);
     if (parent === current) return null;
     current = parent;
@@ -79,7 +90,8 @@ export function resolveCairnBoundary(cwd = process.cwd()) {
   const isRepo = Boolean(repoRoot);
 
   const workspaceSearchStart = mainWorktree ? path.dirname(mainWorktree) : start;
-  const workspaceRoot = findMarkedWorkspace(workspaceSearchStart);
+  const workspace = findMarkedWorkspace(workspaceSearchStart);
+  const workspaceRoot = workspace?.root || null;
   const siblingBase = workspaceRoot || (mainWorktree ? path.dirname(mainWorktree) : null);
   const siblingRepos = siblingBase ? childGitRepos(siblingBase) : [];
   const repoForComparison = mainWorktree || repoRoot;
@@ -87,6 +99,10 @@ export function resolveCairnBoundary(cwd = process.cwd()) {
 
   const cairnStateRoot = workspaceRoot || repoRoot || null;
   const cairnStateScope = workspaceRoot ? "workspace" : repoRoot ? "repo" : "none";
+  const legacyWorkRoot = workspaceRoot && dirExists(path.join(workspaceRoot, ".work"))
+    ? path.join(workspaceRoot, ".work")
+    : null;
+  const cairnRoot = cairnStateRoot ? path.join(cairnStateRoot, ".cairn") : null;
 
   return {
     cwd: start,
@@ -95,11 +111,16 @@ export function resolveCairnBoundary(cwd = process.cwd()) {
     isWorktree: isLinkedWorktree(repoRoot),
     mainWorktree,
     workspaceRoot,
+    workspaceMarker: workspace?.marker || null,
+    legacyWorkRoot,
     umbrellaRoot: siblingRepos.length >= 2 ? siblingBase : null,
     siblingRepos: siblingReposExcludingCurrent,
     cairnStateRoot,
     cairnStateScope,
-    stateRootReason: workspaceRoot ? "marked-workspace-parent" : repoRoot ? "repo-root" : "none",
+    cairnWorktreeRoot: cairnRoot ? path.join(cairnRoot, "worktrees") : null,
+    cairnTmpRoot: cairnRoot ? path.join(cairnRoot, "tmp") : null,
+    cairnWorkspaceDocsRoot: cairnRoot ? path.join(cairnRoot, "docs") : null,
+    stateRootReason: workspaceRoot ? `marked-workspace-parent:${workspace.marker}` : repoRoot ? "repo-root" : "none",
   };
 }
 

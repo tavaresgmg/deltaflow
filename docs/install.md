@@ -102,27 +102,25 @@ Pick one preset:
 ```gitignore
 .cairn/changes/
 .cairn/decision-log.md
-.work/
+.cairn/state/
+.cairn/tmp/
+.cairn/worktrees/
 ```
 
 **Local (everything local)** — nothing under `.cairn/` is versioned:
 
 ```gitignore
 .cairn/
-.work/
 ```
 
 **Commit (everything versioned)** — add nothing for `.cairn/`; let it all be committed.
 
-Commit `.cairn/specs/` and `.cairn/codebase/` whenever possible — they are living documentation.
-Process files (`changes/`, `decision-log.md`) staying local does not break same-machine resume
-(the SessionStart anchor still works).
+Commit `.cairn/specs/`, `.cairn/codebase/`, and `.cairn/docs/` whenever possible — they are
+living documentation. Process files staying local does not break same-machine resume.
 
-**Global default:** state your preference once in your global agent instructions
-(`~/.claude/CLAUDE.md`, or your Codex global `AGENTS.md`), e.g. `Cairn memory: keep local`. Cairn
-reads that and applies the matching preset when it first creates `.cairn/` state — or paste a
-preset above yourself. This plugin's own repo uses `local` — it is the plugin source, not a user
-project.
+Workspace state is owned by Cairn. `.work/` is legacy: Cairn can read it for migration, but new
+handoff/docs/worktrees/tmp state belongs under `.cairn/`. This plugin's own repo uses `local`
+because it is the plugin source, not a user project.
 
 More generally: Claude Code reads your global `~/.claude/CLAUDE.md`, Codex reads your global
 `AGENTS.md`. Cairn honors those above project files but below a same-turn chat instruction (full

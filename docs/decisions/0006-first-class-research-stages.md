@@ -2,6 +2,9 @@
 
 Status: Aceito (2026-06-01)
 
+Current note: `.work/` paths in this historical ADR are legacy. Current research summaries live
+under `.cairn/changes/<slug>/research/`, with durable findings synced to `.cairn/docs/` or specs.
+
 ## Contexto
 
 As três etapas que o dono mais valoriza — brainstorm, pesquisa web, leitura de doc oficial

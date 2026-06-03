@@ -8,6 +8,16 @@ Tagged releases: https://github.com/tavaresgmg/cairn/releases
 
 ## [Unreleased]
 
+## [0.1.5] — 2026-06-03
+
+### Changed
+- Workspace guidance now prefers branch + worktree for non-trivial mutations, with explicit
+  preflight checks for boundary, cleanliness, remotes, existing worktrees, base branch, and
+  local-vs-remote divergence.
+- Cairn workspace ownership moves from `.work/` to `.cairn/`: new handoff, docs, tmp, and
+  worktree state use `.cairn/state`, `.cairn/docs`, `.cairn/tmp`, and `.cairn/worktrees`, while
+  `.work/` remains legacy migration input.
+
 ## [0.1.4] — 2026-06-03
 
 ### Changed
@@ -113,7 +123,8 @@ First tagged milestone. Experimental.
 - Pre-release because real-model eval runs (≥2 models per harness) were not yet published, and Codex live
   PreToolUse enforcement needs manual hook registration until the upstream `plugin_hooks` flag is GA.
 
-[Unreleased]: https://github.com/tavaresgmg/cairn/compare/v0.1.4...HEAD
+[Unreleased]: https://github.com/tavaresgmg/cairn/compare/v0.1.5...HEAD
+[0.1.5]: https://github.com/tavaresgmg/cairn/releases/tag/v0.1.5
 [0.1.4]: https://github.com/tavaresgmg/cairn/releases/tag/v0.1.4
 [0.1.3]: https://github.com/tavaresgmg/cairn/releases/tag/v0.1.3
 [0.1.2]: https://github.com/tavaresgmg/cairn/releases/tag/v0.1.2

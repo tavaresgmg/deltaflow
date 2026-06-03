@@ -77,8 +77,13 @@ function boundary() {
       ok: Boolean(data.repoRoot || data.workspaceRoot || data.cairnStateRoot),
       repoRoot: data.repoRoot,
       workspaceRoot: data.workspaceRoot,
+      workspaceMarker: data.workspaceMarker,
+      legacyWorkRoot: data.legacyWorkRoot,
       cairnStateRoot: data.cairnStateRoot,
       cairnStateScope: data.cairnStateScope,
+      cairnWorktreeRoot: data.cairnWorktreeRoot,
+      cairnTmpRoot: data.cairnTmpRoot,
+      cairnWorkspaceDocsRoot: data.cairnWorkspaceDocsRoot,
       memoryPolicy: data.memoryPolicy,
       contextReadiness: data.context?.readiness ?? null,
     };
