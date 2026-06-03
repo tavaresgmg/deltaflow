@@ -78,6 +78,8 @@ Read these references only when needed:
 - Evidence first: do not invent IDs, dates, owners, card facts, API behavior, or runtime status.
 - Reuse before inventing: search existing symbols, helpers, docs, specs, and local patterns
   before adding a new path. If you do not reuse the obvious owner, name why.
+- Do not expand scope silently. If a side-idea appears mid-work, triage with the user: do now,
+  enqueue in `.cairn/queue.md`, replace priority, or drop.
 - Non-trivial work starts with workflow preflight and closes with review, proof, lifecycle, and
   analysis; see `references/workflow.md`.
 - Research first when external truth can change the plan. Brainstorm, web research, and

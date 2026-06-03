@@ -5,7 +5,7 @@
 //
 //   node scripts/eval-autotrigger.mjs <subset> <label> [model] [--harness codex|claude] [--jobs N]
 //   node scripts/eval-autotrigger.mjs <subset> --out docs/evals/results/<label>.jsonl [--model MODEL]
-//     subset: "all" | "fire" | "nofire" | "realistic" | "p0-matrix" | "infra-lens" | "skill-architecture" | "workflow-discipline" | "evolution-discipline" | comma-separated ids
+//     subset: "all" | "fire" | "nofire" | "realistic" | "p0-matrix" | "infra-lens" | "skill-architecture" | "workflow-discipline" | "evolution-discipline" | "priority-queue" | comma-separated ids
 //     label:  output file name under docs/evals/results/<label>.jsonl unless --no-save
 //     model:  optional, passed to codex exec -m or claude --model
 //
@@ -25,7 +25,7 @@ const USAGE = `Usage:
   node scripts/eval-autotrigger.mjs <subset> --out docs/evals/results/<label>.jsonl [--model MODEL]
 
 Subsets:
-  all | fire | nofire | realistic | realistic-nofire | broad | p0-matrix | infra-lens | skill-architecture | workflow-discipline | evolution-discipline | comma-separated ids
+  all | fire | nofire | realistic | realistic-nofire | broad | p0-matrix | infra-lens | skill-architecture | workflow-discipline | evolution-discipline | priority-queue | comma-separated ids
 
 Options:
   --harness codex|claude
@@ -400,7 +400,53 @@ const EVOLUTION_DISCIPLINE_CASES = [
   },
 ];
 
-const ALL_CASES = [...CASES, ...REALISTIC_CASES, ...REALISTIC_MUST_NOT_CASES, ...INFRA_LENS_CASES, ...SKILL_ARCHITECTURE_CASES, ...WORKFLOW_DISCIPLINE_CASES, ...EVOLUTION_DISCIPLINE_CASES];
+const PRIORITY_QUEUE_CASES = [
+  {
+    id: "Q1",
+    lang: "en",
+    realistic: true,
+    expectFire: true,
+    expectMode: ["delta-spec", "tracked-change", "discovery"],
+    expectText: ["queue|\\.cairn/queue\\.md|triage", "now|enqueue|replace|drop"],
+    prompt: "While implementing QUEUE-clock.md, you notice a frontend cleanup idea in QUEUE-ui-followup.md. Do not implement it silently; show how Cairn should triage the side-idea.",
+  },
+  {
+    id: "Q2",
+    lang: "en",
+    realistic: true,
+    expectFire: true,
+    expectMode: ["direct", "delta-spec", "tracked-change"],
+    expectText: ["enqueue|queued|\\.cairn/queue\\.md", "Next|Later|priority"],
+    prompt: "Implement the tiny README wording fix in QUEUE-now.md. The UI refactor in QUEUE-ui-followup.md is not for now; enqueue it instead of doing it.",
+  },
+  {
+    id: "Q3",
+    lang: "en",
+    realistic: true,
+    expectFire: true,
+    expectMode: ["discovery", "tracked-change", "delta-spec"],
+    expectText: ["replace|priority|Now", "tradeoff|downside"],
+    prompt: "A new urgent security cleanup appears while QUEUE-clock.md is active. Decide whether it replaces a Now item in the Cairn queue and name the tradeoff; do not code.",
+  },
+  {
+    id: "Q4",
+    lang: "en",
+    realistic: true,
+    expectFire: true,
+    expectMode: ["direct", "delta-spec", "tracked-change"],
+    expectText: ["Closed recent|done|dropped", "proof|queue"],
+    prompt: "Finish the queued item described in QUEUE-now.md and show how the queue should be marked at close.",
+  },
+  {
+    id: "Q5",
+    lang: "en",
+    expectFire: false,
+    expectMode: [],
+    prompt: "Explain what a product backlog is in general. Do not inspect this repo.",
+  },
+];
+
+const ALL_CASES = [...CASES, ...REALISTIC_CASES, ...REALISTIC_MUST_NOT_CASES, ...INFRA_LENS_CASES, ...SKILL_ARCHITECTURE_CASES, ...WORKFLOW_DISCIPLINE_CASES, ...EVOLUTION_DISCIPLINE_CASES, ...PRIORITY_QUEUE_CASES];
 const P0_MATRIX_IDS = ["R5", "R10", "R11", "N2", "N7", "N11"];
 const DIAGNOSTIC_LOG_BYTES = 1200;
 
@@ -706,6 +752,51 @@ function setupFixture(fixture, realistic = false, caseId = null) {
         "",
       ].join("\n"));
     }
+    if (/^Q[1234]$/.test(caseId || "")) {
+      fs.mkdirSync(path.join(fixture, ".cairn"), { recursive: true });
+      fs.writeFileSync(path.join(fixture, ".cairn/queue.md"), [
+        "# Queue",
+        "",
+        "## Now",
+        "",
+        "- [ ] Q-001 Clock entry audit — origin: QUEUE-clock.md; area: src/clock.js; priority: P1; status: active; decision: now; proof: pending",
+        "",
+        "## Next",
+        "",
+        "- [ ] Q-002 Frontend polish — origin: QUEUE-ui-followup.md; area: src/table.css; priority: P2; status: queued; decision: enqueue; proof: pending",
+        "",
+        "## Later",
+        "",
+        "## Closed recent",
+        "",
+      ].join("\n"));
+      fs.writeFileSync(path.join(fixture, "QUEUE-clock.md"), [
+        "# Queue: clock implementation",
+        "",
+        "Implement the clock entry validation using existing patterns.",
+        "During the work, a frontend cleanup idea may appear.",
+        "",
+      ].join("\n"));
+      fs.writeFileSync(path.join(fixture, "QUEUE-ui-followup.md"), [
+        "# Follow-up: frontend cleanup",
+        "",
+        "Improve the table spacing and button grouping after the clock path is stable.",
+        "This is useful but not required to finish the current clock task.",
+        "",
+      ].join("\n"));
+      fs.writeFileSync(path.join(fixture, "QUEUE-now.md"), [
+        "# Queue: small now item",
+        "",
+        "README says 'Small internal toll' and should say 'Small internal tool'.",
+        "",
+      ].join("\n"));
+      fs.writeFileSync(path.join(fixture, "QUEUE-security.md"), [
+        "# Queue: urgent security cleanup",
+        "",
+        "Normalize auth error handling before adding more clock code.",
+        "",
+      ].join("\n"));
+    }
   }
   execFileSync("git", ["init", "-q"], { cwd: fixture });
   execFileSync("git", ["add", "-A"], { cwd: fixture });
@@ -983,6 +1074,7 @@ else if (subsetArg === "infra-lens") subset = INFRA_LENS_CASES;
 else if (subsetArg === "skill-architecture") subset = SKILL_ARCHITECTURE_CASES;
 else if (subsetArg === "workflow-discipline") subset = WORKFLOW_DISCIPLINE_CASES;
 else if (subsetArg === "evolution-discipline") subset = EVOLUTION_DISCIPLINE_CASES;
+else if (subsetArg === "priority-queue") subset = PRIORITY_QUEUE_CASES;
 else if (subsetArg === "broad") subset = [
   ...REALISTIC_CASES.filter((c) => ["R8", "R9", "R10", "R11", "R12", "R13", "R14"].includes(c.id)),
   ...REALISTIC_MUST_NOT_CASES,

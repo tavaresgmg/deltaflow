@@ -82,6 +82,7 @@ const required = [
   "plugins/cairn/skills/cairn/references/workspace.md",
   "plugins/cairn/skills/cairn/references/gates.md",
   "plugins/cairn/skills/cairn/references/framework-lessons.md",
+  "plugins/cairn/skills/cairn/templates/queue.md",
   "plugins/cairn/skills/cairn/templates/spec.md",
 ];
 
@@ -232,11 +233,27 @@ if (!missing.length) {
     fail("modes.md missing reuse/adapt/new decision guidance");
   }
   const workflow = read("plugins/cairn/skills/cairn/references/workflow.md");
-  for (const needle of ["git status --short --branch", "cairn/<slug>", "Semantic Claims", "adversarial challenge", "cairn-analyze.mjs"]) {
+  for (const needle of ["git status --short --branch", "cairn/<slug>", "Semantic Claims", "adversarial challenge", ".cairn/queue.md", "now, enqueue, replace priority, or drop", "cairn-analyze.mjs"]) {
     if (!workflow.includes(needle)) fail(`workflow.md missing expected discipline: ${needle}`);
   }
+  const artifacts = read("plugins/cairn/skills/cairn/references/artifacts.md");
+  for (const needle of [".cairn/queue.md", "Now", "Next", "Later", "Closed recent", "do now, enqueue, replace priority, or drop"]) {
+    if (!artifacts.includes(needle)) fail(`artifacts.md missing queue policy: ${needle}`);
+  }
+  const memory = read("plugins/cairn/skills/cairn/references/memory.md");
+  for (const needle of ["queue.md", "Now/Next/Later/Closed recent"]) {
+    if (!memory.includes(needle)) fail(`memory.md missing queue layout: ${needle}`);
+  }
+  const queueTemplate = read("plugins/cairn/skills/cairn/templates/queue.md");
+  for (const needle of ["## Now", "## Next", "## Later", "## Closed recent", "origin:", "priority:", "status:", "decision:", "proof:"]) {
+    if (!queueTemplate.includes(needle)) fail(`queue.md template missing expected field: ${needle}`);
+  }
+  const install = read("docs/install.md");
+  if (!install.includes(".cairn/queue.md")) fail("install.md hybrid preset missing .cairn/queue.md");
+  const boundaryScript = read("plugins/cairn/scripts/cairn-boundary.mjs");
+  if (!boundaryScript.includes("queue\\.md")) fail("cairn-boundary.mjs memoryPolicy detection missing queue.md");
   const developmentWorkflow = read("docs/development-workflow.md");
-  for (const needle of ["research aperture", "borrow / adapt / avoid / defer", "non-agent", "state of practice", "git status --short --branch", "adversarial challenge"]) {
+  for (const needle of ["research aperture", "borrow / adapt / avoid / defer", "non-agent", "state of practice", "git status --short --branch", ".cairn/queue.md", "triage it into now, enqueue, replace priority, or drop", "adversarial challenge"]) {
     if (!developmentWorkflow.includes(needle)) fail(`development-workflow.md missing expected evolution discipline: ${needle}`);
   }
   const evolutionRadar = read("docs/research/evolution-radar.md");
@@ -1226,7 +1243,7 @@ if (!missing.length) {
 
   const evalScript = read("scripts/eval-autotrigger.mjs");
   const evalDocs = read("docs/evals/auto-trigger.md");
-  for (const needle of ["p0-matrix", "infra-lens", "skill-architecture", "workflow-discipline", "evolution-discipline", "expectText", "textMissIds", "answerText", "answerTail", "totalDurationMs", "slowCases", "fireMissIds", "routingMissIds", "diagnosticIds", "timeoutIds", "--out", "--dry-run", "--overwrite", "--no-save"]) {
+  for (const needle of ["p0-matrix", "infra-lens", "skill-architecture", "workflow-discipline", "evolution-discipline", "priority-queue", "expectText", "textMissIds", "answerText", "answerTail", "totalDurationMs", "slowCases", "fireMissIds", "routingMissIds", "diagnosticIds", "timeoutIds", "--out", "--dry-run", "--overwrite", "--no-save"]) {
     if (!evalScript.includes(needle)) {
       fail(`eval runner missing expected matrix support: ${needle}`);
     }
@@ -1272,6 +1289,14 @@ if (!missing.length) {
     }
     if (!new RegExp(`\\|\\s*${id}\\s*\\|`).test(evalDocs)) {
       fail(`eval docs missing evolution-discipline case ${id}`);
+    }
+  }
+  for (const id of ["Q1", "Q2", "Q3", "Q4", "Q5"]) {
+    if (!new RegExp(`id:\\s*["']${id}["']`).test(evalScript)) {
+      fail(`eval runner missing priority-queue case ${id}`);
+    }
+    if (!new RegExp(`\\|\\s*${id}\\s*\\|`).test(evalDocs)) {
+      fail(`eval docs missing priority-queue case ${id}`);
     }
   }
   try {

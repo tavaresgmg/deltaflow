@@ -1,11 +1,10 @@
 # Memory & Resume
 
-File-based, git-versioned state (ADR-0004) — not any harness's native memory. The point is
-to persist intent and resume across sessions, while staying cheap on small work.
+File-based state, not harness native memory. Goal: persist intent/resume while staying cheap.
 
 ## What state each mode creates
 
-Default-light: ceremony scales with the mode, never the other way around.
+Default-light: ceremony scales with mode.
 
 | Mode | State |
 | --- | --- |
@@ -15,19 +14,19 @@ Default-light: ceremony scales with the mode, never the other way around.
 | `delta-spec` | `.cairn/changes/<slug>/` with `delta.md`, `plan.md`, `tasks.md`, `proof.md` |
 | `tracked-change` | same, plus `brainstorm.md` and `research/<topic>.md` as needed |
 
-`<slug>` is kebab-case from the card or intent (`csv-export`, `fix-tax-calc`). Templates for
-each file are in `artifacts.md`.
+`<slug>` is kebab-case from card/intent. Templates are in `artifacts.md`.
 
 ## Layout
 
 ```text
 .cairn/
-  codebase/<area>.md     # optional non-obvious repo map; scoped and revalidated
+  codebase/<area>.md     # optional non-obvious repo map
   specs/<capability>.md  # optional living truth for durable behavior
   docs/<topic>.md         # durable workspace docs
+  queue.md                # local priority queue: Now/Next/Later/Closed recent
   state/HANDOFF.md        # active cross-repo map/sequence/blockers
   tmp/                    # scratch; report-first cleanup
-  worktrees/<repo>/<slug>/ # linked worktrees, never parent worktrees
+  worktrees/<repo>/<slug>/ # linked worktrees
   changes/<slug>/
     brainstorm.md          # tracked-change / when stakes warrant design-before-code
     research/<topic>.md     # distilled research summary (local; sync durable bits at close)
@@ -41,43 +40,36 @@ each file are in `artifacts.md`.
   decision-log.md           # append-only, one line per decision, written DURING the work
 ```
 
-Commit policy is hybrid: durable knowledge (`specs/`, `codebase/`, `docs/`) committed; process
-(`changes/`, `decision-log.md`, `state/`, `tmp/`, `worktrees/`) local/gitignored. See
-`artifacts.md`.
+Hybrid policy: commit durable knowledge (`specs/`, `codebase/`, `docs/`); keep process local
+(`queue.md`, `changes/`, `decision-log.md`, `state/`, `tmp/`, `worktrees/`). See `artifacts.md`.
 
 ## Codebase maps
 
-Use `.cairn/codebase/<area>.md` when repeated observations are expensive or error-prone:
-entry points, boundaries, non-obvious commands, data/control/auth edges, and proof commands.
+Use `.cairn/codebase/<area>.md` when repeated observations are costly: entry points, boundaries,
+non-obvious commands, data/control/auth edges, proof commands.
 
-Do not make maps mandatory. Do not turn them into stale architecture essays. Before relying on
-a map, verify facts that can drift: generated clients, routes, schemas, env vars, owners,
-deploy/runtime state, and versions.
+No mandatory maps or stale essays. Recheck drift-prone facts: clients, routes, schemas, env vars,
+owners, deploy/runtime state, versions.
 
 ## Resume protocol
 
-- **Read state first.** Before acting on existing work, read `tasks.md` and the relevant tail
-  of `decision-log.md`. Do not re-derive a plan that already exists.
-- **Write progress last, but incrementally.** Tick `tasks.md` as each step is verified — never
-  batch all checkboxes at the end. A killed session must leave accurate state.
+- **Read state first.** Existing work: read `tasks.md` + log tail; non-trivial work: scan
+  `.cairn/queue.md` top items. Do not re-derive an existing plan.
+- **Write progress incrementally.** Tick `tasks.md` as each step is verified; never batch all at
+  the end. A killed session must leave accurate state.
 - **One verifiable step per task line.** `- [ ] step` → `- [x] step — proof: <cmd/result>`.
-- **Compaction/resume re-injects an anchor.** On Claude, the SessionStart hook appends a
-  read-only resume anchor (`cairn-anchor.mjs`: active change, open tasks, recent decisions)
-  when `source` is `compact` or `resume`, so the active route survives a compaction. The
-  anchor is a pointer — still re-read `tasks.md` before acting. (Codex has no anchor injection;
-  resume re-reads on-disk `tasks.md`/`decision-log.md`.)
+- **Compaction/resume anchor.** Claude SessionStart appends read-only active change/open
+  tasks/recent decisions when `source` is `compact|resume`. Anchor is a pointer; still re-read
+  `tasks.md`. Codex resumes from disk.
 
 ## decision-log.md
 
-Append-only, repo-level, written when each load-bearing decision is made, never rewritten. Records
-*why*, not *what happened* — code, tests, and specs carry the rest. Template + retention owned by
-`artifacts.md`.
+Append-only repo log for load-bearing decisions. Records *why*; code/tests/specs carry the rest.
+Template + retention owned by `artifacts.md`.
 
 ## Hygiene
 
-Retention is owned by `artifacts.md` (lifecycle decision at close, archive/sync/delete,
-`cairn-retention.mjs`). Memory is a hint, not authority — revalidate drift-prone external facts
-before acting on a recalled summary.
+Retention is owned by `artifacts.md`. Memory is a hint, not authority; revalidate drift-prone
+external facts.
 
-Learn from failure (Principle 9): when work reveals context was missing, wrong, or stale,
-update the owning context doc (codebase map, spec, `AGENTS.md`) at close — not just the code.
+Learn from failure: if context was missing/wrong/stale, update the owner doc at close, not just code.

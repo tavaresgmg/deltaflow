@@ -58,7 +58,7 @@ function memoryPolicy(root) {
     return "commit";
   }
   if (lines.some((l) => l === ".cairn" || l === ".cairn/" || l === ".cairn/*")) return "local";
-  if (lines.some((l) => /^\.cairn\/(changes|decision-log|state|tmp|worktrees)/.test(l))) return "hybrid";
+  if (lines.some((l) => /^\.cairn\/(queue\.md|changes|decision-log|state|tmp|worktrees)/.test(l))) return "hybrid";
   return "commit";
 }
 

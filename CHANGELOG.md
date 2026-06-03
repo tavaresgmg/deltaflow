@@ -8,6 +8,26 @@ Tagged releases: https://github.com/tavaresgmg/cairn/releases
 
 ## [Unreleased]
 
+## [0.1.6] — 2026-06-03
+
+### Added
+- Local priority queue support: `.cairn/queue.md` now owns mid-work ideas and follow-ups that
+  should not silently expand the active scope.
+- Queue template with `Now`, `Next`, `Later`, and `Closed recent` sections plus origin, area,
+  priority, status, decision, and proof fields.
+- `priority-queue` eval fixtures (`Q1-Q5`) cover side-idea triage, deferred enqueue, priority
+  replacement, close marking, and conceptual backlog no-fire behavior.
+
+### Changed
+- Non-trivial workflow preflight now scans queue top items; close reconciles queue state alongside
+  delta/code/tests/specs.
+- Cairn now asks for triage before scope expansion: do now, enqueue, replace priority, or drop.
+- Hybrid memory policy docs include `.cairn/queue.md` as local process state by default.
+
+### Known residuals
+- Queue behavior has structural and dry-run eval coverage only; real-model adherence remains a
+  future `priority-queue` eval run.
+
 ## [0.1.5] — 2026-06-03
 
 ### Changed
@@ -123,7 +143,8 @@ First tagged milestone. Experimental.
 - Pre-release because real-model eval runs (≥2 models per harness) were not yet published, and Codex live
   PreToolUse enforcement needs manual hook registration until the upstream `plugin_hooks` flag is GA.
 
-[Unreleased]: https://github.com/tavaresgmg/cairn/compare/v0.1.5...HEAD
+[Unreleased]: https://github.com/tavaresgmg/cairn/compare/v0.1.6...HEAD
+[0.1.6]: https://github.com/tavaresgmg/cairn/releases/tag/v0.1.6
 [0.1.5]: https://github.com/tavaresgmg/cairn/releases/tag/v0.1.5
 [0.1.4]: https://github.com/tavaresgmg/cairn/releases/tag/v0.1.4
 [0.1.3]: https://github.com/tavaresgmg/cairn/releases/tag/v0.1.3

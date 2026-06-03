@@ -101,6 +101,7 @@ Pick one preset:
 
 ```gitignore
 .cairn/changes/
+.cairn/queue.md
 .cairn/decision-log.md
 .cairn/state/
 .cairn/tmp/

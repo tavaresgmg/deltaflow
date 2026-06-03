@@ -54,6 +54,7 @@ function runType(label = "") {
   if (label.includes("skill-architecture")) return "skill-architecture";
   if (label.includes("workflow-discipline")) return "workflow-discipline";
   if (label.includes("evolution-discipline")) return "evolution-discipline";
+  if (label.includes("priority-queue")) return "priority-queue";
   if (label.includes("realistic-nofire") || label.includes("nofire-after-scope")) return "realistic-nofire";
   if (label.includes("realistic")) return "realistic";
   if (label.includes("broad")) return "broad";

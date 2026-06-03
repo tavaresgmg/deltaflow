@@ -10,8 +10,9 @@ stay direct.
 ## Loop
 
 1. **State preflight.** Confirm repo root, branch, remote, dirty files, existing worktrees, active
-   `.cairn/changes/<slug>/`, open tasks, latest decision-log entries, and whether local plugin
-   installs/releases are in scope. Use `git status --short --branch` before mutation.
+   `.cairn/changes/<slug>/`, `.cairn/queue.md` top items, open tasks, latest decision-log entries,
+   and whether local plugin installs/releases are in scope. Use `git status --short --branch`
+   before mutation.
 2. **Problem frame.** Write the hypothesis, user pain, owner surface, expected artifact, and named
    downside. If the wrong assumption changes public effect, release, cost, or safety, ask first.
 3. **Research aperture.** For methodology or agent-behavior changes, choose 2-4 lenses before
@@ -24,7 +25,8 @@ stay direct.
 5. **Design pressure.** Brainstorm 2-3 options, pick one, name the tradeoff, then run an
    adversarial challenge and a disproof path. If the counter-case wins, change the plan.
 6. **Implementation.** Patch the smallest owner surface. Prefer docs/evals/reference edits over new
-   hooks/scripts/skills unless deterministic evidence proves prose is insufficient.
+   hooks/scripts/skills unless deterministic evidence proves prose is insufficient. If a side-idea
+   appears, triage it into now, enqueue, replace priority, or drop.
 7. **Proof.** Run local structural checks first, then focused eval dry-runs, then real-model evals
    only when a release/public claim needs them. `cairn-analyze.mjs` checks coherence; it does not
    replace executable proof.

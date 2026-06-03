@@ -46,6 +46,7 @@ node scripts/eval-autotrigger.mjs infra-lens cairn-infra-lens-<harness>-<model>
 node scripts/eval-autotrigger.mjs skill-architecture cairn-skill-architecture-<harness>-<model>
 node scripts/eval-autotrigger.mjs workflow-discipline cairn-workflow-discipline-<harness>-<model>
 node scripts/eval-autotrigger.mjs evolution-discipline cairn-evolution-discipline-<harness>-<model>
+node scripts/eval-autotrigger.mjs priority-queue cairn-priority-queue-<harness>-<model>
 ```
 
 `p0-matrix` is the cheap recurring regression matrix: `R5,R10,R11,N2,N7,N11`. It covers
@@ -247,6 +248,20 @@ competitor set while still avoiding a new always-on skill.
 | E3 | en | keep up with agent research without skill bloat; sync owners | `discovery`, `tracked-change`, or `delta-spec` |
 | E4 | en | current source categories for brainstorming/product/methodology gaps | `discovery` or `delta-spec` |
 | E5 | en | Agile Manifesto principles in general | must not fire |
+
+## Priority Queue
+
+These cases test the mid-work priority queue: side-ideas must be triaged instead of silently added
+to scope, user-deferred work should enter `.cairn/queue.md`, urgent work can replace `Now` only
+with an explicit tradeoff, and close should mark queued work done/dropped with proof.
+
+| # | Lang | Prompt focus | Expected mode |
+| --- | --- | --- | --- |
+| Q1 | en | side-idea during implementation needs triage | `delta-spec`, `tracked-change`, or `discovery` |
+| Q2 | en | user says not now; enqueue instead of implement | `direct`, `delta-spec`, or `tracked-change` |
+| Q3 | en | urgent item may replace `Now` with tradeoff | `discovery`, `tracked-change`, or `delta-spec` |
+| Q4 | en | close queued item into `Closed recent` | `direct`, `delta-spec`, or `tracked-change` |
+| Q5 | en | product backlog concept in general | must not fire |
 
 ## Near-miss notes
 
