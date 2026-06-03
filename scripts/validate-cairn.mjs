@@ -3,6 +3,7 @@
 // Validates everything we can check without a live harness; auto-trigger and hook I/O
 // are validated empirically per docs/evals/auto-trigger.md (Phase 1 exit).
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { execSync } from "node:child_process";
 
@@ -37,10 +38,10 @@ const required = [
   "README.md",
   "AGENTS.md",
   "CLAUDE.md",
-  "docs/research/framework-survey.md",
   "docs/research/frameworks.md",
   "docs/research/context-and-portability.md",
   "docs/architecture/mvp-architecture.md",
+  "docs/architecture/agent-integration-contract.md",
   "docs/decisions/README.md",
   "docs/roadmap.md",
   "docs/install.md",
@@ -60,6 +61,7 @@ const required = [
   "plugins/cairn/scripts/cairn-coherence.mjs",
   "plugins/cairn/scripts/cairn-analyze.mjs",
   "plugins/cairn/scripts/cairn-budget.mjs",
+  "plugins/cairn/scripts/cairn-doctor.mjs",
   "plugins/cairn/scripts/cairn-next.mjs",
   "plugins/cairn/scripts/cairn-retention.mjs",
   "plugins/cairn/scripts/cairn-version.mjs",
@@ -91,6 +93,28 @@ if (!missing.length) {
     if (/(^|\/)\.DS_Store$/.test(file)) {
       fail(`tracked macOS artifact must be removed: ${file}`);
     }
+  }
+  const scanForDsStore = (dir, rel = "") => {
+    let entries;
+    try {
+      entries = fs.readdirSync(dir, { withFileTypes: true });
+    } catch {
+      return [];
+    }
+    const found = [];
+    for (const ent of entries) {
+      const childRel = rel ? `${rel}/${ent.name}` : ent.name;
+      if (ent.name === ".git" || ent.name === "node_modules") continue;
+      if (ent.name === ".DS_Store") {
+        found.push(childRel);
+      } else if (ent.isDirectory()) {
+        found.push(...scanForDsStore(path.join(dir, ent.name), childRel));
+      }
+    }
+    return found;
+  };
+  for (const file of scanForDsStore(root)) {
+    fail(`local macOS artifact must be removed: ${file}`);
   }
   const staleDocPhrases = [
     {
@@ -220,6 +244,33 @@ if (!missing.length) {
     fail("hooks.json must register Stop -> cairn-coherence.mjs");
   }
 
+  const integrationContract = read("docs/architecture/agent-integration-contract.md");
+  for (const needle of ["Strong", "Proven", "Advisory", "Pending upstream", "cairn-doctor.mjs", "Codex", "Claude Code"]) {
+    if (!integrationContract.includes(needle)) fail(`agent integration contract missing expected text: ${needle}`);
+  }
+
+  // Doctor smoke test: read-only JSON output should classify both harnesses and key surfaces.
+  try {
+    const out = execSync("node plugins/cairn/scripts/cairn-doctor.mjs --json", {
+      cwd: root,
+      stdio: ["ignore", "pipe", "ignore"],
+    }).toString();
+    const d = JSON.parse(out);
+    if (d.name !== "cairn-doctor" || d.readOnly !== true) fail("cairn-doctor.mjs did not emit a read-only identity");
+    if (!d.harnesses?.codex || !d.harnesses?.claude) fail("cairn-doctor.mjs did not report both harnesses");
+    if (d.harnesses.codex.surfaces.preToolUseGuard.status !== "pending-upstream") {
+      fail("cairn-doctor.mjs must keep Codex write guard status pending-upstream");
+    }
+    if (d.harnesses.claude.surfaces.preToolUseGuard.status !== "strong") {
+      fail("cairn-doctor.mjs must report Claude PreToolUse guard as strong");
+    }
+    if (!d.shared?.manifestParity?.ok) fail("cairn-doctor.mjs did not confirm manifest parity");
+    if (!d.shared?.boundary?.ok) fail("cairn-doctor.mjs did not confirm boundary detection");
+    if (!Array.isArray(d.recommendations)) fail("cairn-doctor.mjs missing recommendations array");
+  } catch (e) {
+    fail(`cairn-doctor.mjs failed to run: ${e.message}`);
+  }
+
   // Boundary detector smoke test: must emit valid JSON resolving this repo.
   try {
     const out = execSync("node plugins/cairn/scripts/cairn-boundary.mjs", {
@@ -316,12 +367,28 @@ if (!missing.length) {
   if (outside !== 2) fail(`cairn-guard.mjs did not block an out-of-repo write (exit ${outside})`);
   if (outsidePatch !== 2) fail(`cairn-guard.mjs did not block an out-of-repo apply_patch (exit ${outsidePatch})`);
 
+  // Allowlist: harness/agent config (~/.claude) is an intended cross-repo edit, allowed even
+  // from inside an adopted repo.
+  const allowConfig = runGuard({ tool_name: "Edit", tool_input: { file_path: path.join(os.homedir(), ".claude/CLAUDE.md") }, cwd: root });
+  if (allowConfig !== 0) fail(`cairn-guard.mjs blocked an allowlisted ~/.claude edit (exit ${allowConfig})`);
+
+  // Adoption gate: a repo with no .cairn/ is not policed — outside edits pass (mirrors coherence).
+  const guardFresh = fs.mkdtempSync(path.join(fs.realpathSync("/tmp"), "cairn-guard-fresh-"));
+  try {
+    execSync("git init -q", { cwd: guardFresh, stdio: ["ignore", "ignore", "ignore"] });
+    const freshOutside = runGuard({ tool_name: "Edit", tool_input: { file_path: "/tmp/cairn-outside.txt" }, cwd: guardFresh });
+    if (freshOutside !== 0) fail(`cairn-guard.mjs policed a non-Cairn repo with no .cairn/ (exit ${freshOutside})`);
+  } finally {
+    fs.rmSync(guardFresh, { recursive: true, force: true });
+  }
+
   const guardWorkspaceTmp = fs.mkdtempSync(path.join(fs.realpathSync("/tmp"), "cairn-guard-workspace-"));
   const guardWorkspace = path.join(guardWorkspaceTmp, "workspace");
   const guardChild = path.join(guardWorkspace, "app");
   const guardSibling = path.join(guardWorkspace, "api");
   try {
     fs.mkdirSync(path.join(guardWorkspace, ".work"), { recursive: true });
+    fs.mkdirSync(path.join(guardWorkspace, ".cairn"), { recursive: true }); // workspace adopted Cairn → guard active
     fs.mkdirSync(guardChild, { recursive: true });
     fs.mkdirSync(guardSibling, { recursive: true });
     execSync("git init -q", { cwd: guardChild, stdio: ["ignore", "ignore", "ignore"] });
@@ -646,6 +713,46 @@ if (!missing.length) {
     const retention = JSON.parse(retentionOut);
     if (!retention.actionable?.some((item) => item.slug === "demo" && item.action === "archive")) {
       fail("cairn-retention.mjs did not recommend archiving a completed change with lifecycle decision");
+    }
+    const retentionApplyOut = execSync(`node ${JSON.stringify(path.join(root, "plugins/cairn/scripts/cairn-retention.mjs"))} ${JSON.stringify(path.join(tmp, ".cairn/changes"))} --apply --slug demo`, {
+      cwd: root,
+      stdio: ["ignore", "pipe", "ignore"],
+    }).toString();
+    const retentionApply = JSON.parse(retentionApplyOut);
+    if (!retentionApply.applied?.some((item) => item.slug === "demo" && item.applied && item.action === "archive")) {
+      fail("cairn-retention.mjs --apply did not archive a completed change with lifecycle decision");
+    }
+    if (fs.existsSync(change)) fail("cairn-retention.mjs --apply left the active change folder in place");
+    if (!fs.existsSync(path.join(tmp, ".cairn/changes/archive"))) {
+      fail("cairn-retention.mjs --apply did not create an archive root");
+    }
+    const collision = path.join(tmp, ".cairn/changes/collision");
+    fs.mkdirSync(collision, { recursive: true });
+    fs.writeFileSync(path.join(collision, "tasks.md"), "# Tasks\n\n- [x] step — proof: demo\n");
+    fs.writeFileSync(path.join(collision, "proof.md"), "# Proof\n\nLifecycle decision: archive — demo\n");
+    const collisionTarget = path.join(tmp, ".cairn/changes/archive", `${new Date().toISOString().slice(0, 10)}-collision`);
+    fs.mkdirSync(collisionTarget, { recursive: true });
+    try {
+      execSync(`node ${JSON.stringify(path.join(root, "plugins/cairn/scripts/cairn-retention.mjs"))} ${JSON.stringify(path.join(tmp, ".cairn/changes"))} --apply --slug collision`, {
+        cwd: root,
+        stdio: ["ignore", "pipe", "ignore"],
+      });
+      fail("cairn-retention.mjs --apply did not refuse an archive target collision");
+    } catch {
+      // expected
+    }
+    const incomplete = path.join(tmp, ".cairn/changes/incomplete");
+    fs.mkdirSync(incomplete, { recursive: true });
+    fs.writeFileSync(path.join(incomplete, "tasks.md"), "# Tasks\n\n- [ ] step\n");
+    fs.writeFileSync(path.join(incomplete, "proof.md"), "# Proof\n\nLifecycle decision: archive — demo\n");
+    try {
+      execSync(`node ${JSON.stringify(path.join(root, "plugins/cairn/scripts/cairn-retention.mjs"))} ${JSON.stringify(path.join(tmp, ".cairn/changes"))} --apply --slug incomplete`, {
+        cwd: root,
+        stdio: ["ignore", "pipe", "ignore"],
+      });
+      fail("cairn-retention.mjs --apply did not refuse an incomplete change");
+    } catch {
+      // expected
     }
   } catch (e) {
     fail(`state helper smoke test failed: ${e.message}`);

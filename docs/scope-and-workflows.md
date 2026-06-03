@@ -29,9 +29,8 @@ cleanup, complexity reduction, and alignment with existing repository patterns.
 
 ## How Cairn wins
 
-See `docs/PRINCIPLES.md` — the canonical principles (proportional depth, brownfield fit,
-evidence first, reuse, portability, honest determinism, no stale artifacts, token economy).
-This doc covers *which work routes where*; principles cover *why*.
+See `docs/PRINCIPLES.md` — the 10 canonical principles (why Cairn behaves as it does). This doc
+covers *which work routes where*; principles cover *why*.
 
 ## Official-doc implications checked 2026-06-01
 

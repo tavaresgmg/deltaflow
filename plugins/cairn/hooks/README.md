@@ -9,7 +9,7 @@ agent routes through Cairn before responding — no need to invoke the skill by 
   also exposes `${CLAUDE_PLUGIN_ROOT}` for compatibility. On Claude it emits `SessionStart`
   `additionalContext` JSON; elsewhere (Codex) it emits plain text.
 
-Autonomy layer 3 (ADR-0003, Phase 4): a `PreToolUse` hook runs `scripts/cairn-guard.mjs`
+Autonomy layer 3 (ADR-0003): a `PreToolUse` hook runs `scripts/cairn-guard.mjs`
 on file-mutating tools and blocks (exit 2) writes outside the active repo. Logic is
 harness-neutral and unit-tested; see `skills/cairn/references/gates.md`.
 

@@ -72,8 +72,11 @@ node scripts/eval-autotrigger.mjs R5,N2 --out docs/evals/results/cairn-fast-code
 Result labels are immutable by default. The runner refuses to overwrite an existing JSONL file;
 use a fresh label for reruns, or pass `--overwrite` only when deliberately replacing a known-bad
 result. Use `--dry-run` to validate subset/output selection without starting a harness.
+Codex runs default to `--sandbox read-only` for comparability; focused diagnostics may use
+`--sandbox workspace-write` against the temporary fixture when read-only friction is the thing
+being measured rather than the routing behavior.
 
-New JSONL runs record `harness`, `harnessVersion`, `model`, `durationMs`, status, trigger
+New JSONL runs record `harness`, `harnessVersion`, `model`, `sandbox`, `durationMs`, status, trigger
 signals, routing correctness, `totalDurationMs`, `maxDurationMs`, `slowCases`, `fireMissIds`,
 `routingMissIds`, `diagnosticIds`, and `timeoutIds`. Mode parsing is intentionally performed
 against `answerText` (the final answer text), while skill-read/collision signals use the full harness log;
@@ -91,7 +94,7 @@ node scripts/eval-scoreboard.mjs --json
 ```
 
 The scoreboard reads the JSONL case rows plus summary rows, separates historical failures
-from active failures, marks focused `route-contract` retests as cleared diagnostics without
+from active failures, marks successful focused `route-contract` retests as diagnostics without
 hiding the original run, recomputes timeout IDs for older summaries, validates the `p0-matrix`
 case set (`R5,R10,R11,N2,N7,N11`), and emits the next cheap command to run.
 
@@ -105,7 +108,7 @@ case set (`R5,R10,R11,N2,N7,N11`), and emits the next cheap command to run.
 4. Run on at least two models per harness (e.g. Opus + Sonnet) — fire-rate varies by model.
 5. Score: must-fire pass = invoked; must-not-fire pass = not invoked. Report per model.
 
-Exit criterion (roadmap Phase 1): ≥90% of must-fire prompts invoke the skill, and ≤1
+Exit criterion: ≥90% of must-fire prompts invoke the skill, and ≤1
 must-not-fire prompt mis-fires, on each tested model.
 
 ## Must fire (≥10)
@@ -173,7 +176,7 @@ for local development work.
 
 ## Infra Lens Seed
 
-These cases seed the first domain lens because Phase 16 exposed a real ops/infra bias:
+These cases seed the first domain lens because dogfooding exposed a real ops/infra bias:
 deploy/teardown work can be classified as high-risk but executed like a direct shell task.
 The scorer still measures routing signals, not proof content; prompts ask for rollback/proof
 language so failed or suspicious answer tails can be reviewed before Cairn adds runtime behavior.
@@ -193,7 +196,27 @@ Borderline by design — watch these when tuning the `description`:
   it" (should fire).
 - A prompt owned by a more specific active skill must defer to that skill, not Cairn.
 
+## Retention
+
+Result files are immutable proof, but not all are durable. What stays git-tracked:
+
+- the latest passing run per (suite × harness × model);
+- any run a doc/decision-log entry cites as failure evidence;
+- the value-of-Cairn controls (`baseline-off`, `cairn-on-clean`).
+
+Same-prompt `route-contract` retests and `-rerun-N` files document *variance*, not new
+signal. Keep at most the final file of a flapping case (it carries the conclusion) and record
+the verdict in the ledger below — do not let reruns grow into a pile of near-duplicate JSONL.
+
+Archiving is **not** a bare `mv`: `eval-scoreboard.mjs` derives `cleared`/`timeout` state from
+the rerun files, and `validate-cairn.mjs` pins baseline summaries (a past rerun overwrote better
+proof — decision-log 2026-06-02). Moving a result means updating the scoreboard inputs and the
+validate expectations in the *same* change, never a file move alone.
+
 ## Results log
+
+Historical evidence ledger. For active failures and the next command, run
+`node scripts/eval-scoreboard.mjs`.
 
 Record runs here (date, harness, model, fire-rate, mis-fires, notes) as the suite is
 executed.
@@ -292,6 +315,11 @@ executed.
   - **Trigger: 1/1 must-fire fired and routed (100%).**
   - **Misfire: 0/1 must-not (0%).**
 
+- **2026-06-02 — Claude Code v2.1.160, `haiku` — P0 matrix (R5,R10,R11,N2,N7,N11).**
+  `docs/evals/results/cairn-p0-matrix-claude-2.1.160-haiku.jsonl`.
+  - **Trigger/routing: active failure.** See `eval-scoreboard.mjs` for current percentages and
+    next actions; this ledger preserves the result label without becoming the active-status owner.
+
 - **2026-06-02 — Codex v0.136.0, `gpt-5.4-mini` — fast subset (R5,N2).**
   `docs/evals/results/cairn-fast-codex-0.136-gpt-5.4-mini.jsonl`.
   - **Trigger: 1/1 must-fire fired (100%).**
@@ -369,3 +397,20 @@ executed.
     as `diagnose`, outside expected `direct`/`delta-spec`.
   - **Misfire: 0/2 must-not (0%).** N10/N12 stayed out of Cairn. Remaining Codex mini debt:
     R14 route/latency variance, not activation.
+
+- **2026-06-02 — route-output contract retest — Codex `gpt-5.4-mini` realistic gaps rerun 3, 240s timeout.**
+  `docs/evals/results/cairn-route-contract-codex-0.136-gpt-5.4-mini-realistic-gaps-rerun-3.jsonl`.
+  - **Trigger: 1/1 must-fire fired (100%).** R14 read Cairn but timed out before final mode.
+  - **Misfire: 0/2 must-not (0%).** N10/N12 stayed out of Cairn.
+  - **Conclusion:** R14 is stable Codex-mini route/latency diagnostic debt, not a trigger gap.
+
+- **2026-06-02 — infra-lens seed — Codex `gpt-5.4-mini`.**
+  `docs/evals/results/cairn-infra-lens-codex-0.136-gpt-5.4-mini.jsonl`.
+  - **Trigger: 2/2 must-fire fired (100%).** I1 routed as `diagnose`; I2 timed out.
+  - **Misfire: 0/1 must-not (0%).** I3 stayed out of Cairn.
+  - **Conclusion:** infra-lens activation works; the Docker fix case is latency/route-output debt.
+
+- **2026-06-02 — infra-lens I2 sandbox diagnostic — Codex `gpt-5.4-mini`, workspace-write.**
+  `docs/evals/results/cairn-infra-lens-codex-0.136-gpt-5.4-mini-workspace-write-smoke.jsonl`.
+  - **Trigger: 1/1 must-fire fired (100%).** I2 still timed out at 150s.
+  - **Conclusion:** I2 is not only read-only friction; the prompt/hook path is too slow for the small-model fast lane.

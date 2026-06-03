@@ -5,18 +5,18 @@ advisory; only hooks and scripts enforce. This file is explicit about which is w
 
 ## Deterministic (enforced by hooks/scripts)
 
-- **Mutation boundary guard** — `scripts/cairn-guard.mjs`, wired as a PreToolUse hook on
-  `Edit|Write|MultiEdit|NotebookEdit|apply_patch`. Blocks (exit 2) any file mutation
-  event whose target is outside the active repo root — the main multi-repo footgun. Override:
-  `CAIRN_ALLOW_CROSS_REPO=1`.
+- **Mutation boundary guard** — `scripts/cairn-guard.mjs`, a PreToolUse hook on
+  `Edit|Write|MultiEdit|NotebookEdit|apply_patch`. Blocks (exit 2) a file mutation outside the
+  active repo root (the main multi-repo footgun), only in `.cairn/`-adopted repos. Allows config
+  `~/.claude`/`~/.codex`; override `CAIRN_ALLOW_CROSS_REPO=1`.
 - **Consistency check** — `scripts/cairn-analyze.mjs .cairn/changes/<slug>` reports internal
   drift in a change folder (or `--all .cairn/changes`). For a finished change it emits a `verify`
   verdict (completeness/coherence/proof → `verified`|`incomplete`|`drift`) — the spec→code loop
   closure, never running the proof commands. Read-only; run before claiming a change complete.
-- **End-of-turn coherence** — `scripts/cairn-coherence.mjs`, a `Stop` hook, active only in repos
-  that already use `.cairn/` (no global nagging). If the turn declared `Mode: tracked-change|delta-spec`
+- **End-of-turn coherence** — `scripts/cairn-coherence.mjs`, a `Stop` hook, active only in
+  `.cairn/`-adopted repos (no global nagging). If the turn declared `Mode: tracked-change|delta-spec`
   but no `.cairn/changes/<slug>/` exists, it blocks the close once (exit 2 + stderr) to force
-  scaffolding. Not a hard gate: `stop_hook_active` guards looping. Codex `Stop` parity live-proven.
+  scaffolding. Not a hard gate: `stop_hook_active` guards looping.
 
 ## Advisory (not deterministically enforceable)
 

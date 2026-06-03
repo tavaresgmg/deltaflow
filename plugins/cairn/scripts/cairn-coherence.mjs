@@ -10,21 +10,11 @@
 // Reads the harness Stop event as JSON on stdin (or argv[2] for testing). Exit 2 = block-once.
 import fs from "node:fs";
 import path from "node:path";
-import { resolveCairnBoundary } from "./cairn-workspace.mjs";
+import { resolveCairnBoundary, hasCairnDir } from "./cairn-workspace.mjs";
 
 // Only these two modes contract a durable change folder (modes.md). direct/diagnose/discovery
 // do not, so declaring them must never trip the check.
 const MODE_RE = /^\s*Mode:\s*(tracked-change|delta-spec)\b/im;
-
-// Has the repo adopted Cairn? A `.cairn/` dir means specs/changes/decision-log live here, so a
-// declared mode without a change folder is a real gap. No `.cairn/` = don't nag this project.
-function hasCairnDir(root) {
-  try {
-    return fs.statSync(path.join(root, ".cairn")).isDirectory();
-  } catch {
-    return false;
-  }
-}
 
 // A non-empty change folder = any directory under .cairn/changes/ other than archive/.
 function hasChangeFolder(root) {

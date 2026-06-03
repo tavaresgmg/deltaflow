@@ -12,6 +12,21 @@ tracked multi-repo change — and produces only the artifacts that mode justifie
 from a SessionStart bootstrap (no need to invoke it by name) and runs on **OpenAI Codex and Claude
 Code from a single source**.
 
+## What you get
+
+- Auto-routing for coding tasks: bugs, cards, rough ideas, cleanup, research, and specs.
+- Five proportional modes, so tiny tasks stay tiny and risky work gets gates.
+- File-based memory for resumable work without turning every task into a framework ceremony.
+- Repo/workspace boundary checks, coherence checks, budget checks, and artifact retention.
+- One source that builds both Codex and Claude Code plugin shims.
+
+## What Cairn is not
+
+- Not a project-management system.
+- Not a replacement for tests, review, or production safety.
+- Not a magic autonomous coding framework.
+- Not a broad CLI; deterministic scripts exist only where repeated toil proves the need.
+
 ## Why
 
 Most agent workflow frameworks overfit one extreme:
@@ -80,13 +95,15 @@ Full setup, memory-policy presets, and local development: [`docs/install.md`](do
 
 ## Status
 
-**Experimental.** Phases 0–16 built and locally validated (`node scripts/validate-cairn.mjs` —
-39 files green). Verified live on Codex CLI `0.136.0` and Claude Code `2.1.159` (PreToolUse guard confirmed firing
-on Claude Code; Codex `Stop` hook confirmed firing + honoring `exit 2`). Open items — real-model
-eval runs and Codex PreToolUse guard parity — are tracked in the roadmap.
+**Experimental.** Structural validation passes locally. Live harness behavior and model-eval gaps
+are tracked in the roadmap/eval docs. Claude PreToolUse guard is live-proven; Codex Stop hook is
+live-proven; Codex write-guard parity remains best-effort pending upstream PreToolUse/plugin-hook
+behavior.
 
+- Changelog: [`CHANGELOG.md`](CHANGELOG.md)
 - Roadmap & live proof: [`docs/roadmap.md`](docs/roadmap.md)
 - Activation evals: [`docs/evals/auto-trigger.md`](docs/evals/auto-trigger.md)
+- Agent integration contract: [`docs/architecture/agent-integration-contract.md`](docs/architecture/agent-integration-contract.md)
 - Principles: [`docs/PRINCIPLES.md`](docs/PRINCIPLES.md)
 
 ## License

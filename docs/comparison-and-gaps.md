@@ -1,6 +1,6 @@
 # Comparison & Gaps
 
-Cairn (competitive snapshot through Phase 16) vs BMAD, OpenSpec, Spec Kit, Superpowers, ECC/caveman. Anchored in
+Cairn (current competitive snapshot) vs BMAD, OpenSpec, Spec Kit, Superpowers, ECC/caveman. Anchored in
 `docs/research/frameworks.md`. Principles: `docs/PRINCIPLES.md`. Goal: what's strong, what's
 genuinely missing, what to build next — by activation, modes/workflows, artifacts,
 deterministic automation, memory, research, token economy.
@@ -9,7 +9,7 @@ deterministic automation, memory, research, token economy.
 
 | Capability | Where | State |
 | --- | --- | --- |
-| Auto-activation via SessionStart bootstrap | `hooks/session-start.sh` + `bootstrap.md` | validated on Codex (fires, routes) |
+| Auto-activation via SessionStart bootstrap | `hooks/session-start.sh` + `bootstrap.md` | validated on Codex; cross-harness subsets logged in evals |
 | Directive `description` + bilingual `when_to_use` | `skills/cairn/SKILL.md` | YAML-safe, guarded by validate |
 | 5 modes (direct→tracked-change) | `references/modes.md` | routing measured by eval harness |
 | Artifact templates | `references/artifacts.md` | brainstorm/brief/delta/plan/tasks/proof/decision-log |
@@ -25,7 +25,7 @@ deterministic automation, memory, research, token economy.
 | Reuse + anti-rationalization guardrails | `SKILL.md`, `framework-lessons.md`, `gates.md` | explicit advisory behavior, validator-guarded |
 | Context budget guard | `plugins/cairn/scripts/cairn-budget.mjs`, `validate-cairn.mjs` | always-on bootstrap + progressive references budgeted |
 | Eval scoreboard | `scripts/eval-scoreboard.mjs`, `validate-cairn.mjs` | read-only coverage/failure/slow-case/next-command surface |
-| Dual-harness from one source | `build-manifests.mjs`, both marketplaces | install verified on Codex |
+| Dual-harness from one source | `build-manifests.mjs`, both marketplaces | generated from one source; install/eval proof logged in roadmap/evals |
 
 ## By dimension
 
@@ -42,7 +42,7 @@ deterministic automation, memory, research, token economy.
 | Determinism | Python (hot path) | CLI state machine | scripts | one bash hook | scripts + hooks ✓ |
 | Memory | .decision-log | filesystem-as-state | constitution | TodoWrite (ephemeral) | .cairn/ versioned ✓ |
 | Multi-repo | refuses nesting | one-instance | `.specify` over git | — | **umbrella (unique)** ✓ |
-| Concise output | — | — | — | — | caveman `full` Output Style, safety/public exempt ✓ (Phase 7) |
+| Concise output | — | — | — | — | caveman `full` Output Style, safety/public exempt ✓ |
 
 ECC/caveman (`affaan-m/ECC`, `JuliusBrussee/caveman`) is not a workflow framework — it is a
 concise-output technique. Cairn borrows the `full` level as Principle 8 (Output Style in
@@ -53,31 +53,35 @@ artifacts, and any number/ID/date/path. It does not adopt the ambiguous `ultra` 
 
 ### P0 — high value, fills a real hole
 
-1. **Broader eval matrix.** Realistic/broad routing is strong on Codex default. Codex
+1. **Core usability before more eval churn.** Make the routing judgment easy to apply: mode,
+   owner, evidence, artifact, proof, residue. Concept owner: `docs/architecture/mvp-architecture.md`.
+   Operator owner: `references/modes.md`. Workspace owner: `references/workspace.md`. Do not add
+   a route-card artifact or patch `SKILL.md` unless real usage proves the lazy refs are missed.
+2. **Broader eval matrix.** Realistic/broad routing is strong on Codex default. Codex
    `gpt-5.4-mini` focused diagnostics were cleared once, but the latest full realistic rerun
    fired 14/14 and routed 11/14 with R7/R13/R14 timeouts, so second-model realistic proof is
-   still open. Focused retests cleared R13 and R7; R14 remains a route/latency variance.
-   Claude active failures remain: `haiku` P0 misses R5/R11, and default realistic has timeouts
-   plus an uncleared R3 route miss. The scoreboard owns the next command and active gaps.
-2. **Result-history protection.** Real-model runs are expensive and JSONL summaries are proof.
-   The eval runner now refuses to overwrite existing labels unless `--overwrite` is explicit.
-3. **Domain lenses from evidence, not taxonomy.** `infra-lens` is seeded because Phase 16
+   still open. Focused retests cleared R13 and R7; R14 remains route/latency debt. Claude
+   active failures and Codex mini route/latency debt remain. The scoreboard owns the next
+   command and active gaps; this file should not duplicate every run label.
+3. **Result-history protection.** Real-model runs are expensive and JSONL summaries are proof.
+   The eval runner refuses to overwrite existing labels unless `--overwrite` is explicit.
+4. **Domain lenses from evidence, not taxonomy.** `infra-lens` is seeded because dogfooding
    exposed a real ops/infra bias. Other lenses (database/ui/testing/product/analyze) should
    enter as fixtures or lazy references only after dogfood/evals prove current guidance is
    underspecified.
 
 ### P1 — sharpens correctness & quality
 
-4. **Repeat variance-sensitive evals before prompt changes.** Small-model misses are not yet
+5. **Repeat variance-sensitive evals before prompt changes.** Small-model misses are not yet
    proven as capacity limits or promptable defects. Re-run before changing `description`,
    bootstrap, or mode text.
-5. **Run the full eval suite on Claude Code** on current versions when cost is justified.
+6. **Run the full eval suite on Claude Code** on current versions when cost is justified.
    Claude default has no-fire proof and a diagnostic realistic run; second-model P0/realistic
    proof is still missing.
 
 ### P2 — automation polish
 
-8. **Reviewed archive/apply helper** — optional mutation layer only if manual archive moves
+7. **Reviewed archive/apply helper** — optional mutation layer only if manual archive moves
    become repeated toil.
 
 ## Where Cairn already leads

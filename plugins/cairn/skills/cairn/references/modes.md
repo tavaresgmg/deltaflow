@@ -1,13 +1,15 @@
 # Cairn Modes
 
+Route: mode/owner/evidence/artifact/proof/residue. Existing state; no card file.
+
 ## Context readiness
 
 `context.readiness` (boundary detector: `thin|partial|strong`) grades repo docs (`AGENTS.md`,
 tests, `.cairn` maps/specs). Calibrate autonomy — thin context + full autonomy ships subtle
 bugs (METR 2025):
 
-- **thin** — no `direct` for non-trivial work. Inspect first, name the missing context,
-  declare the gap before mutating; at close write the map you wished existed (Principle 9).
+- **thin** — no `direct` for non-trivial work; inspect first, declare the gap before mutating,
+  write the missing map at close (Principle 9).
 - **partial/strong** — proceed; on `partial`, ground claims on code.
 
 ## Direct
@@ -79,7 +81,8 @@ Workflow:
 6. Implement and update the delta when reality differs.
 7. Archive or sync final behavior when done.
 
-Create `.cairn/changes/<slug>/` and write `delta.md` before mutating; tick `tasks.md` live.
+Scaffold `.cairn/changes/<slug>/` (+ `delta.md`) before mutating; tick `tasks.md` live; no
+folder first = not delta-spec.
 
 ## Tracked Change
 
@@ -93,12 +96,13 @@ Use when work crosses boundaries:
 
 Workflow:
 
-1. Ground on repo constraints first (`AGENTS.md`, lockfile, conventions, existing specs).
-2. Scaffold `.cairn/changes/<slug>/` **before any mutation** (infra, deploy, or edit); tick
-   `tasks.md` live, never retroactively. No folder before you act = not tracked-change.
-3. Capture evidence, scope, gates, rollback, and proof strategy.
-4. Record reuse/adapt/new decisions before implementation phases that add owners.
+1. Ground on repo constraints (`AGENTS.md`, lockfile, conventions, specs).
+2. Scaffold `.cairn/changes/<slug>/` before mutation; tick `tasks.md` live. No folder first =
+   not tracked-change.
+3. Capture evidence, scope, gates, rollback, proof, and reuse/adapt/new decisions.
+4. Infra lens: for deploy/runtime, name env, health/log signal, rollback, and local/no-deploy
+   proof before commands.
 5. Implement in phases.
 6. Verify each boundary.
-7. Adversarial review (mandatory) — isolated subagent, writer ≠ reviewer. See `review.md`.
+7. Adversarial review: isolated subagent, writer ≠ reviewer. See `review.md`.
 8. Archive/sync after completion.

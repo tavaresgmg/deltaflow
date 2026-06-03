@@ -54,7 +54,7 @@ upstream, not Cairn (verified 2026-06-02 against `openai/codex`):
 Check `plugin_hooks` status in `config.schema.json` on `openai/codex` main before relying on
 plugin-delivered enforcement.
 
-## Claude Code (validated on v2.1.159)
+## Claude Code (validated on v2.1.159; local now v2.1.160)
 
 ```bash
 /plugin marketplace add tavaresgmg/cairn
@@ -128,9 +128,33 @@ More generally: Claude Code reads your global `~/.claude/CLAUDE.md`, Codex reads
 `AGENTS.md`. Cairn honors those above project files but below a same-turn chat instruction (full
 order in `docs/PRINCIPLES.md`).
 
+## Lifecycle cleanup
+
+Process state is local by default, but completed change folders should not stay active forever:
+
+```bash
+node plugins/cairn/scripts/cairn-retention.mjs .cairn/changes
+```
+
+Default is read-only. To archive one completed change after `proof.md` has an explicit
+`Lifecycle decision: sync|delegate|archive|delete`, use:
+
+```bash
+node plugins/cairn/scripts/cairn-retention.mjs .cairn/changes --apply --slug <slug>
+```
+
+Apply mode only cleans retention state. It does not perform semantic spec sync or broad workflow
+automation; `delete` still requires explicit `--delete`.
+
 ## Verify locally (no harness)
 
 ```bash
 node scripts/build-manifests.mjs   # regenerate manifests + marketplaces from the canonical source
+node plugins/cairn/scripts/cairn-doctor.mjs --json  # read-only local Codex/Claude integration health
 node scripts/validate-cairn.mjs    # structural + YAML-safety + gate smoke tests
 ```
+
+`cairn-doctor.mjs` does not install plugins, trust hooks, run model evals, or mutate state. It only
+reports visible CLIs, manifest parity, declared hook surfaces, boundary detection, and which
+Codex/Claude guarantees are strong, proven, advisory, or pending upstream. The contract behind
+those labels is in `docs/architecture/agent-integration-contract.md`.

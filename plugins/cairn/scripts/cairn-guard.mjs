@@ -2,13 +2,19 @@
 // blocks file mutations whose target is outside the active repo (the #1 multi-repo footgun).
 // Reads the harness tool event as JSON on stdin (or argv[2] for testing); exit 2 = block.
 //   node cairn-guard.mjs '{"tool_name":"Edit","tool_input":{"file_path":"..."},"cwd":"..."}'
-// Override with CAIRN_ALLOW_CROSS_REPO=1.
+// Blast-radius gate: like the coherence Stop hook, the guard only policies a project that has
+// ALREADY adopted Cairn (a `.cairn/` dir in the state root, the repo, or a child repo). An
+// unrelated project the user opens is not policed — outside-repo edits there are allowed.
+// Allowlist: harness/agent config dirs (~/.claude, ~/.codex) are common, intended cross-repo
+// edits, allowed even inside an adopted repo. Override everything with CAIRN_ALLOW_CROSS_REPO=1.
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
-import { childGitRepos, isInside, isInsideCairnState, resolveCairnBoundary } from "./cairn-workspace.mjs";
+import { childGitRepos, hasCairnDir, isInside, isInsideCairnState, resolveCairnBoundary } from "./cairn-workspace.mjs";
 
 const FILE_MUTATORS = new Set(["Edit", "Write", "MultiEdit", "NotebookEdit", "apply_patch"]);
 const SHELL_MUTATORS = new Set(["Bash", "Shell", "exec_command"]);
+const ALLOWLIST = [path.join(os.homedir(), ".claude"), path.join(os.homedir(), ".codex")];
 
 function decide(event) {
   const isFileMutation = FILE_MUTATORS.has(event.tool_name);
@@ -25,8 +31,13 @@ function decide(event) {
     ? childGitRepos(stateRoot).map((repo) => path.join(repo, ".cairn"))
     : [];
   if (!root && !stateRoot) return { allow: true }; // not in a repo/workspace — nothing to guard
+  // Adoption gate: only police projects actually using Cairn. No `.cairn/` anywhere relevant
+  // (state root, repo, or a child repo) = unrelated project — do not block its outside edits.
+  const adopted = hasCairnDir(stateRoot) || hasCairnDir(root) || childRepoCairnRoots.length > 0;
+  if (!adopted) return { allow: true };
   for (const file of files) {
     const abs = path.resolve(cwd, file);
+    if (ALLOWLIST.some((dir) => isInside(abs, dir))) continue; // harness/agent config — intended edit
     if (childRepoCairnRoots.some((cairnRoot) => isInside(abs, cairnRoot))) {
       return {
         allow: false,

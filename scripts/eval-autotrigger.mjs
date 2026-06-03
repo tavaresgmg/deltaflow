@@ -31,6 +31,7 @@ Options:
   --harness codex|claude
   --jobs N
   --timeout-ms MS
+  --sandbox read-only|workspace-write
   --label LABEL
   --model MODEL
   --out docs/evals/results/<label>.jsonl
@@ -563,10 +564,10 @@ function extractAnswerText(stdout, harness) {
   return fragments.join("\n");
 }
 
-async function runCase(c, { harness, model, timeoutMs, safeLabel }) {
+async function runCase(c, { harness, model, timeoutMs, sandbox, safeLabel }) {
   const fixture = path.join("/tmp", `cairn-eval-fixture-${safeLabel}-${process.pid}-${c.id}`);
   setupFixture(fixture, c.realistic || /^R/.test(c.id), c.id);
-  const args = ["exec", "--sandbox", "read-only"];
+  const args = ["exec", "--sandbox", sandbox];
   let command = "codex";
   let commandArgs = args;
   if (harness === "claude") {
@@ -595,7 +596,7 @@ async function runCase(c, { harness, model, timeoutMs, safeLabel }) {
 }
 
 function parseArgs(argv) {
-  const opts = { harness: "codex", jobs: 1, timeoutMs: DEFAULT_TIMEOUT_MS };
+  const opts = { harness: "codex", jobs: 1, timeoutMs: DEFAULT_TIMEOUT_MS, sandbox: "read-only" };
   const positional = [];
   let explicitLabel = null;
   let explicitModel = null;
@@ -614,6 +615,8 @@ function parseArgs(argv) {
     else if (arg.startsWith("--jobs=")) opts.jobs = Number(arg.split("=", 2)[1]);
     else if (arg === "--timeout-ms") opts.timeoutMs = Number(requireValue(arg, argv[++i]));
     else if (arg.startsWith("--timeout-ms=")) opts.timeoutMs = Number(arg.split("=", 2)[1]);
+    else if (arg === "--sandbox") opts.sandbox = requireValue(arg, argv[++i]);
+    else if (arg.startsWith("--sandbox=")) opts.sandbox = arg.split("=", 2)[1];
     else if (arg === "--label") explicitLabel = requireValue(arg, argv[++i]);
     else if (arg.startsWith("--label=")) explicitLabel = arg.split("=", 2)[1];
     else if (arg === "--model") explicitModel = requireValue(arg, argv[++i]);
@@ -631,6 +634,7 @@ function parseArgs(argv) {
   if (explicitModel && positional[2]) throw new Error("use either positional [model] or --model, not both");
   if (explicitOut && positional[1]) throw new Error("use either positional <label> or --out, not both");
   if (!["codex", "claude"].includes(opts.harness)) throw new Error(`invalid --harness: ${opts.harness}`);
+  if (!["read-only", "workspace-write"].includes(opts.sandbox)) throw new Error(`invalid --sandbox: ${opts.sandbox}`);
   if (!Number.isInteger(opts.jobs) || opts.jobs < 1) throw new Error(`invalid --jobs: ${opts.jobs}`);
   if (!Number.isInteger(opts.timeoutMs) || opts.timeoutMs < 1000) throw new Error(`invalid --timeout-ms: ${opts.timeoutMs}`);
   const outFile = explicitOut ? resolveOutFile(explicitOut) : null;
@@ -687,7 +691,7 @@ function promoteOutput(outTmp, outFile, overwrite) {
 }
 
 // main
-const { subsetArg, label, model, harness, jobs, timeoutMs, outFile: parsedOutFile, dryRun, overwrite, help } = parseArgs(process.argv.slice(2));
+const { subsetArg, label, model, harness, jobs, timeoutMs, sandbox, outFile: parsedOutFile, dryRun, overwrite, help } = parseArgs(process.argv.slice(2));
 if (help) {
   console.log(USAGE);
   process.exit(0);
@@ -724,6 +728,7 @@ if (dryRun) {
     subset: subset.map((c) => c.id),
     harness,
     model: model || "default",
+    sandbox,
     outFile: path.relative(ROOT, outFile),
     overwrite: Boolean(overwrite),
   }, null, 2));
@@ -734,7 +739,7 @@ fs.writeFileSync(outTmp, ""); // fresh, promoted only after summary is written
 
 const results = [];
 const version = harnessVersion(harness);
-await runPool(subset, { harness, model, jobs, timeoutMs, safeLabel }, (r) => {
+await runPool(subset, { harness, model, jobs, timeoutMs, sandbox, safeLabel }, (r) => {
   results.push(r);
   fs.appendFileSync(outTmp, JSON.stringify(r) + "\n");
   console.log(`${r.id} [${r.status}] ${r.durationMs}ms fired=${r.firedStrong} (expect ${r.expectFire}) mode=${r.modeDetected} ok=${r.fireCorrect}${r.expectFire ? ` modeOk=${r.modeCorrect}` : ""} collideAnalyze=${r.collidedAnalyze}`);
@@ -751,6 +756,7 @@ const summary = {
   model: model || "default",
   jobs,
   timeoutMs,
+  sandbox,
   cases: results.length,
   mustFire: fires.length,
   mustFire_fired: fires.filter((r) => r.firedStrong).length,

@@ -44,14 +44,15 @@ Auto-trigger by description is model-invoked and probabilistic in both harnesses
 reinforced in three layers:
 
 1. **Dispatch** — a single bash SessionStart hook detects the harness and injects a small
-   bootstrap (<2k tokens) that tells the agent to route through Cairn before responding.
+   bootstrap that tells the agent to route through Cairn before responding.
 2. **Discovery** — a directive `description`: `[domain] + [ALWAYS directive] + [real trigger
    phrases] + [negative boundary]`, front-loaded, third person; `when_to_use` carries pt-BR+en
    trigger phrases with the same keywords duplicated in `description`.
-3. **Enforcement** — mutation-boundary gates via PreToolUse hook (Claude) / command hook
-   `exit 2` (Codex once live delivery is proven). Brainstorm and proof-before-done remain
-   advisory unless promoted to a deterministic Stop/UserPromptSubmit heuristic. Prose in
-   AGENTS.md is advisory.
+3. **Enforcement** — mutation-boundary gates via PreToolUse hook are live-proven on Claude;
+   Codex write-guard parity remains best-effort until upstream hook behavior is reliable.
+   The coherence Stop hook is live-proven on Codex and adoption-gated to repos that already
+   use `.cairn/`. Brainstorm and proof-before-done remain advisory unless promoted to a
+   deterministic, low-blast-radius signal. Prose in `AGENTS.md` is advisory.
 
 Context budget is enforced by `plugins/cairn/scripts/cairn-budget.mjs` and
 `node scripts/validate-cairn.mjs`: the always-on bootstrap, the selected `SKILL.md`, each
@@ -61,8 +62,63 @@ This keeps the router small while still using progressive disclosure for deeper 
 ## Core flow
 
 ```text
-input -> observe -> classify -> artifact policy -> execute -> prove -> close
+input -> observe -> classify -> choose evidence -> choose artifact -> act -> close/sync
 ```
+
+The core product is not the eval harness or a spec folder. It is the **routing judgment**:
+what is the smallest workflow that can still catch the real risk? Evals measure that judgment,
+but dogfood, architecture review, and residue cleanup improve it.
+
+Every non-trivial routed task should be explainable as a compact route card. This is an
+explanation contract, not a new durable artifact unless the selected mode already creates one:
+
+| Question | Must be explicit |
+| --- | --- |
+| Mode | Why this is the lowest safe ceremony. |
+| Owner | Which repo/doc/spec/code path owns the truth. |
+| Evidence | What was observed before acting. |
+| Artifact | What state is created, reused, archived, or avoided. |
+| Proof | What fresh check closes the risk. |
+| Residue | What stale plan/spec/change/result must be synced, archived, or deleted. |
+
+If any row is unclear, improve the owning context before adding more framework vocabulary.
+For `direct`, this may be one sentence; for `delta-spec`/`tracked-change`, the rows should be
+visible in the existing plan/proof/change folder.
+
+### Core maturity axes
+
+| Axis | Healthy state | Failure smell |
+| --- | --- | --- |
+| Routing | lower ceremony by default, escalates only on risk | everything becomes `tracked-change` or everything becomes `direct` |
+| Evidence | proof chosen before acting, proportional to risk | proof is bolted on after a confident answer |
+| Artifacts | one owner per fact; archive/sync/delete at close | plans, specs, eval notes, and roadmap all repeat the same stale claim |
+| Workspace | owner boundary is explicit before mutation | parent workspace silently edits child repo state |
+| Token economy | always-on context is tiny; depth is lazy-loaded | `SKILL.md` grows to explain every edge case |
+| Human use | user can predict why Cairn picked a path | framework vocabulary hides the actual decision |
+
+## Runtime map
+
+```text
+plugin.manifest.json
+  -> build-manifests.mjs
+  -> .codex-plugin/ + .claude-plugin/ generated shims
+  -> SessionStart bootstrap
+  -> cairn SKILL.md router
+  -> lazy references/ by mode or risk
+  -> deterministic scripts/hooks report facts or block narrow cases
+  -> .cairn/changes + specs + codebase maps persist state
+  -> eval JSONL + scoreboard feed regression decisions
+```
+
+| Surface | Owner | Drift check |
+| --- | --- | --- |
+| Canonical plugin metadata | `plugins/cairn/plugin.manifest.json` | `build-manifests.mjs`, `validate-cairn.mjs` |
+| Harness shims | `.codex-plugin/`, `.claude-plugin/` | generated, never hand-edited |
+| Routing prompt surface | `hooks/bootstrap.md`, `SKILL.md` | activation evals + budget guard |
+| Progressive guidance | `skills/cairn/references/*.md` | budget guard + targeted reads |
+| Deterministic signals | `plugins/cairn/scripts/*.mjs`, hooks | smoke tests in `validate-cairn.mjs` |
+| Durable state | `.cairn/changes`, `.cairn/specs`, `.cairn/codebase` | `cairn-analyze.mjs`, `cairn-retention.mjs` |
+| Regression proof | `docs/evals/results/*.jsonl` | `eval-scoreboard.mjs` |
 
 Modes (classified by size/risk, lowest ceremony wins):
 
@@ -98,16 +154,18 @@ AGENTS.md                      # human/project guidance; plugin bootstrap carrie
 .cairn/decision-log.md         # append-only, written DURING the work
 ```
 
-A spec↔code reconciliation step is ours to build (OpenSpec-style drift is by-design and
-has no native command in 2026).
+Spec↔code reconciliation is handled by `cairn-analyze.mjs` verify/drift checks. It names
+missing claims, refs, proof, and lifecycle decisions; it does not run proof commands.
 
 ## Workspace model (ADR-0005)
 
 Umbrella workspace with explicit owner per level: parent `AGENTS.md` = scope + cross-repo
-safety + repo map (not a monorepo); child repos own git/code/tests; state in two `.work/`
-layers (parent `HANDOFF.md` + child `last-session`); deterministic boundary detection
-(`git rev-parse --show-toplevel`) before any mutation; worktrees anchored per child repo.
-Multi-repo task = parent `.work/` + separate PRs/MRs per repo.
+safety + repo map (not a monorepo); parent `.work/HANDOFF.md` coordinates cross-repo work;
+child repos own git/code/tests and their own `.cairn/changes` state unless the boundary
+detector reports workspace-scoped Cairn state. `HANDOFF.md` coordinates; it never replaces
+Cairn state. Workspace-scoped state lives in the parent `.cairn/changes/<slug>/`; repo-scoped
+state lives in each touched child repo. Run deterministic boundary detection before mutation;
+multi-repo tasks still close with separate proof and PR/MR boundaries per repo.
 
 ## Why plugin, not CLI first
 

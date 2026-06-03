@@ -9,31 +9,38 @@ point here instead of restating.
 (`~/.claude/CLAUDE.md` / Codex global `AGENTS.md`) > project `AGENTS.md`/`CLAUDE.md` > these
 principles and skill references > recalled memory (a hint, revalidated) > inference.
 
+**Reading the labels** (Principle 6): *Enforced by* = deterministic — a hook/script that blocks
+(exit 2) or fails CI. *Checked by* = a read-only script that reports drift but does not block.
+*Reinforced by* = advisory prose or red flags, no enforcement. Only the first is a gate.
+
 ## 1. Proportional depth
 
 Structure matches risk. Tiny tasks stay tiny; research, SDD, greenfield, cleanup, and
 high-risk implementation get only the structure their risk justifies. Lowest-ceremony mode
 that still protects correctness wins.
-*Enforced by:* mode ladder (`references/modes.md`), intent gate (`references/research.md`).
+*Reinforced by:* mode ladder (`references/modes.md`), intent gate (`references/research.md`).
 
 ## 2. Brownfield first
 
 Inspect the current system before proposing architecture. Reuse patterns, fit the owner
 boundary. Existing-system evidence beats abstract planning.
-*Enforced by:* boundary detector + PreToolUse guard (`cairn-boundary.mjs`, `cairn-guard.mjs`).
+*Enforced by:* PreToolUse guard (`cairn-guard.mjs`, Claude — harness parity in `gates.md`);
+*informed by* boundary detector (`cairn-boundary.mjs`, read-only).
 
 ## 3. Evidence first
 
 Material facts need a source. No invented IDs, dates, owners, card facts, API behavior, or
 runtime status. Evidence ladder: live system > repo/code > official docs > primary web >
-memory > inference. "Done"/"fixed"/"passes" require fresh proof named with command + result.
-*Enforced by:* `cairn-analyze.mjs` claim-backed drift; proof artifacts near the work.
+secondary web > memory > inference. "Done"/"fixed"/"passes" require fresh proof named with
+command + result.
+*Checked by:* `cairn-analyze.mjs` (claim structure + refs exist, **not** proof execution);
+proof artifacts near the work.
 
 ## 4. Reuse before invent
 
 Search existing symbols, helpers, docs, specs, local patterns before adding a path. One
 owner per concern. If you do not reuse the obvious owner, name why.
-*Enforced by:* reuse + anti-rationalization red flags (`framework-lessons.md`).
+*Reinforced by:* reuse + anti-rationalization red flags (`framework-lessons.md`).
 
 ## 5. One source -> both harnesses
 
@@ -47,13 +54,13 @@ on the other harness and the asymmetry is documented in the capability matrix.
 
 Say plainly what is deterministically enforced (scripts, hooks) vs advisory (prose). Never
 claim a gate Cairn cannot keep.
-*Enforced by:* `references/gates.md`.
+*Owned by:* `references/gates.md` (the deterministic-vs-advisory ledger itself).
 
 ## 7. No stale artifacts
 
 Artifacts are deleted, archived, or synced — never left as clutter. Living specs sync;
 transient planning is archived or deleted at close.
-*Enforced by:* retention helper (`cairn-retention.mjs`), archive lifecycle.
+*Checked by:* retention helper (`cairn-retention.mjs`, read-only reporter); archive lifecycle.
 
 ## 8. Token economy / concise comms
 
@@ -69,7 +76,8 @@ Two surfaces:
 Never compress: security warnings, irreversible-action confirmations, public artifacts
 (PRs/changelogs), and any number/ID/date/path. Concise is not ambiguous — every inference
 step stays explicit.
-*Enforced by:* `cairn-budget.mjs` (tool surfaces); Output Style in `SKILL.md` (agent output).
+*Enforced by:* `cairn-budget.mjs` + `validate-cairn.mjs` (tool-surface char caps). This principle
+owns the agent-output style; `SKILL.md` Output Style points here.
 
 ## 9. Compounding context
 
@@ -78,7 +86,7 @@ the code. Update the relevant `.cairn/codebase/<area>.md`, spec, `AGENTS.md`, or
 `framework-lessons.md` so the next session does not relearn it. Blameless: ask what context
 was missing, not whose prompt was wrong. The decision-log records *why* a choice was made;
 this records *what the system now knows*.
-*Enforced by:* close-step hygiene (`references/memory.md`); red flag (`framework-lessons.md`).
+*Reinforced by:* close-step hygiene (`references/memory.md`); red flag (`framework-lessons.md`).
 
 ## 10. Adversarial by default
 
@@ -91,7 +99,7 @@ attacks, so a refutation is a hypothesis, not a verdict. Proportional (Principle
 needs none; a design or principle change needs the contrary case — and its evidence — on the
 record. Confidence with no named downside, or a refutation accepted without checking its
 evidence, is the red flag.
-*Enforced by:* brainstorm tradeoffs and decision-log downside (`artifacts.md`), review ladder
+*Reinforced by:* brainstorm tradeoffs and decision-log downside (`artifacts.md`), review ladder
 (`review.md`), anti-rationalization red flags (`framework-lessons.md`).
 
 ---

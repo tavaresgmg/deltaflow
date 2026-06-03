@@ -32,7 +32,8 @@ build-or-buy choice — never for a trivial lib. Run it in isolation (the `cairn
 subagent on Claude) so only a distilled summary returns. Persist that summary to
 `.cairn/changes/<slug>/research/<topic>.md` — local; sync durable findings into `specs/` at close.
 
-Evidence ladder: live system > repo/code > official docs > primary web > secondary web.
+Evidence ladder (canonical in Principle 3): live system > repo/code > official docs > primary
+web > secondary web.
 
 ## Official-docs grounding (always-on rule)
 

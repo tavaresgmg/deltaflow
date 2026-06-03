@@ -348,16 +348,20 @@ function nextCommand(rows) {
       ...codexMiniRealistic.unclearedRoutingMissIds,
       ...codexMiniRealistic.unclearedTimeoutIds,
     ]));
-    const subset = sortedIds(new Set([...missIds, "N10", "N12"])).join(",");
-    const label = nextAvailableLabel("cairn-route-contract-codex-0.136-gpt-5.4-mini-realistic-gaps");
     const repeatedTimeout = rows.some((row) => row.harness === "codex"
       && row.model === codexMiniRealistic.model
       && row.type === "route-contract"
       && row.timeoutIds.some((id) => missIds.includes(id)));
+    const subset = repeatedTimeout
+      ? missIds.join(",")
+      : sortedIds(new Set([...missIds, "N10", "N12"])).join(",");
+    const label = nextAvailableLabel("cairn-route-contract-codex-0.136-gpt-5.4-mini-realistic-gaps");
     const timeoutMs = repeatedTimeout ? 240000 : 180000;
+    const sandbox = repeatedTimeout ? " --sandbox workspace-write" : "";
+    const jobs = repeatedTimeout ? 1 : 4;
     return {
-      reason: `Codex second-model realistic suite has focused diagnostic debt (${missIds.join(",")}); retest only those gaps plus near-misses before rerunning the full suite.${repeatedTimeout ? " Repeated timeout debt bumps the focused timeout to 240s." : ""}`,
-      command: `node scripts/eval-autotrigger.mjs ${subset} ${label} gpt-5.4-mini --jobs 4 --timeout-ms ${timeoutMs}`,
+      reason: `Codex second-model realistic suite has focused diagnostic debt (${missIds.join(",")}); ${repeatedTimeout ? "avoid another broad near-miss rerun and isolate only the timed-out case in a writable temp sandbox." : "retest only those gaps plus near-misses before rerunning the full suite."}`,
+      command: `node scripts/eval-autotrigger.mjs ${subset} ${label} gpt-5.4-mini --jobs ${jobs} --timeout-ms ${timeoutMs}${sandbox}`,
     };
   }
   const label = nextAvailableLabel("cairn-realistic-codex-0.136-gpt-5.4-mini");

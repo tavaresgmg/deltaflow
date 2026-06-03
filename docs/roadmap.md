@@ -1,418 +1,42 @@
 # Roadmap
 
-Principles: `docs/PRINCIPLES.md` (canonical). Decisions: `docs/decisions/`.
-Evidence: `docs/research/`. Scope: `docs/scope-and-workflows.md`.
-
-## Phase 0: Seed + research + decisions — DONE
-
-- Repo and plugin scaffold; rename to Cairn; MIT license; public-repo hygiene.
-- Two multi-agent research passes (frameworks + harness/context), ~2M tokens, verified.
-- Six ADRs recording the load-bearing decisions and their tradeoffs.
-
-Exit (met): repo has shape and a grounded design to build the MVP from.
-
-## Phase 1: Autonomous portable skill (MVP)
-
-Built and locally validated:
-
-- [x] Directive, front-loaded `description` + bilingual `when_to_use` (ADR-0003).
-- [x] SessionStart bootstrap hook — one harness-detecting bash script using
-  `${CLAUDE_PLUGIN_ROOT}` (`plugins/cairn/hooks/`), both branches tested.
-- [x] Canonical `plugin.manifest.json` + `build-manifests.mjs` emitting both
-  `.codex-plugin` and `.claude-plugin` manifests.
-- [x] `validate-cairn.mjs` extended: file set, manifest parity, build-drift, `description`
-  <=1024 + directive + negative boundary, no dirs in manifest dirs, hook portability.
-- [x] Auto-trigger eval fixture: 12 must-fire (pt-BR/en) + 6 must-not-fire + protocol
-  (`docs/evals/auto-trigger.md`).
-- [x] Eval scoreboard over JSONL results: current gaps, historical failures, route-contract
-  clears, slow cases, and next cheap command (`scripts/eval-scoreboard.mjs`).
-
-Validated on Codex (v0.135.0, gpt-5.5 — at the time; current local is v0.136.0):
-
-- [x] Installs from a marketplace (`.agents/plugins/marketplace.json`, discovered live);
-  `installed, enabled`.
-- [x] SessionStart hook injects the bootstrap (plain-text branch).
-- [x] Skill loads (after fixing an unquoted-colon YAML bug now guarded by validate).
-- [x] Auto-fires on a brownfield prompt without being named, routing to `diagnose`.
-
-Still pending:
-
-- [ ] Full auto-trigger suite (12 must-fire + 6 must-not) on ≥2 models per harness; log fire-rate.
-- [x] Fast install + auto-trigger pass on Claude Code v2.1.159.
-- [x] Incremental P0 matrix runner/result contract with duration metrics.
-- [x] Claude Code realistic no-fire subset on v2.1.159 default: 0/6 misfires.
-- [x] Second-model fast activation smoke: Claude `haiku` passed; Codex `gpt-5.4-mini`
-  initially fired without a parseable route mode, then passed route-contract and P0 retests.
-- [x] Route-output contract retest: Codex `gpt-5.4-mini` R5 and Claude default R11 now
-  emit parseable expected modes.
-- [x] Codex `gpt-5.4-mini` P0 matrix: 3/3 must-fire routed, 0/3 must-not misfires.
-- [x] Codex `gpt-5.4-mini` realistic diagnostic run: 13/14 fired, 12/14 routed, 0 timeouts;
-  focused R9/R14 route-contract retest passed.
-- [x] Confirm the Claude Code PreToolUse guard blocks outside-repo writes live.
-- [ ] Confirm the PreToolUse guard blocks live on Codex, not only via local smoke.
-  Latest v0.136.0 `exec` smoke proved the gap: `apply_patch` outside the repo was blocked by
-  sandbox in `workspace-write`, but succeeded under sandbox bypass without a captured
-  `PreToolUse` event.
-
-Exit: the skill auto-fires on >=90% of must-fire prompts and routes to the right mode in
->=4/5 real brownfield cards. Codex default suites are strong; Claude realistic default now
-shows 14/14 activation, 12/14 routed, and 3 timeouts, so full cross-model exit remains pending.
-
-## Phase 2: File-based layered memory (ADR-0004)
-
-- [x] `.cairn/changes/<slug>/` templates (brainstorm, research, delta, plan, tasks, proof).
-- [x] `.cairn/codebase/<area>.md` optional scoped maps for repeated brownfield observation.
-- [x] `.cairn/specs/<capability>.md` optional living truth guidance for durable behavior.
-- [x] `.cairn/decision-log.md` append-only convention (write during the work).
-- [x] `tasks.md` checkbox resume protocol; read-state-first / write-progress-last.
-- [x] `cairn-next.mjs` read-only next-step reporter over a change folder.
-- [x] `cairn-retention.mjs` read-only reporter for completed active changes and archive/delete actions.
-- [x] Worked examples proving that maps reduce repeated observe cost without becoming stale docs.
-
-Exit: medium changes persist intent and resume across sessions without ceremony for small fixes.
-
-## Phase 3: Workspace umbrella (ADR-0005)
-
-- Deterministic boundary detection script (repo owner of cwd; worktree?).
-- Parent `HANDOFF.md` + repo map; per-repo `.work/` state; worktrees anchored per repo.
-- Cross-repo task coordination (parent `.work/`, separate PRs).
-
-Exit: a task spanning 2+ repos in one workspace is coordinated without touching the wrong repo.
-
-## Phase 4: Deterministic gates + reconciliation
-
-- Deterministic mutation-boundary enforcement via PreToolUse hook (Claude) / command hook
-  `exit 2` (Codex when live delivery is proven). Brainstorm and fresh-proof discipline remain
-  advisory until a deterministic Stop/UserPromptSubmit heuristic exists.
-- [x] Spec<->code reconciliation closeout guidance: sync living spec, delegate to OpenSpec,
-  archive, or delete transient planning.
-- [x] Spec Kit-style cheap read-only `/analyze` consistency check with severity-bearing
-  findings and `--all` active-change scanning.
-- [x] Semantic-claim v0 analysis: explicit `## Semantic Claims` must name code/proof and
-  existing code refs.
-- [x] Claim-backed spec<->code drift check: deltas and living specs validate code refs and
-  proof commands; behavior deltas without claims are flagged.
-- [x] Completed retained changes archived under `.cairn/changes/archive/<date>-<slug>/`.
-- [x] Inferred semantic extraction from behavior prose beyond explicit claims: code/proof
-  candidates are accepted as coverage, and missing code/proof/refs become findings.
-- [x] Claude Code live hook proof: SessionStart and PreToolUse.
-- [ ] Codex live hook proof beyond local smoke. Current result: plugin is installed/enabled,
-  Codex docs support plugin-bundled hooks and trust review, but local v0.136.0 `exec` file
-  changes did not trigger captured `PreToolUse` events.
-
-Exit: the gates that matter are deterministic, not advisory, with parity across harnesses.
-
-## Phase 5: First-class research stages as subagents (ADR-0006)
-
-- Brainstorm hard-gate; Phase 0 web-research subagent writing reusable `research/<topic>.md`;
-  official-docs grounding rule (lockfile version).
-- Subagents only for isolated research / adversarial review — never to parallelize coding.
-
-Exit: brainstorm + research + docs improve quality without recreating ceremony on small cards.
-
-## Phase 6: Public readiness
-
-- [x] Install guide for both harnesses (`docs/install.md`), with verified Codex commands.
-- [x] Prompt eval fixture (`docs/evals/auto-trigger.md`) with a first logged Codex run.
-- [x] Release checklist (`docs/release-checklist.md`).
-- [x] Worked example proving codebase maps on a realistic brownfield eval-harness card.
-- [x] Realistic routing fixture subset with cards + code + tests on Codex v0.136.0 default.
-- [x] Fast cross-harness subset on Codex v0.136.0 and Claude Code v2.1.159.
-- [x] Broad no-card/research/cleanup/pattern-alignment eval coverage on Codex, plus a
-  Claude Code broad-fast subset.
-- [x] P0 matrix subset with duration metrics on Codex default and Claude default.
-- [x] Read-only eval scoreboard for choosing the next cheapest useful run.
-- [x] Fast second-model subset on Claude `haiku`; Codex `gpt-5.4-mini` P0 matrix passed.
-- [x] Codex `default` full realistic (14): 14/14 fired, 14/14 routed, 0 timeouts on v0.136.0
-  (`cairn-realistic-codex-0.136-default-full`). Strongest realistic proof to date.
-- [~] Second-model realistic proof is still pending at the full-run level. Codex
-  `gpt-5.4-mini` has focused route-contract clears, but the latest full realistic rerun
-  (`cairn-realistic-codex-0.136-gpt-5.4-mini-rerun-1`) reached 14/14 fired and only 11/14
-  routed because R7/R13/R14 timed out. Focused retests cleared R13 and R7; R14 now completes
-  under a 240s timeout but routes as `diagnose`, so the second Codex realistic proof remains
-  open as a narrow R14 routing/latency variance.
-- [ ] Claude `default` realistic rerun on v2.1.160 (was lossy on 2.1.159: 3 near-timeouts).
-  Deferred — expensive (large model, ~180s/case); run on request.
-- [ ] Publish patterns only after real brownfield usage validates the core assumptions.
-
-### Finding: small-model routing misses are variance until proven otherwise (2026-06-02)
-
-Small-model misses have not been proven to be a capacity limit or a promptable fix. Later
-adversarial review found the earlier "route-contract retest" signal was a same-prompt rerun,
-not a special subset or new enforcement path. Treat the gaps as execution variance until
-repeated real-model runs (n>1) prove a stable pattern.
-
-- [ ] Do not add routing enforcement. Next proof is repeated eval, not a prose hook.
-
-## Phase 7: Token economy / concise comms (Principle 8)
-
-The cheapest, highest-frequency lever: every turn pays. Adapts the "caveman" concise-output
-technique (JuliusBrussee/caveman, wilpel/caveman-compression) without extreme compression.
-
-- [x] `Output Style` section in `SKILL.md` (extends existing `Output Shape`, reusing the owner):
-  caveman `full` for agent output — fragments ok, active voice, present tense, one idea per
-  line. Hard exceptions: security warnings, irreversible confirmations, public artifacts,
-  numbers/IDs/dates/paths. Budget green after edit (skill 7032/7200 chars).
-- [~] `cairn-budget.mjs` already counts the whole `SKILL.md` as one budgeted surface; per-section
-  granularity skipped as over-engineering. If `SKILL.md` later overflows its char cap, push the
-  Output Style block to a `references/output-style.md` lazy reference then.
-- [x] Concise-comms red flag added to `framework-lessons.md` ("More words make the answer safer"
-  -> cut filler, keep numbers/IDs/safety/inference steps).
-- [ ] Eval: measure mean output tokens per routed turn before/after on the existing fixtures;
-  log the delta. No accuracy regression on the auto-trigger + route-contract suites. (Needs a
-  real-model run — deferred to the next eval cycle.)
-
-Exit target: routed turns drop measurable output tokens with zero routing/accuracy regression,
-and the concision rule never fires on a safety/public surface. Token-delta eval remains deferred
-to the next real-model cycle.
-
-## Phase 8: Harness capability adoption (Principle 5, graceful fallback)
-
-Best feature of each harness, documented asymmetry. Claims verified against official docs on
-2026-06-02 (`code.claude.com/docs/en/hooks`, `/skills`, `/settings`; `developers.openai.com/codex/hooks`,
-`/plugins/build`; `github.com/openai/codex` PRs/releases). Verdicts below are CONFIRMED unless noted.
-
-### Capability matrix (verified — encode supported set in `build-manifests.mjs`)
-
-| Capability | Claude Code | Codex | Cairn use |
-| --- | --- | --- | --- |
-| Hide inactive skills from model | `skillOverrides`: `on`/`name-only`/`user-invocable-only`/`off` ✓ | none -> noop | shrink system prompt: expose only active-route skill |
-| Cheapest-point prompt gating | `UserPromptExpansion` (block, per-command matcher) ✓ | `UserPromptSubmit` (block/augment, **no matcher** — fires on every prompt) ✓ | block/augment before inference tokens |
-| Survive compaction | `PreCompact` (block, `auto`/`manual`) + `SessionStart` `source:"compact"` + `reloadSkills` ✓ | SQLite memory (v0.135.0) — global/non-editable, **not a Cairn lever**; resume re-reads on-disk state | snapshot active route + in-flight proof |
-| Inject route identity into subagents | `SubagentStart` `additionalContext` ✓ (**cannot block**; block via `SubagentStop`) | none -> parent-prompt fallback | route constraints at spawn, not via parent prompt |
-| Plugin-bundled hooks | yes ✓ | `hooks/hooks.json` + `PLUGIN_ROOT`/`PLUGIN_DATA` ✓ **behind `plugin_hooks` feature flag** (PR #19705) | zero-config distribution |
-| Per-route tool restriction | skill `disallowed-tools` (+ `allowed-tools`) ✓ | `PreToolUse` `updatedInput` rewrite ✓ (**`apply_patch` may not fire** — Issue #17794) | static permission enforcement per mode |
-
-REFUTED / corrected by the verification pass:
-- `continueOnBlock` (PostToolUse) — not in official docs. Dropped. (`updatedToolOutput` is real.)
-- `SubagentStart` does **not** support `decision:"block"`; use `additionalContext`, block via `SubagentStop`.
-- `--output-schema` works in `codex exec` but **not** `codex exec resume` (open issues #14343, #22998).
-
-Decision after verification: do **not** inflate the plugin with new runtime hooks that the
-task does not prove the need for (AGENTS.md). Most "levers" don't fit a single-skill router:
-
-- [x] Confirm each row against official docs; confabulated rows dropped (see REFUTED above).
-- [x] `skillOverrides` shipped as an install.md tip — not for `cairn` itself (collapsing its
-  `description` would break activation) but to hide *competing* skills that pollute routing.
-  Real activation win; documented, no plugin change.
-- [~] `PreCompact` route snapshot — **skipped**. `SessionStart` already has a `compact` matcher
-  and re-injects the bootstrap; a second hook is redundant and unprovable here.
-- [~] `SubagentStart` identity injection — **skipped**. `cairn-researcher` is already
-  self-contained; broad injection would add noise.
-- [x] Codex enforcement fallback (manual `~/.codex/hooks.json` registration, `plugin_hooks`
-  flag, Issue #17794) documented in install.md.
-
-Exit (met for the parts that fit): Claude's `skillOverrides` lever is documented; the Codex
-gap has a root cause and a fallback; no low-value runtime hooks added. The matrix is the single
-source for what is real vs aspirational.
-
-### Root cause found for the long-standing Codex live-PreToolUse gap
-
-The Phase 1/Phase 4 pending item ("Codex live PreToolUse proof beyond local smoke") has a
-verified two-part cause, not a Cairn bug:
-1. **`plugin_hooks` feature flag** — plugin-bundled hooks were not loaded at runtime until PR
-   #19705/#19778, and remain behind the `plugin_hooks` flag. Without it, a plugin cannot enforce
-   `PreToolUse`; the user must register the hook manually in `~/.codex/hooks.json`.
-2. **`apply_patch` hook gap** — Issue #17794: file-write ops sometimes do not fire
-   `PreToolUse`/`PostToolUse`, which is exactly what the boundary guard needs to intercept.
-
-- [ ] Re-test Codex live PreToolUse once `plugin_hooks` is confirmed GA (check `config.schema.json`
-  on `openai/codex` main). Until then, document the manual-registration fallback in `install.md`.
-- [ ] Track Issue #17794; the boundary guard's write-block on Codex is best-effort until it lands.
-
-## Phase 9: Consolidation / redundancy cleanup (Principle 7 + 8)
-
-`roadmap.md`, `comparison-and-gaps.md`, and `scope-and-workflows.md` overlap on "what Cairn
-has / how it wins". Drift risk across three surfaces.
-
-- [x] `PRINCIPLES.md` is the only home for principles; README thesis, `scope` "How Cairn wins",
-  and `framework-lessons` Design Rules reduced to pointers.
-- [x] `comparison-and-gaps.md` keeps the competitive matrix; added ECC/caveman + a concise-output
-  dimension, pointed principles to `PRINCIPLES.md`.
-- [x] Re-ran `cairn-budget.mjs` — green; `framework-lessons` shrank (324->310 words).
-- [x] Checked for stale archived-change refs in public docs — none load-bearing (only dated eval
-  logs, which are valid proof). No removal needed.
-
-Exit (met): each principle fact lives once in `PRINCIPLES.md`; `cairn-budget.mjs` green;
-validate passes (38 files).
-
-## Phase 10: Methodology depth
-
-Audited Cairn against BMAD v6.8, OpenSpec, Spec Kit v0.9.1, Superpowers v5, GSD (2026-06-02).
-Verdict: Cairn already has its OWN methodology (proportional modes + brownfield-first +
-umbrella multi-repo, which no surveyed tool has). Pesquisa, templates, retention, concise
-output, archiving are covered. Real capability gaps were narrow.
-
-Shipped (cheap, aligned with existing principles, not ceremony):
-
-- [x] Evidence grading in `diagnose` — Confirmed/Deduced/Hypothesized (BMAD `bmad-investigate`
-  idea, but it's just Principle 3 made explicit; no new artifact).
-- [x] Adversarial review step in `tracked-change` — separate isolated subagent reviews the diff
-  vs `delta.md` (writer ≠ reviewer); reuses the existing research/review subagent boundary.
-- [x] Ground-on-constraints first in `delta-spec`/`tracked-change` — read `AGENTS.md`/lockfile/
-  conventions before proposing (Spec Kit constitution idea, but AGENTS.md already is ours).
-
-Shipped (2026-06-02):
-
-- [x] Verify loop spec→code: extended `cairn-analyze.mjs` (reused the owner, no new script) with
-  a `verify` verdict — aggregates the existing findings into completeness/coherence/proof →
-  `verified`|`incomplete`|`drift`. The spec→code loop closure (OpenSpec `/opsx:verify`), read-only,
-  never runs the proof commands. Most of the loop (`DONE_WITHOUT_PROOF`, claim↔code refs,
-  lifecycle decision) already existed; this is the explicit closure.
-- [x] Long-context survival: `cairn-anchor.mjs` (read-only: active change, open tasks, recent
-  decisions) re-injected by the `SessionStart` hook when `source` is `compact`/`resume`. Smoke:
-  startup omits it, compact injects it with the open tasks; Codex has no anchor — resume there
-  re-reads on-disk `tasks.md`/`decision-log.md`.
-
-Deferred by the anti-bloat principle (AGENTS.md) until real usage demands it:
-
-- [~] Auto-sync archived deltas into `specs/` (OpenSpec `/opsx:sync`) — manual sync is fine
-  until `tracked-change` volume makes drift real.
-- [~] Separate `.cairn/constitution.md` — `AGENTS.md` already carries project constraints;
-  a second file would duplicate the owner (Principle 4).
-- [~] CI lifecycle hooks, multi-agent wave parallelism, 12+ personas — ceremony Cairn rejects.
-
-Exit: methodology gaps that fit a proportional brownfield router are closed; the rest are
-documented as deliberate omissions, not oversights.
-
-## Phase 11: Software-engineering foundations
-
-Two convergent primary-source research passes (2026-06-02): current agile/AI practice (DORA
-2025, METR RCT, SDD, brownfield) + timeless principles (Cynefin, OODA, Lean, XP, Conway,
-comm theory, cognitive load, ADRs). Both independently concluded Cairn already embodies the
-durable principles and shares one real gap.
-
-Already embodied (validated, not changed): proportional modes ≈ Cynefin; observe→act→verify
-≈ OODA; gates ≈ Lean jidoka/poka-yoke; smallest change ≈ XP YAGNI; decision-log ≈ ADRs;
-concision + context budget ≈ cognitive load; single-threaded coding + adversarial review ≈
-Theory of Constraints — human review, not code generation, is the real bottleneck (METR -19%
-in mature repos; DORA 2025 AI productivity paradox: +98% PRs merged, delivery flat).
-
-Shipped (one genuine convergent gap, minimal wiring):
-
-- [x] Principle 9 "Compounding context" — kaizen + blameless postmortem: when work reveals
-  context was missing/wrong/stale, fix the context doc, not just the code. Decision-log records
-  *why*; this records *what the system now knows*. Wired in PRINCIPLES.md + memory.md close
-  hygiene + a framework-lessons red flag. No SKILL/gates/modes inflation (anti-bloat).
-- [x] Named the theoretical lineage in PRINCIPLES.md — grounding, zero behavior change.
-- [x] Context-quality → autonomy calibration (METR/DORA: full autonomy on a thin-context repo
-  ships subtle bugs). Extended `cairn-boundary.mjs` (reused the owner — no new script) with a
-  deterministic `context` block (`agents/readme/tests/codebaseMaps/specs` + `readiness:
-  thin|partial|strong`); `modes.md` calibration rule turns a thin signal into "no `direct` for
-  non-trivial work, declare the missing context, write the map at close" (OODA Orient / DoR +
-  Principle 9). Honest-determinism: the script reports facts, the prose decides. validate smoke
-  test asserts the readiness label.
-
-Rejected / deferred:
-
-- [~] DORA/SPACE metrics surface — Cairn is a router, not a metrics product; the eval
-  scoreboard already tracks regression.
-- [~] Cynefin "complex" probe mode — `discovery` already covers exploratory probing.
-
-Exit: Cairn's pragmatic principles now have a named theoretical spine; the one missing loop
-(learn from failure) is codified.
-
-## Phase 12: Proportional review
-
-Audit (2026-06-02) of honesty / research / review maturity:
-
-- **Honesty** — sufficient. Principle 3 (evidence ladder), Principle 6 (determinism boundary),
-  diagnose evidence grading, `cairn-analyze` verify verdict, and the new context-readiness
-  "declare the gap" all cover it. Adding confidence grading to every mode would be ceremony.
-- **Web research** — sufficient. `research.md` is intent-gated (default-light table), isolated
-  (`cairn-researcher`), evidence-laddered, lockfile-version grounded. No change.
-- **Review** — the real gap. Adversarial review existed only in `tracked-change`; `direct`,
-  `diagnose`, and `delta-spec` had proof (does it work) but no review (is it right and safe).
-  Post-AI, review is the bottleneck and the value (METR 2025, DORA 2025).
-
-Shipped:
-
-- [x] `references/review.md` — proportional review ladder (self-review → diff-vs-delta →
-  isolated adversarial subagent), single owner. Wired by pointer from SKILL, `modes.md` step 7
-  (trimmed to a pointer — removed the restated text), and a `gates.md` advisory bullet. Budget
-  entry added; validate `required` list updated.
-
-Open items (tracked, not bugs — deferred by cost or upstream block):
-
-- Real-model eval runs (full auto-trigger suite, token-delta, Claude default rerun) — cost-gated.
-- Codex live PreToolUse proof — blocked on `plugin_hooks` GA + Issue #17794 (upstream).
-- `Mode:` contract reinforcement for small models — open design decision, awaits real usage.
-
-## Phase 13: Safety + coherence review (git, native memory, AGENTS/CLAUDE)
-
-Multi-agent read-only review (2026-06-02, 4 dimensions: git/safety, native memory,
-AGENTS/CLAUDE, doc coherence). Verdict per dimension: `minor-gaps` — core is sound, gaps were
-documentation-only. Quick wins shipped:
-
-- [x] Public-mutation hard gate now SHIPS with the plugin. Was only in a personal global
-  `CLAUDE.md`; a clean install routed work with no push/PR gate. Stated in `bootstrap.md`
-  (always-on) + `gates.md` advisory: push/PR/MR/merge/release/deploy/publish need explicit
-  same-turn authorization; honest-determinism — required behavior, not an enforced gate.
-- [x] Host-neutral git: "PR" → "PR/MR" in `workspace.md` (GitLab/merge-request aware), close
-  step gated by `gates.md`.
-- [x] Codex resume honesty: dropped the "Codex uses its internal memory" implication
-  (contradicted ADR-0004 — Codex memory is global/non-editable). Codex has no anchor; resume
-  re-reads on-disk `tasks.md`/`decision-log.md`. Fixed `memory.md`, `session-start.sh`,
-  roadmap capability matrix + Phase 10 note.
-- [x] Authority/precedence order documented once in `PRINCIPLES.md` (chat > global gates >
-  project AGENTS/CLAUDE > principles/refs > memory > inference); `install.md` states the
-  global-instructions rule for both harnesses; Principle 5 now names the `CLAUDE.md`→`AGENTS.md`
-  import.
-- [x] `validate-cairn.mjs` asserts `CLAUDE.md` imports `@AGENTS.md` (prevents silent one-source
-  rot). Coherence fixes: README status (Phases 0-12), research.md commit-policy line, file
-  count (38), comparison/Phase-1 snapshot labels.
-
-Deliberately not done: git rebase/conflict/stash guidance (general agent skill, would be the
-ceremony Cairn avoids).
-
-Exit: the safety gate ships, git guidance is host-neutral, Codex resume is honestly stated, and
-the precedence chain is written down once.
-
-## Phase 14: Principle 10 (adversarial by default) + enforcement decision
-
-Two converging threads (2026-06-02): the user asked to elevate adversarial critique + tradeoff
-naming to a first-class principle, and an adversarial panel reviewed whether to add routing
-enforcement. The panel's own output became the proof case for the principle.
-
-- [x] **Principle 10 "Adversarial by default"** — load-bearing decisions survive the opposite
-  case + a named downside; high-risk work gets an independent check (writer ≠ reviewer); the
-  counter-argument is itself verified against primary evidence (a refutation is a hypothesis,
-  not a verdict). Governed by Principle 1 (proportional — a typo needs none). Wired in
-  PRINCIPLES.md, theoretical lineage (Popper/red-team), and two framework-lessons red flags.
-  No tooling — the mechanisms (brainstorm tradeoffs, `review.md`, decision-log downside) already
-  exist.
-
-- **Enforcement decision (triple-verified, Principle 10 in action):** an adversarial panel
-  argued to REVERSE the "build no routing enforcement" recommendation, citing R5/gpt-5.4-mini
-  going `modeDetected: null → diagnose` on a "route-contract retest" as proof the gap is
-  promptable. Primary-evidence check refuted the panel: there is **no `route-contract` subset**
-  in `eval-autotrigger.mjs` (subsets are `all|fire|nofire|realistic|realistic-nofire|broad|
-  p0-matrix|<ids>`) — the "retest" is the same ids, same prompt, same bootstrap/SKILL, rerun
-  under a different file label. So the `null → diagnose` flip is **execution variance, not a
-  promptable fix**. Conclusions:
-  - Do **not** build a routing-enforcement hook. `UserPromptSubmit` augments input, it cannot
-    force an assistant `Mode:` prefill (panel's mechanism was technically wrong); a prose-parsing
-    WARN is theater (Principle 6).
-  - The small-model gap is **inconsistent adherence (variance), not a capacity limit and not a
-    proven promptable fix** — corrects the earlier "model limit" phrasing. Beating variance needs
-    repeated real-model runs (n>1), which is *more* cost-gated, not less.
-  - One honest survivor from the panel: a **file-state** PreToolUse gate (e.g. warn if
-    `tracked-change` has no `brainstorm.md`) is deterministic (filesystem fact, not prose), unlike
-    a prose WARN. Tracked as a P1 candidate with a named tradeoff (narrow coverage — only bites once
-    `.cairn/changes/<slug>/` exists; false positives on legitimately inline-brainstormed work).
-
-Exit: adversarial+tradeoff is a named principle with the verify-the-refutation clause that this
-very decision exercised; the enforcement question is closed with evidence, not opinion.
-
-## Phase 15: Distribution / public launch (deferred)
+Forward-looking only. Shipped work → `CHANGELOG.md`; the *why* behind decisions → `docs/decisions/`;
+canonical principles → `docs/PRINCIPLES.md`.
+
+## Sequencing (next cycle)
+
+Current focus: **core-first, eval-light**. Do not keep spending cycles on model suites while
+the operating model, artifact ownership, and dogfood story can still improve without model
+cost. Evals stay as evidence gates for routing/prose changes, not the center of day-to-day
+project evolution.
+
+Each behind the default-light intent gate:
+
+1. **Core operating model** — make routing judgment, artifact lifecycle, workspace ownership,
+   and token economy obvious in existing owners (`mvp-architecture.md`, `PRINCIPLES.md`,
+   `framework-lessons.md`). No new ceremony surface unless an owner is missing.
+2. **Dogfood one real multi-repo workspace task before more fixtures** — pick a task that touches
+   2+ independent child repos under one parent workspace. Success means: boundary output captured
+   for parent + children, one `HANDOFF.md` repo map, one correct Cairn state owner based on
+   `cairnStateScope`, separate proof/PR/MR boundary per repo, and a closeout lifecycle decision.
+   Patch only `workspace.md`/`modes.md` if this exposes friction; do not add a new template first.
+3. **Domain lenses** — start with manual brownfield evidence. `infra-lens` is seeded,
+   but do not edit `SKILL.md` until the vague guidance is confirmed outside eval churn.
+4. **Protect eval history** — result labels are immutable by default; use `--overwrite` only for
+   a known-bad file. Keep scoreboard as the owner of active eval gaps.
+5. **Distribution** — still gated on publishable evidence and a clean core story; no
+   launch while the methodology is hard to explain.
+
+## Distribution / public launch (deferred)
 
 Deferred by user (2026-06-02): hold public promotion until there is real-model eval proof to show.
-The v0.1.0 GitHub Release is published as **pre-release** as the milestone marker.
+Current release state: **v0.1.2 is Latest** (2026-06-02); v0.1.0 and v0.1.1 stay pre-release
+milestone markers. Per-version changes live in `CHANGELOG.md`.
 
-Prerequisite chain: publish real-model eval → promote release pre-release → latest → then announce.
+Prerequisite chain: publish real-model eval → **announce**. The GitHub Release is already promoted
+to Latest; the remaining gate is the public launch, still held for publishable eval numbers.
 
 - [ ] Run + publish real-model eval (cost-gated) — fire-rate/routing on ≥2 models per harness.
-- [ ] Promote v0.1.0 release from pre-release → latest once the numbers are in.
 - [ ] Draft launch posts (transparent "experimental, feedback welcome" tone). Author posts
   **manually** — no bot/automation posting (Reddit self-promo rules + one-shot first-impression
   risk; the value is replying to comments live).
@@ -423,64 +47,7 @@ Prerequisite chain: publish real-model eval → promote release pre-release → 
 
 Exit: launched with evidence (eval numbers) rather than claims; the first impression is spent well.
 
-## Phase 16: Dogfooding fix — `.cairn/` not materialized during a tracked-change
-
-Real Codex dogfooding case (2026-06-02): Cairn classified an ops/teardown task as `tracked-change`
-but created no `.cairn/changes/<slug>/` during the work — the folder appeared only retroactively
-when prompted, with Options/Tradeoff written after the fact (process theater: asserting
-design-before-code that did not happen — violates Principle 3/10).
-
-Root cause (3 layers, not one bug):
-- **Invisible artifact.** The mode step "create durable change folder" was weak and not early,
-  and Output Shape never required *naming* the artifact — so the agent optimized for what is
-  visible and verified (`Mode:`, proof) and silently dropped the invisible folder.
-- **Ops/infra bias.** Teardown/deploy "feels like commands," so the agent labels `tracked-change`
-  but operates like `direct`.
-- **HANDOFF vs `.cairn` confusion.** Parent `.work/HANDOFF.md` was treated as if it replaced the
-  child's change folder.
-
-Fix, part 1 — flow + contract + honesty. A PreToolUse hook is weak here: ops via CLI/MCP never
-trips a file-write guard, and the hook knows neither mode nor slug.
-- [x] `modes.md` — tracked-change step 2 now "scaffold `.cairn/changes/<slug>/` **before any
-  mutation**; tick `tasks.md` live, never retroactively; no folder first = not tracked-change."
-  Same early-scaffold note added to delta-spec. Cut redundant "Borrow from…" lines to bank budget
-  (attribution is owned by `framework-lessons.md`, Principle 4).
-- [x] `SKILL.md` — Required Behavior now mandates scaffold-before-mutation + live ticks + "no
-  folder first = not that mode" for delta-spec/tracked-change.
-- [x] `framework-lessons.md` — red flag: "I'll write the change folder after the work" →
-  narrative-after-code; if already mutated, record it as honest post-hoc, never stage tradeoffs
-  you never weighed (Principle 3/10).
-- [x] `workspace.md` — explicit: the parent HANDOFF coordinates but does **not** replace a child's
-  `.cairn/changes/<slug>/`; a tracked-change in a child still scaffolds before mutating.
-
-- [x] **Deterministic signal shipped — coherence `Stop` hook** (`scripts/cairn-coherence.mjs`).
-  Research (2026-06-02, primary-source survey of OpenSpec/BMAD/Spec Kit/Superpowers) showed **none**
-  of the four force proactive folder creation deterministically — all stop at scaffold-on-setup +
-  optional script + validate-of-structure + prose. The one lever none of them has: an **end-of-turn
-  coherence check**. Codex CLI confirmed to support `Stop` hooks (developers.openai.com/codex/hooks),
-  same as Claude Code, so it is portable from the existing `hooks/hooks.json`. The hook reads the
-  turn's declared `Mode:` (Codex `last_assistant_message`; Claude Code transcript tail) and, if it is
-  `tracked-change`/`delta-spec` with no `.cairn/changes/<slug>/`, blocks the close once (exit 2,
-  `stop_hook_active`-guarded) to force scaffolding. Promotes the signal `gates.md` reserved.
-  **Blast-radius gate (added after a live incident):** a Stop hook fires in *every* Codex session
-  on *every* project; to avoid nagging unrelated repos it stays silent unless the repo already uses
-  `.cairn/` (a brand-new repo's first change is covered by prose, not this hook).
-  *Tradeoff (named):* coarse (fires on "zero folders", not "wrong folder"); transcript-tail parsing
-  is best-effort; misses the first change in a never-adopted repo (accepted, for bounded blast radius).
-  *Codex parity — live-proven (2026-06-02):* a probe confirmed Codex fires the plugin `Stop` hook,
-  passes `last_assistant_message`/`cwd`/`stop_hook_active`, and honors `exit 2` (the blocked model
-  tried to scaffold). The unguarded probe also looped infinitely, validating why the shipped hook
-  guards `stop_hook_active`. **Incident lesson:** the probe was injected into the *shared global*
-  `~/.codex/plugins/cache`, leaking into an unrelated live Codex session — never instrument the
-  global cache; use an isolated `CODEX_HOME`. Cache reverted to original after the test.
-  *Proof:* `validate-cairn.mjs` smoke test (non-Cairn repo→0, adopted+incoherent→exit 2,
-  transcript-tail→exit 2, `stop_hook_active`→0, non-folder mode→0, folder-present→0); built dogfood —
-  scaffolded `.cairn/changes/coherence-stop-hook/` before mutating, per this phase's own contract.
-
-Exit: the create-before-mutate contract lives in flow + skill + honesty red flag, now backed by the
-first deterministic end-of-turn signal — a lever no surveyed framework has.
-
-## Phase 17: Domain lenses inside Cairn (discovery backlog)
+## Domain lenses (discovery backlog)
 
 Working direction: keep only truly external specialty skills outside Cairn (for now `secrets`
 and media transcription). Common development lenses should be folded into Cairn's proportional
@@ -489,7 +56,7 @@ workflow only when evals or real brownfield usage prove a routing/proof gap.
 Candidate lenses to analyze and fold into references/evals:
 
 - `infra`: runtime systems, Docker, deploy, CI/CD, logs, health, SSH, connectors. Seeded as
-  `infra-lens` eval cases (`I1`-`I3`) because Phase 16 exposed a real ops/infra bias.
+  `infra-lens` eval cases (`I1`-`I3`) because dogfooding exposed a real ops/infra bias.
 - `database`: schema, migrations, ORM, queries, indexes, N+1. Likely needs explicit
   expand-contract and rollback proof guidance.
 - `ui`: visual validation, screenshots, responsive/accessibility, design-system fit. Likely
@@ -504,18 +71,3 @@ Candidate lenses to analyze and fold into references/evals:
 Entry rule: add a lens only with a concrete fixture or dogfood incident showing current Cairn
 guidance is underspecified. Prefer a short lazy reference or eval fixture over inflating
 `SKILL.md`.
-
-## Sequencing (next cycle)
-
-Each behind the default-light intent gate:
-
-1. **Protect eval history** — result labels are immutable by default; use `--overwrite` only for
-   a known-bad file.
-2. **Phase 6 eval gaps** — next cheap proof from the scoreboard is the Codex
-   `gpt-5.4-mini` full realistic rerun; Claude default realistic rerun remains expensive and
-   on-request.
-3. **Phase 17 domain lenses** — start with fixtures, not runtime changes. Add the first lens only
-   when a concrete brownfield case proves current guidance is too vague. `infra-lens` is seeded;
-   run it before editing `SKILL.md`.
-4. **Phase 15 distribution** — still gated on published real-model eval numbers; no launch
-   before evidence.

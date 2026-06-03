@@ -46,10 +46,16 @@ Never make a worktree of the parent.
 
 ## Multi-repo tasks
 
-A task spanning 2+ repos is coordinated from the parent workspace and lands as **separate
-PRs/MRs per repo**, never one across repos. Parent `.cairn/changes/<slug>/` records workflow
-state; `.work/HANDOFF.md` records active handoff, repo map, sequencing, and blockers. Do not
-create duplicate child `.cairn/changes/<slug>/` folders when `cairnStateScope` is `workspace`.
+A task spanning 2+ repos is parent-coordinated and lands as **separate PRs/MRs per repo**.
+`.work/HANDOFF.md` records handoff/map/sequence/blockers; never replaces Cairn state. If
+`cairnStateScope=workspace`, parent `.cairn/changes/<slug>/` owns state; child duplicates are
+wrong. If `repo`, each touched child owns its `.cairn/changes/<slug>`.
+
+## Dogfood proof contract
+
+A public-quality proof is one real task across 2+ child repos. Show: parent + child boundary
+output; `HANDOFF.md` map; correct state owner; no duplicate child state; separate branch/proof/PR/MR
+per child; one lifecycle decision. No new template: use `HANDOFF.md`, change folder, repo proofs.
 
 ## Templates
 

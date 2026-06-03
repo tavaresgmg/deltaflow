@@ -1,29 +1,29 @@
 # Framework Lessons
 
-## Borrow
+## Borrow / Avoid
 
-- BMAD: brainstorming quality, research before PRD, complexity tracks, project context.
-- OpenSpec: delta specs, propose/apply/archive, specs beside code, brownfield-first.
-- Spec Kit: phase separation, consistency analysis, templates/presets later.
-- Superpowers: verification before completion, code review discipline, skill-first authoring.
-- GSD: durable state, discuss/plan/execute/verify/ship loop, deterministic scripts for state capture.
-
-## Avoid
-
-- Full PRD for ordinary card work.
-- Full-system spec generation before incremental work.
-- Mandatory TDD.
-- Mandatory subagents.
-- Duplicate board/task state.
-- CLI/runtime before prompt-only workflow proves insufficient.
-- More skills than the trigger system can reliably route.
+- Borrow: BMAD discovery; OpenSpec deltas/archive; Spec Kit analyze; Superpowers proof/review;
+  GSD durable state and deterministic state capture.
+- Avoid: full PRDs/specs for ordinary work, mandatory TDD/subagents, duplicate board state,
+  premature CLI/runtime, and more skills than routing can reliably select.
 
 ## Design Rules
 
-Canonical principles: `docs/PRINCIPLES.md`. Operating shorthand: route first then execute;
-smallest sufficient mode wins; evidence beats abstract planning; research external truth early
-when it changes the plan; proof lives near the work; artifacts deleted/archived/synced, never
-stale. Reuse the existing owner before creating a new one.
+Canonical principles: `docs/PRINCIPLES.md`. Shorthand: route first; smallest sufficient mode;
+evidence over theory; research external truth when it changes the plan; proof near work;
+delete/archive/sync artifacts. Reuse the existing owner before creating one. Improve the core
+judgment through dogfood and architecture clarity before spending more model-suite budget.
+
+## Failure Controls
+
+| Failure | Cairn control |
+| --- | --- |
+| Sycophancy | Treat user framing as hypothesis; verify evidence. |
+| Lazy/fake done | Fresh proof before done. |
+| Hallucinated certainty | Grade confirmed/deduced/hypothesized. |
+| Spec theater | Smallest sufficient mode; no PRD for small work. |
+| Context rot | Fix stale maps/specs/instructions. |
+| Boundary damage | Boundary detector/guard before mutation. |
 
 ## Anti-Rationalization Red Flags
 
@@ -35,8 +35,9 @@ stale. Reuse the existing owner before creating a new one.
 | "I will clean this later." | Delete, archive, or sync touched stale artifacts before close. |
 | "The test is slow, so skip it." | Run a focused cheaper proof or state the residual risk explicitly. |
 | "Planning slows us down." | Use `direct` for small reversible work; use discovery/spec when the wrong path is costly. |
-| "More words make the answer safer." | Cut filler, hedging, and restated context (Principle 8). Keep numbers, IDs, safety warnings, and every inference step intact. |
-| "The map was stale but I worked around it." | Fix the context that misled you — map, spec, `AGENTS.md` — not just the code (Principle 9). Ask what context was missing, not whose prompt was wrong. |
-| "I'm confident this is right." | Name the strongest counter-case and the downside you accept before committing (Principle 10). Confidence with no named downside is the tell. |
-| "The review (or refutation) says so, so it's settled." | A critique can be as wrong as the claim — verify it against primary evidence before acting (Principle 10). A refutation is a hypothesis. |
-| "I'll write the change folder after the work." | Narrative-after-code. Scaffold `.cairn/changes/<slug>/` before acting; if already mutated, record it as post-hoc (decision-log + proof) — never stage tradeoffs you never weighed (Principle 3/10). |
+| "More words make the answer safer." | Cut filler; keep numbers, IDs, safety, and inference steps. |
+| "The map was stale but I worked around it." | Fix the misleading context — map, spec, `AGENTS.md` — not just the code (Principle 9). |
+| "I'm confident this is right." | Name the strongest counter-case and accepted downside first (Principle 10). |
+| "The review (or refutation) says so, so it's settled." | Verify critiques against primary evidence before acting (Principle 10). A refutation is a hypothesis. |
+| "The user proposed the cause or solution, so accept it." | Treat framing as a hypothesis; verify live/repo evidence, then state confirmed, deduced, or hypothesized. |
+| "I'll write the change folder after the work." | Narrative-after-code. Scaffold `.cairn/changes/<slug>/` before acting; if already mutated, record post-hoc — never stage tradeoffs you never weighed. |
