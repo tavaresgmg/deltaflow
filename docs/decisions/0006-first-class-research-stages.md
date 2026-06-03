@@ -24,8 +24,8 @@ Elevá-las é parte da tese do Cairn.
   antes de código, uma pergunta por vez, 2-3 abordagens com trade-off nomeado, salva
   `brainstorm.md`, self-review. Escala com stakes (pode ser curto). No Claude, subagent
   isolado read-only para não poluir o contexto principal.
-- **Pesquisa web = Phase 0** subagent isolado que devolve só resumo destilado e GRAVA
-  `.work/<id>/research/<topic>.md` versionado e reusável (reuso = memória). Dispara quando
+- **Pesquisa web = Phase 0** subagent isolado que devolve só resumo destilado e grava
+  pesquisa em `.cairn/changes/<slug>/research/<topic>.md` quando a tarefa justifica artifact. Dispara quando
   há unknown técnico / versão de framework / escolha de lib / API externa. Escada de
   evidência: live > repo > doc oficial > web primária. NÃO disparar para lib trivial.
 - **Doc oficial = regra always-on** no `AGENTS.md`: antes de codar contra lib/ferramenta

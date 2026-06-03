@@ -56,7 +56,7 @@ surface:
 ## Distribution / public launch (deferred)
 
 Deferred by user (2026-06-02): hold public promotion until there is real-model eval proof to show.
-Current release state: **v0.1.6 is Latest** (2026-06-03); v0.1.0 and v0.1.1 stay pre-release
+Current release state: **v0.1.11 is Latest** (2026-06-03); v0.1.0 and v0.1.1 stay pre-release
 milestone markers. Per-version changes live in `CHANGELOG.md`.
 
 Prerequisite chain: publish real-model eval → **announce**. The GitHub Release is already promoted

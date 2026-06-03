@@ -8,6 +8,20 @@ Tagged releases: https://github.com/tavaresgmg/cairn/releases
 
 ## [Unreleased]
 
+## [0.1.11] — 2026-06-03
+
+### Changed
+- Clarified the current workspace-state standard: `.cairn/` is the active owner for handoff,
+  docs, tmp, research artifacts, and worktrees.
+- ADR-0005 now explicitly marks old `.work/` implementation details as superseded by the
+  current `.cairn/` layout.
+- ADR-0006 and framework research notes now point Phase 0 research artifacts at `.cairn/`
+  instead of the historical `.work/` convention.
+
+### Notes
+- `.work/` remains mentioned only as legacy migration input, compatibility coverage, changelog,
+  or historical ADR context.
+
 ## [0.1.6] — 2026-06-03
 
 ### Added
@@ -143,7 +157,8 @@ First tagged milestone. Experimental.
 - Pre-release because real-model eval runs (≥2 models per harness) were not yet published, and Codex live
   PreToolUse enforcement needs manual hook registration until the upstream `plugin_hooks` flag is GA.
 
-[Unreleased]: https://github.com/tavaresgmg/cairn/compare/v0.1.6...HEAD
+[Unreleased]: https://github.com/tavaresgmg/cairn/compare/v0.1.11...HEAD
+[0.1.11]: https://github.com/tavaresgmg/cairn/releases/tag/v0.1.11
 [0.1.6]: https://github.com/tavaresgmg/cairn/releases/tag/v0.1.6
 [0.1.5]: https://github.com/tavaresgmg/cairn/releases/tag/v0.1.5
 [0.1.4]: https://github.com/tavaresgmg/cairn/releases/tag/v0.1.4
