@@ -8,6 +8,32 @@ Tagged releases: https://github.com/tavaresgmg/cairn/releases
 
 ## [Unreleased]
 
+## [0.1.15] — 2026-06-04
+
+Documentation and methodology pass: skill↔methodology alignment fixes plus an
+adversarially-filtered evidence/clarity audit (no runtime behavior change).
+
+### Fixed
+- Aligned the user-facing mode tables with the deterministic scaffold: `delta-spec` now lists
+  `delta, plan, tasks, proof` (was `brief, delta, plan, proof`) in `SKILL.md` and `README.md`.
+- Corrected an overclaim in `docs/ARCHITECTURE.md`: `validate-cairn.mjs` caps the always-on
+  bootstrap surface only, not `SKILL.md`/`references` — kept small by progressive disclosure
+  (honest determinism boundary, Principle 6).
+- Corrected the inverted Cynefin analogy and softened the OODA equivalence in `docs/PRINCIPLES.md`.
+- Refreshed stale OpenSpec evidence: `/opsx:sync` has been default since v1.4.0 (2026-06-01), so the
+  "no native reconciliation command" claim and the `1.3.x` version label in `docs/RESEARCH.md` were
+  wrong; fixed both and added a dated `docs/DECISIONS.md` addendum. Added the METR RCT citation.
+- Removed the stale `v0.1.13 is Latest` line from `docs/ROADMAP.md`; `CHANGELOG.md` is the sole
+  release-history owner.
+
+### Changed
+- `scripts/validate-cairn.mjs` now guards all 10 skill templates in `required[]` (was 6), so
+  deleting any documented template fails validation.
+- Tightened `docs/METHODOLOGY.md`: the differentiator and mechanisms sections point to their
+  `METHODOLOGY_DEEP_DIVE.md` owner, and the proportional-routing claim cites the real dogfood
+  locator and names its structural gap.
+- `references/review.md` marks `docs/RESEARCH.md` as repo-only (self-contained runtime).
+
 ## [0.1.14] — 2026-06-04
 
 ### Changed
