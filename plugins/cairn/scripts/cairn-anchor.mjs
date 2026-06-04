@@ -6,12 +6,11 @@ import { execSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 const args = process.argv.slice(2);
-const asJson = args.includes("--json");
-const changesArgIdx = args.findIndex((a) => a === "--changes");
 const emitArg = args.find((arg) => arg.startsWith("--emit="));
 const emitMode = emitArg ? emitArg.slice("--emit=".length) : null;
 const MAX_OPEN_TASKS = 5;
 const MAX_LINE_CHARS = 140;
+const MIN_PROMPT_GAP = 3;
 
 function trimLine(text) {
   return text.length > MAX_LINE_CHARS ? text.slice(0, MAX_LINE_CHARS - 1) + "…" : text;
@@ -99,19 +98,10 @@ function sha(text) {
   return crypto.createHash("sha256").update(text).digest("hex");
 }
 
-function positiveIntEnv(name, fallback) {
-  const parsed = Number.parseInt(process.env[name] || "", 10);
-  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
-}
-
-function cacheDir() {
-  return process.env.CAIRN_ANCHOR_STATE_DIR || path.join(os.tmpdir(), "cairn-anchor");
-}
-
 function cachePath(input) {
   const cwd = input.cwd || process.cwd();
   const session = input.session_id || `cwd:${cwd}`;
-  return path.join(cacheDir(), `${sha(`${session}\0${cwd}`).slice(0, 32)}.json`);
+  return path.join(os.tmpdir(), "cairn-anchor", `${sha(`${session}\0${cwd}`).slice(0, 32)}.json`);
 }
 
 function activeSlug(anchorText) {
@@ -139,7 +129,6 @@ function runPromptAnchorPolicy() {
   const root = repoRoot(input.cwd || process.cwd());
   const text = renderAnchor(buildAnchor({ root }));
   const file = cachePath(input);
-  const minPromptGap = positiveIntEnv("CAIRN_ANCHOR_MIN_PROMPT_GAP", 3);
 
   if (!text.trim()) {
     try {
@@ -164,16 +153,14 @@ function runPromptAnchorPolicy() {
   const firstAnchor = !previous || !emittedHash;
   const switchedSlug = previous?.slug && previous.slug !== slug;
   const unchanged = previous?.slug === slug && emittedHash === hash;
-  const shouldEmit = firstAnchor || switchedSlug || (!unchanged && turnsSinceEmit >= minPromptGap);
+  const shouldEmit = firstAnchor || switchedSlug || (!unchanged && turnsSinceEmit >= MIN_PROMPT_GAP);
 
   function remember(state) {
     fs.mkdirSync(path.dirname(file), { recursive: true });
     fs.writeFileSync(file, JSON.stringify({
       slug,
       emittedHash: state.emittedHash,
-      latestHash: hash,
       turnsSinceEmit: state.turnsSinceEmit,
-      minPromptGap,
       updatedAt: new Date().toISOString(),
     }) + "\n");
   }
@@ -187,7 +174,6 @@ function runPromptAnchorPolicy() {
       hash,
       emittedHash,
       turnsSinceEmit,
-      minPromptGap,
     });
     return;
   }
@@ -198,7 +184,6 @@ function runPromptAnchorPolicy() {
     reason: firstAnchor ? "active" : switchedSlug ? "active-change-switched" : "prompt-gap",
     slug,
     hash,
-    minPromptGap,
     context: text,
   });
 }
@@ -210,12 +195,5 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   }
 
   const root = repoRoot();
-  const changesRoot = changesArgIdx >= 0 ? path.resolve(args[changesArgIdx + 1]) : path.join(root, ".cairn/changes");
-  const anchor = buildAnchor({ root, changesRoot });
-
-  if (asJson) {
-    process.stdout.write(JSON.stringify({ active: Boolean(anchor), anchor }, null, 2) + "\n");
-  } else {
-    process.stdout.write(renderAnchor(anchor));
-  }
+  process.stdout.write(renderAnchor(buildAnchor({ root })));
 }

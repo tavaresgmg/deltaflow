@@ -85,20 +85,6 @@ brownfield-first, proportional, token-cheap, evidence-first, portable, and hones
 | [DORA/Westrum culture](https://dora.dev/devops-capabilities/cultural/generative-organizational-culture/) | Good information is timely, usable, and answers receiver questions; failure leads to inquiry. | Agent output should surface bad news, proof gaps, and risk early. | Punishing the messenger with verbose defensive narratives. |
 | SPACE / DevEx | Productivity needs balanced signals; cognitive load and feedback loops matter. | Evaluate decision quality, proof quality, flow, context compounding, cognitive load, and stability. | One-number productivity claims. |
 
-## Coverage Matrix
-
-| Area | Coverage | Current decision |
-| --- | --- | --- |
-| Agent/SDD frameworks | OpenSpec, Spec Kit, BMAD, Superpowers, GSD, Codex/Claude, LangGraph/AutoGen/CrewAI, Aider/SWE-agent | Covered as comparative pressure; do not import wholesale. |
-| Classic software methods | Agile, XP/YAGNI, Kanban, DDD, Continuous Delivery, test automation | Covered as operating constraints; use proportionally by boundary. |
-| Product discovery | Shape Up, Double Diamond, Lean Startup, JTBD | Covered for `discovery` and product/DX tasks; not default for code fixes. |
-| Strategy and org design | Wardley Mapping, Team Topologies, Theory of Constraints, Westrum/DORA culture | Covered as lenses for landscape, owner, flow, cognitive load, and information quality. |
-| Operations and incidents | TPS, SRE postmortems, continuous delivery | Covered as proof/learn/flow pressure. |
-| Security | OWASP threat modeling | Covered for trust boundaries; deferred for low-risk local edits. |
-| Threat modeling for agentic/MCP systems | OWASP/STRIDE-like concepts only | Deferred until Cairn adds or depends on richer MCP/agent runtime behavior. |
-| Formal test strategy | DORA test automation and proportional proof taxonomy | Partially covered; roadmap should sharpen proof taxonomy by claim scope. |
-| Public evidence | Dogfood, local validators, focused harness smokes | Partial; measured productivity claims are intentionally not made. |
-
 ## Operational Lens Matrix
 
 | Observed pain | Allowed lens | Maximum artifact | Allowed enforcement | Ceremony risk |
@@ -227,30 +213,16 @@ Demotion criteria:
 
 ## Evaluation Strategy
 
-Cairn should be evaluated by balanced evidence:
-
-- route correctness across realistic prompts and near-misses;
-- proof quality against the actual boundary changed: syntax, unit, integration, runtime, security,
-  release, or production-readiness claims must not be conflated;
-- number and severity of stale-artifact findings;
-- resume quality after compaction/session restart;
-- review findings caught before close;
-- dogfood incidents converted into owner updates;
-- user cognitive load: can the user predict why Cairn chose a mode?
-
-Do not treat smoke pass rate as the whole product. Dogfood and runtime proof are reality checks.
-User trust is the final acceptance signal.
+Owned by `docs/METHODOLOGY.md` (Measuring Real Value + Claims And Evidence Bar): judge Cairn by
+balanced signals — route correctness, proof quality by boundary, stale-artifact findings, resume
+quality, review catches, dogfood-to-owner updates, cognitive load — never smoke-pass rate alone.
+Dogfood and runtime proof are the reality checks; user trust is the final acceptance signal.
 
 ## Scenario Matrix
 
-| Scenario | Cairn route | Why |
-| --- | --- | --- |
-| Remove a dead comment from a hook | `direct` | Local, reversible, obvious; proof is syntax/validator. |
-| Debug prompt-anchor over-injection | `diagnose` or `delta-spec` | Concrete behavior plus policy change; proof needs repeated-turn payload checks. |
-| Add a new methodology principle | `tracked-change` | Durable doctrine; needs source translation and adversarial review. |
-| Add a feature touching API and web client | `tracked-change` | Cross-boundary owner/proof/rollback required. |
-| Explore whether to split Cairn into more skills | `discovery` first | Wrong split increases token cost and routing ambiguity. |
-| Build a deterministic hook for Learn | `delta-spec` only after dogfood | Needs structural signal; otherwise it is prose enforcement theater. |
+Route examples are owned by `docs/METHODOLOGY.md` (Scenarios) and
+`plugins/cairn/skills/cairn/references/modes.md`. This file keeps only the cross-cutting lens
+matrices above, not per-task route examples.
 
 ## Open Methodology Questions
 

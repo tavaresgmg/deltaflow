@@ -8,6 +8,33 @@ Tagged releases: https://github.com/tavaresgmg/cairn/releases
 
 ## [Unreleased]
 
+## [0.1.16] — 2026-06-04
+
+Self-audit cleanup. A multi-agent audit (find → adversarial verify → synthesize) flagged dead
+script surface and validator drift gaps; this release prunes them. No runtime behavior change
+(−133/+47 lines; `validate-cairn.mjs` and anchor/workspace smokes pass).
+
+### Fixed
+- `scripts/validate-cairn.mjs` now guards `references/framework-lessons.md`, which was orphaned —
+  referenced by `SKILL.md` but absent from `required[]`.
+- `scripts/validate-cairn.mjs` now guards both generated `marketplace.json` files
+  (`.claude-plugin/`, `.agents/plugins/`) with a `sameJson` parity check, closing a silent
+  build-drift gap (a hand-edited or stale marketplace passed unnoticed before).
+
+### Changed
+- `plugins/cairn/scripts/cairn-workspace.mjs`: `resolveCairnBoundary` now returns only the three
+  fields consumers read (`repoRoot`, `cairnStateRoot`, `cairnStateScope`); removed 13 unused return
+  fields, the sibling/umbrella/worktree/legacy computation feeding only them, 7 internal-only
+  exports, and the zero-caller `hasWorkspaceMarker`/`isLinkedWorktree`.
+- `plugins/cairn/scripts/cairn-anchor.mjs`: removed dead `--json`/`--changes` flags, the write-only
+  `latestHash`/`minPromptGap` cache fields, and the unused `CAIRN_ANCHOR_MIN_PROMPT_GAP` /
+  `CAIRN_ANCHOR_STATE_DIR` env indirection (defaults inlined).
+- Documentation dedup: dropped the duplicated 11-principle list from `README.md` (pointer kept);
+  reconciled the in-file version headers in `docs/INSTALL.md`; turned the cross-harness status block
+  in `references/gates.md` into a pointer to its `docs/ARCHITECTURE.md` owner; deleted the
+  reconstructible Coverage Matrix and converted the duplicate Evaluation Strategy + Scenario Matrix
+  to pointers in `docs/METHODOLOGY_DEEP_DIVE.md`.
+
 ## [0.1.15] — 2026-06-04
 
 Documentation and methodology pass: skill↔methodology alignment fixes plus an

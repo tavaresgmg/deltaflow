@@ -44,6 +44,7 @@ const required = [
   "plugins/cairn/skills/cairn/references/research.md",
   "plugins/cairn/skills/cairn/references/workspace.md",
   "plugins/cairn/skills/cairn/references/gates.md",
+  "plugins/cairn/skills/cairn/references/framework-lessons.md",
   "plugins/cairn/skills/cairn/templates/brainstorm.md",
   "plugins/cairn/skills/cairn/templates/brief.md",
   "plugins/cairn/skills/cairn/templates/codebase-map.md",
@@ -56,6 +57,8 @@ const required = [
   "plugins/cairn/skills/cairn/templates/tasks.md",
   "scripts/build-manifests.mjs",
   "scripts/validate-cairn.mjs",
+  ".claude-plugin/marketplace.json",
+  ".agents/plugins/marketplace.json",
 ];
 
 const removed = [
@@ -128,6 +131,17 @@ if (!errors.length) {
   }
   if (!sameJson(readJson("plugins/cairn/.claude-plugin/plugin.json"), expectedClaude)) {
     fail("claude plugin.json is stale; run node scripts/build-manifests.mjs");
+  }
+
+  const expectedMarketplace = {
+    name,
+    owner: author,
+    plugins: [{ name, source: "./plugins/cairn", description }],
+  };
+  for (const rel of [".claude-plugin/marketplace.json", ".agents/plugins/marketplace.json"]) {
+    if (!sameJson(readJson(rel), expectedMarketplace)) {
+      fail(`${rel} is stale; run node scripts/build-manifests.mjs`);
+    }
   }
 
   const skill = read("plugins/cairn/skills/cairn/SKILL.md");

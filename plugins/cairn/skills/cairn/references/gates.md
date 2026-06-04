@@ -55,7 +55,7 @@ inspect runtime, prove security, perform semantic sync, or decide product intent
 
 ## Cross-harness parity & validation status
 
-The guard *logic* is harness-neutral and unit-tested, including `apply_patch` patch-header
-paths. Claude Code live wiring is confirmed. Codex `exec` fires `SessionStart` and `Stop` plugin
-hooks (live-proven 2026-06-02) but did not deliver a captured `PreToolUse` event for file changes
-on v0.136.0. Treat Codex *mutation guard* parity as pending, not proven.
+The guard *logic* is harness-neutral and unit-tested, including `apply_patch` patch-header paths;
+Claude Code wiring is live-confirmed and Codex *mutation guard* parity is pending, not proven.
+Full per-surface status (Strong/Proven/Advisory/Pending) is owned by `docs/ARCHITECTURE.md`
+(Harness status) — do not restate it here.

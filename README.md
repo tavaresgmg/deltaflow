@@ -45,19 +45,9 @@ The full method is documented in [`docs/METHODOLOGY.md`](docs/METHODOLOGY.md).
 
 ## Principles
 
-Eleven principles drive every decision (full text in [`docs/PRINCIPLES.md`](docs/PRINCIPLES.md)):
-
-1. Proportional depth
-2. Brownfield first
-3. Evidence first
-4. Reuse before invent
-5. One source → both harnesses
-6. Honest determinism boundary
-7. No stale artifacts
-8. Token economy / concise comms
-9. Compounding context
-10. Structured signals before text matching
-11. Adversarial by default
+Eleven principles drive every decision — proportional depth, brownfield first, evidence
+first, reuse before invent, one source → both harnesses, and honest determinism among them.
+Full text in [`docs/PRINCIPLES.md`](docs/PRINCIPLES.md).
 
 ## Install
 

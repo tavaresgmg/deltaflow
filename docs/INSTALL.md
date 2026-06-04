@@ -11,7 +11,7 @@ Last checked: 2026-06-04.
 
 Use the `latest` channel for normal validation.
 
-## Codex (validated on v0.136.0)
+## Codex (validated on v0.136.0; local v0.137.0)
 
 ```bash
 codex plugin marketplace add tavaresgmg/cairn   # owner/repo, HTTPS git URL, or a local path
@@ -54,7 +54,7 @@ upstream, not Cairn (verified 2026-06-02 against `openai/codex`):
 Check `plugin_hooks` status in `config.schema.json` on `openai/codex` main before relying on
 plugin-delivered enforcement.
 
-## Claude Code (validated on v2.1.159; local now v2.1.161)
+## Claude Code (validated on v2.1.159; local v2.1.162)
 
 ```bash
 /plugin marketplace add tavaresgmg/cairn
