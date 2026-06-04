@@ -1,8 +1,5 @@
-// Deterministic change-folder scaffolder (Principle 6: scaffold in code, not prose).
-// Copies the minimal templates a mode justifies into <cairnStateRoot>/.cairn/changes/<slug>/
-// and seeds the repo-level decision-log. Idempotent: never overwrites existing work.
+// Creates the templates justified by one Cairn mode. Existing files are never overwritten.
 //   node cairn-scaffold.mjs <mode> <slug> [cwd]
-// Modes that create a folder: discovery, delta-spec, tracked-change. direct/diagnose do not.
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -10,7 +7,6 @@ import { resolveCairnBoundary } from "./cairn-workspace.mjs";
 
 const TEMPLATES_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "skills", "cairn", "templates");
 
-// One owner per mode for which artifacts it scaffolds. Kept minimal on purpose (anti-bloat).
 const MODE_TEMPLATES = {
   discovery: ["brief.md"],
   "delta-spec": ["delta.md", "plan.md", "tasks.md", "proof.md"],
@@ -58,7 +54,6 @@ for (const template of MODE_TEMPLATES[mode]) {
   place(path.join(changeDir, template), template, true);
 }
 
-// Repo-level decision-log is seeded once, never per-change.
 place(path.join(cairnStateRoot, ".cairn", "decision-log.md"), "decision-log.md", false);
 
 process.stdout.write(

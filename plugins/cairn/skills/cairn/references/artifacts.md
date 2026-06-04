@@ -48,7 +48,7 @@ Use for discovery and ambiguous planning. Template: `templates/brief.md`.
 Use for medium brownfield behavior changes. Template: `templates/delta.md`.
 
 Use `Semantic Claims` only when drift matters: one behavior, one code path, one proof command.
-`cairn-analyze.mjs` checks `code:`, `proof:`, paths, and infers simple `Proposed Behavior`.
+`cairn-close.mjs` checks `code:`, `proof:`, paths, and infers simple `Proposed Behavior`.
 
 ## Spec
 
@@ -68,6 +68,11 @@ Template: `templates/tasks.md`.
 ## Proof
 
 Template: `templates/proof.md`.
+
+`Context learned:` is required on durable closeout. Use `none`,
+`owner:<path> — <learned fact>`, or `deferred:<reason>`. `cairn-close.mjs` reports missing or
+placeholder values; this checks the `Learn` step without pretending every surprise can be forced
+deterministically.
 
 ## Decision log
 
@@ -89,4 +94,5 @@ decision. Template: `templates/decision-log.md`.
   findings at close. User-overridable via `.gitignore`; boundary reports `memoryPolicy`.
 - Do not keep execution logs as durable docs. Prefer code, tests, and concise specs over narrative.
 - Cleanup is report-first: list stale tmp/worktrees/changes, then remove only by explicit command.
-- `cairn-retention.mjs .cairn/changes` reports completed changes and next retention action.
+- `cairn-close.mjs .cairn/changes/<slug>` reports change consistency. Add `--apply` only after the
+  change is verified and `proof.md` records the lifecycle decision.

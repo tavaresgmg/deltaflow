@@ -6,18 +6,20 @@
 ![License](https://img.shields.io/badge/license-MIT-2f855a)
 ![Status](https://img.shields.io/badge/status-experimental-dd6b20)
 
-Cairn is a workflow router for AI coding agents. Instead of forcing every task through one
-heavyweight process, it picks **one of five proportional modes** — from a one-line fix to a
-tracked multi-repo change — and produces only the artifacts that mode justifies. It auto-activates
-from a SessionStart bootstrap (no need to invoke it by name) and runs on **OpenAI Codex and Claude
-Code from a single source**.
+Cairn implements **Cairn Proofflow**: Evidence-Routed Development for AI-assisted software work.
+It routes by evidence, risk, and owner boundaries instead of forcing every task through one
+heavyweight process. It picks **one of five proportional modes** — from a one-line fix to a tracked
+multi-repo change — and produces only the artifacts that mode justifies. It auto-activates from a
+SessionStart bootstrap (no need to invoke it by name) and runs on **OpenAI Codex and Claude Code
+from a single source**.
 
 ## What you get
 
 - Auto-routing for coding tasks: bugs, cards, rough ideas, cleanup, research, and specs.
 - Five proportional modes, so tiny tasks stay tiny and risky work gets gates.
 - File-based memory for resumable work without turning every task into a framework ceremony.
-- Repo/workspace boundary checks, coherence checks, budget checks, and artifact retention.
+- Repo/workspace boundary checks, coherence checks, deterministic scaffolding, and one closeout
+  validator/archiver.
 - One source that builds both Codex and Claude Code plugin shims.
 
 ## What Cairn is not
@@ -38,6 +40,8 @@ Code from a single source**.
 | `tracked-change` | multi-phase, high-risk, cross-boundary, customer-visible | durable change folder |
 
 The loop is the same every time: **Observe → Classify → Act → Verify → Close**.
+
+The full method is documented in [`docs/METHODOLOGY.md`](docs/METHODOLOGY.md).
 
 ## Principles
 
@@ -77,11 +81,11 @@ Full setup, memory-policy presets, and local development: [`docs/INSTALL.md`](do
 
 **Experimental.** Structural validation passes locally. Claude PreToolUse guard and Codex Stop hook
 are live-proven; Codex write-guard parity is pending upstream behavior. Full per-harness enforcement
-status lives in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) (Harness status); model-eval gaps in the eval docs.
+status lives in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) (Harness status).
 
 - Changelog: [`CHANGELOG.md`](CHANGELOG.md)
 - Roadmap & live proof: [`docs/ROADMAP.md`](docs/ROADMAP.md)
-- Activation evals: [`docs/evals/auto-trigger.md`](docs/evals/auto-trigger.md)
+- Methodology: [`docs/METHODOLOGY.md`](docs/METHODOLOGY.md)
 - Architecture & harness status: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - Principles: [`docs/PRINCIPLES.md`](docs/PRINCIPLES.md)
 

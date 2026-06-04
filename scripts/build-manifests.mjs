@@ -1,6 +1,3 @@
-// Generates both per-harness plugin manifests from one canonical source (Decision 2).
-// Codex reads .codex-plugin/plugin.json; Claude Code reads .claude-plugin/plugin.json.
-// Never hand-edit the generated files — edit plugins/cairn/plugin.manifest.json and rebuild.
 import fs from "node:fs";
 import path from "node:path";
 
@@ -12,10 +9,7 @@ const canonical = JSON.parse(
 
 const { name, version, description, author, homepage, license, keywords, skills, interface: iface } = canonical;
 
-// Codex: name/version/description/author + skills pointer + interface block.
 const codex = { name, version, description, author, skills, interface: iface };
-
-// Claude Code: package metadata; skills are discovered under ./skills/ by convention.
 const claude = { name, version, description, author, homepage, license, keywords };
 
 function writeJson(rel, obj) {
@@ -28,8 +22,6 @@ function writeJson(rel, obj) {
 writeJson(".codex-plugin/plugin.json", codex);
 writeJson(".claude-plugin/plugin.json", claude);
 
-// Marketplace manifests (verified live: Claude reads .claude-plugin/marketplace.json at repo
-// root; Codex reads .agents/plugins/marketplace.json). Both written from one shape.
 const marketplace = {
   name,
   owner: author,

@@ -1,12 +1,6 @@
-// Read-only resume anchor for long-context survival. Emits a compact, schema-fixed summary
-// of the active change so it can be re-injected after compaction/resume (the SessionStart
-// hook appends it when source is "compact" or "resume"). Concise by design (Principle 8):
-// active change, open tasks, recent decisions — the unpredictable state, nothing the model
-// can reconstruct for free.
-//
-//   node cairn-anchor.mjs [--json] [--changes <dir>]
-// Prints nothing (exit 0) when there is no active change, so the hook injects no noise.
+import crypto from "node:crypto";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { execSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -14,6 +8,14 @@ import { fileURLToPath } from "node:url";
 const args = process.argv.slice(2);
 const asJson = args.includes("--json");
 const changesArgIdx = args.findIndex((a) => a === "--changes");
+const emitArg = args.find((arg) => arg.startsWith("--emit="));
+const emitMode = emitArg ? emitArg.slice("--emit=".length) : null;
+const MAX_OPEN_TASKS = 5;
+const MAX_LINE_CHARS = 140;
+
+function trimLine(text) {
+  return text.length > MAX_LINE_CHARS ? text.slice(0, MAX_LINE_CHARS - 1) + "…" : text;
+}
 
 export function repoRoot(cwd = process.cwd()) {
   try {
@@ -39,11 +41,12 @@ export function renderAnchor(anchor) {
     `Active change: ${anchor.slug} (${anchor.tasks.done}/${anchor.tasks.total} tasks done)`,
   ];
   if (anchor.tasks.open.length) {
-    lines.push("Open tasks (resume here):", ...anchor.tasks.open);
+    lines.push("Open tasks (resume here):", ...anchor.tasks.open.slice(0, MAX_OPEN_TASKS).map(trimLine));
+    const omitted = anchor.tasks.open.length - MAX_OPEN_TASKS;
+    if (omitted > 0) lines.push(`Open tasks omitted: ${omitted}`);
   }
   if (anchor.decisions.length) {
-    const trim = (d) => (d.length > 140 ? d.slice(0, 139) + "…" : d);
-    lines.push("Recent decisions:", ...anchor.decisions.map((d) => `- ${trim(d)}`));
+    lines.push("Recent decisions:", ...anchor.decisions.map((d) => `- ${trimLine(d)}`));
   }
   lines.push("Re-read tasks.md and the decision-log tail before acting.");
   return lines.join("\n") + "\n";
@@ -65,7 +68,6 @@ function activeChange(changesRoot) {
       return { slug: e.name, abs, mtime: fs.statSync(abs).mtimeMs };
     });
   if (!dirs.length) return null;
-  // Most recently touched active change is the one a resumed session cares about.
   return dirs.sort((a, b) => b.mtime - a.mtime)[0];
 }
 
@@ -77,7 +79,136 @@ function recentDecisions(root, n = 3) {
     .slice(-n);
 }
 
+function readStdin() {
+  try {
+    return fs.readFileSync(0, "utf8");
+  } catch {
+    return "";
+  }
+}
+
+function parseInput(text) {
+  try {
+    return text.trim() ? JSON.parse(text) : {};
+  } catch {
+    return {};
+  }
+}
+
+function sha(text) {
+  return crypto.createHash("sha256").update(text).digest("hex");
+}
+
+function positiveIntEnv(name, fallback) {
+  const parsed = Number.parseInt(process.env[name] || "", 10);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function cacheDir() {
+  return process.env.CAIRN_ANCHOR_STATE_DIR || path.join(os.tmpdir(), "cairn-anchor");
+}
+
+function cachePath(input) {
+  const cwd = input.cwd || process.cwd();
+  const session = input.session_id || `cwd:${cwd}`;
+  return path.join(cacheDir(), `${sha(`${session}\0${cwd}`).slice(0, 32)}.json`);
+}
+
+function activeSlug(anchorText) {
+  return anchorText.match(/^Active change:\s+(\S+)/m)?.[1] || "unknown";
+}
+
+function writePolicyResult(result) {
+  if (emitMode === "plain") {
+    if (result.emit) process.stdout.write(result.context);
+    return;
+  }
+  if (emitMode === "claude") {
+    if (result.emit) {
+      process.stdout.write(JSON.stringify({
+        hookSpecificOutput: { hookEventName: "UserPromptSubmit", additionalContext: result.context },
+      }));
+    }
+    return;
+  }
+  process.stdout.write(JSON.stringify(result) + "\n");
+}
+
+function runPromptAnchorPolicy() {
+  const input = parseInput(readStdin());
+  const root = repoRoot(input.cwd || process.cwd());
+  const text = renderAnchor(buildAnchor({ root }));
+  const file = cachePath(input);
+  const minPromptGap = positiveIntEnv("CAIRN_ANCHOR_MIN_PROMPT_GAP", 3);
+
+  if (!text.trim()) {
+    try {
+      fs.rmSync(file, { force: true });
+    } catch {}
+    writePolicyResult({ emit: false, reason: "inactive" });
+    return;
+  }
+
+  const slug = activeSlug(text);
+  const hash = sha(text);
+
+  let previous = null;
+  try {
+    previous = JSON.parse(fs.readFileSync(file, "utf8"));
+  } catch {}
+
+  const emittedHash = previous?.emittedHash || previous?.hash || null;
+  const turnsSinceEmit = Number.isInteger(previous?.turnsSinceEmit)
+    ? previous.turnsSinceEmit + 1
+    : 0;
+  const firstAnchor = !previous || !emittedHash;
+  const switchedSlug = previous?.slug && previous.slug !== slug;
+  const unchanged = previous?.slug === slug && emittedHash === hash;
+  const shouldEmit = firstAnchor || switchedSlug || (!unchanged && turnsSinceEmit >= minPromptGap);
+
+  function remember(state) {
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, JSON.stringify({
+      slug,
+      emittedHash: state.emittedHash,
+      latestHash: hash,
+      turnsSinceEmit: state.turnsSinceEmit,
+      minPromptGap,
+      updatedAt: new Date().toISOString(),
+    }) + "\n");
+  }
+
+  if (!shouldEmit) {
+    remember({ emittedHash, turnsSinceEmit });
+    writePolicyResult({
+      emit: false,
+      reason: unchanged ? "unchanged" : "paced",
+      slug,
+      hash,
+      emittedHash,
+      turnsSinceEmit,
+      minPromptGap,
+    });
+    return;
+  }
+
+  remember({ emittedHash: hash, turnsSinceEmit: 0 });
+  writePolicyResult({
+    emit: true,
+    reason: firstAnchor ? "active" : switchedSlug ? "active-change-switched" : "prompt-gap",
+    slug,
+    hash,
+    minPromptGap,
+    context: text,
+  });
+}
+
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  if (emitMode) {
+    runPromptAnchorPolicy();
+    process.exit(0);
+  }
+
   const root = repoRoot();
   const changesRoot = changesArgIdx >= 0 ? path.resolve(args[changesArgIdx + 1]) : path.join(root, ".cairn/changes");
   const anchor = buildAnchor({ root, changesRoot });

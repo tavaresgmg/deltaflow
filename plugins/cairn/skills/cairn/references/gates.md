@@ -9,8 +9,8 @@ advisory; only hooks and scripts enforce. This file is explicit about which is w
   `Edit|Write|MultiEdit|NotebookEdit|apply_patch`. Blocks (exit 2) a file mutation outside the
   active repo root (the main multi-repo footgun), only in `.cairn/`-adopted repos. Allows config
   `~/.claude`/`~/.codex`; override `CAIRN_ALLOW_CROSS_REPO=1`.
-- **Consistency check** — `scripts/cairn-analyze.mjs .cairn/changes/<slug>` reports internal
-  drift in a change folder (or `--all .cairn/changes`). For a finished change it emits a `verify`
+- **Consistency check** — `scripts/cairn-close.mjs .cairn/changes/<slug>` reports internal
+  drift in one change folder. For a finished change it emits a `verify`
   verdict (completeness/coherence/proof → `verified`|`incomplete`|`drift`) — the spec→code loop
   closure, never running the proof commands. Read-only; run before claiming a change complete.
 - **End-of-turn coherence** — `scripts/cairn-coherence.mjs`, a `Stop` hook, active only in
@@ -46,11 +46,12 @@ When `delta.md` exists and code has moved:
 2. Compare against current code and tests (the live source of truth).
 3. Sync: update `delta.md`, fix code, or update/delegate the living spec; record the choice in
    `.cairn/decision-log.md`.
-4. Re-run `cairn-analyze.mjs`.
+4. Re-run `cairn-close.mjs`.
 5. Close with lifecycle (`artifacts.md`): sync, delegate, archive, or delete.
 
-`cairn-analyze.mjs` checks consistency: lifecycle, claims, code refs, and proof refs.
-It does not run tests, inspect runtime, prove security, or decide product intent.
+`cairn-close.mjs` checks consistency: lifecycle, claims, code refs, and proof refs.
+With `--apply`, it archives or deletes a verified local change folder. It does not run tests,
+inspect runtime, prove security, perform semantic sync, or decide product intent.
 
 ## Cross-harness parity & validation status
 

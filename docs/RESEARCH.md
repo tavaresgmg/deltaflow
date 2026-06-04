@@ -25,7 +25,7 @@ Question: is Cairn getting worse by concentrating too much behavior in one skill
 Finding: current evidence does not support a blind split. The installed plugin reports about
 657 always-on tokens, while detailed references remain lazy-loaded. The stronger risk is not token
 load; it is that one broad router can hide domain-specific gaps or selection failures. The right
-next move is an eval-backed architecture audit, not a new skill tree by assumption.
+next move is a dogfood-backed architecture audit, not a new skill tree by assumption.
 
 Current external signals:
 
@@ -56,7 +56,7 @@ Decision pressure:
   `discovery`, `delta-spec`, `tracked-change`) would create competing routers and likely hurt
   selection.
 - Add sharper **lens coverage** first: database, UI, testing, product, infra, and skill architecture
-  prompts in eval fixtures.
+  prompts from real incidents.
 - Split only a narrow lens into a secondary skill if it beats the current baseline with no must-fire
   regression, no no-fire regression, and acceptable always-on/token cost.
 - Use subagents for competitive research, adversarial review, long logs, and isolated domain
@@ -129,7 +129,7 @@ Rechecagem em docs oficiais Codex + Claude Code:
 
 - Codex confirma que skills são o formato do workflow e plugins são a unidade instalável;
   a lista inicial de skills é limitada a ~2% do contexto ou 8.000 caracteres quando a janela
-  é desconhecida. Implicação: `description` curta/front-loaded e `cairn-budget.mjs` continuam
+  é desconhecida. Implicação: `description` curta/front-loaded e `validate-cairn.mjs` continuam
   sendo P0, não polimento.
 - Codex subagents são explícitos, paralelos e úteis para exploração/testes/logs/sumarização;
   docs avisam sobre custo maior e cuidado com workflows write-heavy. Implicação: manter
@@ -171,6 +171,13 @@ depender de `memory_20250818` ou `/compact` de um harness. Protocolo long-runnin
 iniciar, ler estado/progresso + `git log` antes de agir; ao encerrar, persistir progresso
 e decisões. Pós-compaction, o Claude Code re-anexa só ~5.000 tokens de cada skill invocada
 (budget combinado 25.000) — mais uma razão para corpo curto e estado em arquivo.
+
+Atualização 2026-06-04 — `UserPromptSubmit` é um evento por prompt, não uma licença para
+repetir contexto por prompt. Codex documenta que stdout do hook vira developer context;
+Claude Code documenta que o evento sempre dispara e não aceita matcher. Tradução Cairn:
+usar o evento como ponto de decisão barato, mas emitir só quando há active change novo/trocado
+ou uma mudança de âncora já passou do gap mínimo. Isso alinha com contexto mínimo de alto sinal,
+estado em arquivo e recuperação imediata via `SessionStart` em `compact|resume`.
 
 ### Táticas de eficiência de tokens
 
@@ -280,7 +287,7 @@ inspecionando se a tool Skill foi chamada nos logs, em Opus e Sonnet.
 1. Codex pode OMITIR a skill inteira do listing (com warning) se o ambiente tiver muitas skills — risco real de nunca disparar. Mitigar com description curta/front-loaded. No Claude o NOME sempre sobrevive.
 2. Bug #22345: `disable-model-invocation` ignorado para skills via plugin no Claude — gating de side-effect via frontmatter não funciona hoje. Mitigar com PreToolUse hook ou skill standalone.
 3. Drift de versão Codex: GPT-5.3-Codex RE-HABILITOU preâmbulos. NÃO codificar "Codex proíbe plano upfront" como verdade fixa.
-4. Over-trigger: `ALWAYS invoke` pode roubar gatilho de `analyze`/`product`/`harness`. Exige fronteira negativa específica + evals de near-miss.
+4. Over-trigger: `ALWAYS invoke` pode roubar gatilho de `analyze`/`product`/`harness`. Exige fronteira negativa específica + dogfood de near-miss.
 5. Step-following é problema separado da ativação — não se resolve só com a description.
 6. `[confirm]` — números não verificados em fonte primária: resumo de subagente ~1-2k tokens; structured outputs 100% vs <40%; janela Codex 192k. (15x multi-agente CONFIRMADO.)
 
@@ -308,16 +315,22 @@ across changes unless fresh evidence makes the same lane load-bearing again.
 
 | Lane | Source | Last review | Cairn use |
 | --- | --- | --- | --- |
-| AI delivery evidence | [DORA 2025 State of AI-assisted Software Development](https://dora.dev/research/2025/dora-report/) | 2026-06-03 | Treat AI as an amplifier of system quality; improve context, proof, and workflow before claiming speed. |
-| AI productivity evidence | [METR early-2025 experienced OSS developer study](https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/) | 2026-06-03 | Keep real brownfield proof and human review central; do not trust benchmark-like evals alone. |
-| DevEx measurement | [SPACE framework](https://queue.acm.org/detail.cfm?id=3454124) | 2026-06-03 | Avoid one-metric productivity theater; evaluate satisfaction, performance, activity, collaboration, and flow only when useful. |
+| AI delivery evidence | [DORA 2026 Gen AI report](https://dora.dev/ai/gen-ai-report/) | 2026-06-04 | Treat AI as an amplifier of system quality; pair usage with governance, feedback loops, proof, and stability signals before claiming speed. |
+| AI productivity evidence | [METR 2026 uplift update](https://metr.org/blog/2026-02-24-uplift-update/) + [AI usage survey](https://metr.org/blog/2026-05-11-ai-usage-survey/) | 2026-06-04 | Separate speed from value, treat early-2025 results as stale context, and triangulate dogfood, reviewer reports, and runtime proof. |
+| DevEx measurement | [SPACE framework](https://queue.acm.org/detail.cfm?id=3454124) + [DevEx framework](https://queue.acm.org/detail.cfm?id=3595878) | 2026-06-04 | Avoid one-metric productivity theater; evaluate feedback loops, cognitive load, flow, performance, collaboration, and satisfaction only when useful. |
 | Agile principles | [Agile Manifesto principles](https://agilemanifesto.org/principles) | 2026-06-03 | Keep working software/proof, simplicity, sustainable pace, and regular reflection as constraints. |
 | Flow systems | [The Kanban Guide](https://kanbanguides.org/the-kanban-guide/) | 2026-06-03 | Use explicit workflow definitions and flow signals; do not create a heavyweight board inside Cairn. |
-| Product shaping | [Shape Up](https://basecamp.com/shapeup) | 2026-06-03 | Borrow appetite, shaping, and no-infinite-backlog pressure; adapt to small tracked changes. |
+| Lean quality systems | [Toyota Production System](https://global.toyota/en/company/vision-and-philosophy/production-system/index.html) | 2026-06-04 | Borrow jidoka and kaizen as operational pressure: stop on abnormality, fix context after surprise, and improve the system, not the blame story. |
+| Product shaping | [Shape Up](https://basecamp.com/shapeup) | 2026-06-04 | Borrow appetite, shaping, rabbit-hole risk, and no-infinite-backlog pressure; adapt to small tracked changes. |
+| Product discovery | [Jobs To Be Done](https://www.christenseninstitute.org/theory/jobs-to-be-done/) + [Lean Startup](https://theleanstartup.com/principles) + [Double Diamond](https://www.designcouncil.org.uk/our-resources/the-double-diamond/) | 2026-06-04 | Use only when the problem/user progress is unclear; convert to testable learning, not imagined user motivation. |
 | Situational awareness | [Wardley Mapping FAQ](https://www.wardleymaps.com/faqs/what-is-wardley-mapping) | 2026-06-03 | Use mapping as a discovery lens for landscape/user/dependency clarity, not as a required artifact. |
+| Domain boundaries | [Bounded Context](https://martinfowler.com/bliki/BoundedContext.html) + [Team Topologies](https://teamtopologies.com/key-concepts) | 2026-06-04 | Reinforce owner boundaries, cognitive-load limits, and subagents as enabling/review roles rather than default swarms. |
+| Delivery and test strategy | [DORA continuous delivery](https://dora.dev/capabilities/continuous-delivery/) + [test automation](https://dora.dev/capabilities/test-automation/) | 2026-06-04 | Match proof to deployability and claim scope; do not use narrow checks for release/runtime claims. |
+| Security and threat modeling | [OWASP Threat Modeling Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Threat_Modeling_Cheat_Sheet.html) | 2026-06-04 | Apply to auth, data, MCP, multi-agent, customer-visible, and trust-boundary changes; keep it proportional. |
 | Agent design | [Anthropic: Building effective agents](https://www.anthropic.com/engineering/building-effective-agents) | 2026-06-03 | Prefer simple workflows before agent swarms; add orchestration only when proof shows the simpler loop fails. |
-| Agent planning/evals | [OpenAI Cookbook: PLANS.md for multi-hour problem solving](https://developers.openai.com/cookbook/articles/codex_exec_plans) | 2026-06-03 | Use self-contained plans for long work; keep eval/proof tied to actual task outcomes. |
-| Framework competitors | Cairn framework comparison (Part 1 above) | 2026-06-03 | Treat BMAD/OpenSpec/Spec Kit/Superpowers as one lane, not the boundary of research. |
+| Agent planning/proof | [OpenAI Cookbook: PLANS.md for multi-hour problem solving](https://developers.openai.com/cookbook/articles/codex_exec_plans) | 2026-06-03 | Use self-contained plans for long work; keep proof tied to actual task outcomes. |
+| Framework competitors | Cairn framework comparison (Part 1 above) + [OpenSpec workflows](https://github.com/Fission-AI/OpenSpec/blob/main/docs/workflows.md) | 2026-06-04 | Treat BMAD/OpenSpec/Spec Kit/Superpowers as one lane, not the boundary of research; borrow action/state lifecycle without slash-first ceremony. |
+| Method synthesis | [Cairn Proofflow](METHODOLOGY.md) + [deep dive](METHODOLOGY_DEEP_DIVE.md) | 2026-06-04 | Name the methodology, keep runtime mechanisms in existing owners, and enforce only structural facts. |
 
 ### Translation Template
 
@@ -325,7 +338,7 @@ Use this in the active change or decision log when a source matters:
 
 | Source | Borrow | Adapt | Avoid | Defer |
 | --- | --- | --- | --- | --- |
-| `<source>` | `<what transfers cleanly>` | `<what needs Cairn constraints>` | `<what would add ceremony or false certainty>` | `<what needs real dogfood/eval first>` |
+| `<source>` | `<what transfers cleanly>` | `<what needs Cairn constraints>` | `<what would add ceremony or false certainty>` | `<what needs real dogfood first>` |
 
 ### Open Watchlist
 
@@ -334,4 +347,4 @@ Use this in the active change or decision log when a source matters:
   Stop/PreToolUse compromises stale.
 - Whether context-engineering evidence changes the current "lazy references over one huge skill"
   budget rule.
-- Whether real multi-repo Cairn dogfood exposes coordination pressure that docs/evals cannot catch.
+- Whether real multi-repo Cairn dogfood exposes coordination pressure that docs alone cannot catch.

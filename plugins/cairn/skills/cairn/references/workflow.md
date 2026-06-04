@@ -21,4 +21,4 @@ Order for non-trivial work.
 ## Close
 
 Review, prove, reconcile delta/code/tests/specs/queue, record `sync|delegate|archive|delete`,
-run `cairn-analyze.mjs` (`--spec-root` if external). Truth: code/tests/specs/maps/docs.
+run `cairn-close.mjs .cairn/changes/<slug>`. Truth: code/tests/specs/maps/docs.

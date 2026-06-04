@@ -8,6 +8,27 @@ Tagged releases: https://github.com/tavaresgmg/cairn/releases
 
 ## [Unreleased]
 
+## [0.1.14] — 2026-06-04
+
+### Changed
+- Reduced the runtime helper surface for the operational-core pass: `UserPromptSubmit` policy and
+  anchor rendering now share `cairn-anchor.mjs`, so there is one owner for resume-anchor text,
+  cadence, and cache behavior.
+- Collapsed change-folder closeout into `cairn-close.mjs`, which validates lifecycle/proof/context
+  consistency and can archive/delete a verified local change with `--apply`.
+- Reworked `scripts/validate-cairn.mjs` around the minimal core: scaffold, close, anchor, hooks,
+  and manifest parity.
+
+### Removed
+- Removed `cairn-anchor-policy.mjs`, `cairn-next.mjs`, and `cairn-version.mjs`. The first was
+  merged into `cairn-anchor.mjs`; the others were convenience helpers that did not enforce a
+  unique methodology invariant.
+- Removed the local eval suite (`docs/evals/`, `eval-autotrigger.mjs`, `eval-scoreboard.mjs`) and
+  the non-minimal helper scripts `cairn-analyze.mjs`, `cairn-retention.mjs`, `cairn-budget.mjs`,
+  `cairn-boundary.mjs`, and `cairn-doctor.mjs`.
+- Removed the packaged `cairn-researcher` agent. Research remains a method stage, but Cairn no
+  longer ships a separate agent component.
+
 ## [0.1.13] — 2026-06-03
 
 ### Fixed
@@ -92,7 +113,7 @@ Tagged releases: https://github.com/tavaresgmg/cairn/releases
   signals before text matching explicit.
 - Documentation ownership tightened: `comparison-and-gaps.md` is now a short snapshot, roadmap owns
   gap closure, ADR-0004 explicitly marks the old versioned-change-folder rule as superseded, and
-  `cairn-analyze.mjs` is documented as consistency analysis rather than executable proof.
+  `cairn-close.mjs` is documented as consistency analysis rather than executable proof.
 
 ## [0.1.3] — 2026-06-02
 

@@ -134,8 +134,6 @@ export function isInsideCairnState(absFile, cairnStateRoot) {
   return isInside(absFile, path.join(cairnStateRoot, ".cairn"));
 }
 
-// Has this root adopted Cairn? A `.cairn/` dir means specs/changes/decision-log live here.
-// Shared blast-radius gate: hooks policing a project only act once it adopted Cairn.
 export function hasCairnDir(root) {
   if (!root) return false;
   try {

@@ -1,8 +1,8 @@
 # AGENTS
 
-- English for all docs and rationale. Intentional exceptions, both functional: the SKILL
-  `description`/`when_to_use` bilingual block and the pt-BR eval fixtures — they drive and test
-  routing. Decision and research rationale stay in pt-BR in `docs/DECISIONS.md` and
+- English for all docs and rationale. Intentional exception: the SKILL
+  `description`/`when_to_use` bilingual block, which drives routing in pt-BR and English.
+  Decision and research rationale stay in pt-BR in `docs/DECISIONS.md` and
   `docs/RESEARCH.md` as internal evidence.
 - Principles: `docs/PRINCIPLES.md`. Skills are the source of workflow behavior; docs explain
   decisions.

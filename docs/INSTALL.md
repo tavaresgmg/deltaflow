@@ -4,10 +4,10 @@ Cairn ships one plugin from this repo, for both Codex and Claude Code, from one 
 
 ## Version Check
 
-Last checked: 2026-06-03.
+Last checked: 2026-06-04.
 
-- Local Codex: `codex-cli 0.136.0`; npm `@openai/codex` `latest=0.136.0`.
-- Local Claude Code: `2.1.161`; npm `@anthropic-ai/claude-code` `latest=2.1.161`.
+- Local Codex: `codex-cli 0.137.0`; npm `@openai/codex` `latest=0.137.0`.
+- Local Claude Code: `2.1.162`; npm `@anthropic-ai/claude-code` `latest=2.1.162`.
 
 Use the `latest` channel for normal validation.
 
@@ -70,10 +70,9 @@ claude plugin details cairn@cairn
 ```
 
 Marketplace manifest is at `.claude-plugin/marketplace.json`; hooks use the documented
-`SessionStart` / `PreToolUse` contracts. Verified locally: marketplace add/install, component
-inventory (skill, agent, SessionStart, PreToolUse), SessionStart injection, PreToolUse allow
-inside repo, PreToolUse block outside repo, and a fast auto-trigger eval through
-`scripts/eval-autotrigger.mjs --harness claude`.
+`SessionStart` / `PreToolUse` contracts. Verify with `claude plugin list`,
+`claude plugin details cairn@cairn`, and a focused local hook/plugin smoke when runtime behavior
+changes.
 
 ## Reducing routing noise (Claude Code, optional)
 
@@ -93,9 +92,7 @@ the model, still in the `/` menu), `off`. Do **not** override `cairn` — its di
 ## Memory policy: local, hybrid, or commit
 
 Whether `.cairn/` is local or versioned is set by your project `.gitignore` — that **is** the
-config, read deterministically. The boundary detector reports the effective `memoryPolicy`
-(`local|hybrid|commit`) each session, so the agent respects your choice instead of guessing.
-Pick one preset:
+config, read deterministically. Pick one preset:
 
 **Hybrid (default)** — durable knowledge committed, process local:
 
@@ -131,32 +128,31 @@ order in `docs/PRINCIPLES.md`).
 
 Process state is local by default, but completed change folders should not stay active forever:
 
+Default is read-only:
+
 ```bash
-node plugins/cairn/scripts/cairn-retention.mjs .cairn/changes
+node plugins/cairn/scripts/cairn-close.mjs .cairn/changes/<slug>
 ```
 
-Default is read-only. To archive one completed change after `proof.md` has an explicit
+To archive a verified completed change after `proof.md` has an explicit
 `Lifecycle decision: sync|delegate|archive|delete`, use:
 
 ```bash
-node plugins/cairn/scripts/cairn-retention.mjs .cairn/changes --apply --slug <slug>
+node plugins/cairn/scripts/cairn-close.mjs .cairn/changes/<slug> --apply
 ```
 
-Apply mode only cleans retention state. It does not perform semantic spec sync or broad workflow
-automation; `delete` still requires explicit `--delete`.
+Apply mode only archives or deletes the local change folder. It does not perform semantic spec sync
+or broad workflow automation; `delete` still requires explicit `--delete`.
 
 ## Verify locally (no harness)
 
 ```bash
 node scripts/build-manifests.mjs   # regenerate manifests + marketplaces from the canonical source
-node plugins/cairn/scripts/cairn-doctor.mjs --json  # read-only local Codex/Claude integration health
 node scripts/validate-cairn.mjs    # structural + YAML-safety + gate smoke tests
 ```
 
-`cairn-doctor.mjs` does not install plugins, trust hooks, run model evals, or mutate state. It only
-reports visible CLIs, manifest parity, declared hook surfaces, boundary detection, and which
-Codex/Claude guarantees are strong, proven, advisory, or pending upstream. The contract behind
-those labels is in `docs/ARCHITECTURE.md (Harness status)`.
+Harness install status is checked directly with `codex plugin list -m cairn`, `claude plugin list`,
+and `claude plugin details cairn@cairn`.
 
 ## Release
 
@@ -165,23 +161,17 @@ the core assumptions.
 
 - [ ] `node scripts/build-manifests.mjs` — regenerate; commit any manifest/marketplace diff.
 - [ ] `node scripts/validate-cairn.mjs` passes (files, parity, marketplace drift, YAML safety,
-      gate/helper smoke).
+      minimal workflow smoke).
 - [ ] Confirm local harness versions against npm `latest`: `codex --version`,
       `claude --version`, `npm view @openai/codex version`,
       `npm view @anthropic-ai/claude-code version`.
-- [ ] `node plugins/cairn/scripts/cairn-doctor.mjs --json` reports no broken manifest, hook,
-      helper, or boundary surfaces; Codex write guard should remain `pending-upstream` until proven.
-- [ ] `node plugins/cairn/scripts/cairn-analyze.mjs --all .cairn/changes` reports no HIGH
-      findings for active release work.
-- [ ] `node plugins/cairn/scripts/cairn-retention.mjs .cairn/changes` reports no unexpected
-      actionable completed changes; use `--apply --slug <slug>` only after proof/lifecycle is set.
+- [ ] `node plugins/cairn/scripts/cairn-close.mjs .cairn/changes/<slug>` reports `verified`
+      for any active release work before archive.
 - [ ] Bump `version` in `plugins/cairn/plugin.manifest.json` and rebuild.
 - [ ] Update `CHANGELOG.md` — add the new version section (Added/Changed/Fixed + known residuals),
       sourced from the GitHub release notes; keep numbers/dates/IDs verbatim.
 - [ ] Install on Codex from the pushed repo: `SessionStart` hook fires, skill loads with no
       YAML errors, auto-fires on a brownfield prompt.
-- [ ] Run `docs/evals/auto-trigger.md` on ≥2 models per harness; log fire-rate in that file.
-- [ ] Install on Claude Code; confirm marketplace, hooks (SessionStart + PreToolUse), skill,
-      and the `cairn-researcher` agent load.
+- [ ] Install on Claude Code; confirm marketplace, hooks (SessionStart + PreToolUse), and skill.
 - [ ] Confirm no personal paths or internal artifacts shipped (public-repo hygiene).
 - [ ] Tag and push.

@@ -30,8 +30,8 @@ be invoked by name. Manual override: invoke the `cairn` skill / `/cairn`.
 ## Quick Start
 
 1. **Observe.** Identify cwd, repo root, owner boundary, relevant instructions,
-   existing docs/specs, code paths, and available proof commands. Before any mutation in
-   a multi-repo workspace, run the boundary detector (see `references/workspace.md`).
+   existing docs/specs, code paths, and available proof commands. In multi-repo workspaces, inspect
+   the owner boundary before mutation (see `references/workspace.md`).
 2. **Classify.** Pick exactly one mode from the table below.
 3. **Act.** Produce only the artifacts justified by that mode.
 4. **Verify.** Run proof proportional to risk.
@@ -93,7 +93,8 @@ Read these references only when needed:
 - delta-spec/tracked-change: scaffold via `cairn-scaffold.mjs <mode> <slug>` before mutating; tick
   `tasks.md` live, never back-fill. No folder first = not that mode.
 - Resume: on existing `.cairn/changes/<slug>/`, read `tasks.md` + `decision-log.md` tail first.
-- Before saying done, provide fresh proof and run `cairn-analyze.mjs` on any change folder.
+- Before saying done, provide fresh proof and run `cairn-close.mjs <change-folder>` on any change
+  folder.
 - A PreToolUse guard blocks writes outside the active repo; do not work around it without
   confirming the target repo is intended.
 

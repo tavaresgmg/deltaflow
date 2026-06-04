@@ -14,13 +14,8 @@ under `.cairn/`.
 
 ## Boundary check
 
-Before mutation:
-
-```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/cairn-boundary.mjs
-```
-
-Key fields:
+Before mutation, establish these facts from `pwd`, `git status --short --branch`,
+`git rev-parse --show-toplevel`, nearby `AGENTS.md`, and `.cairn/` state:
 
 - `repoRoot`: code/Git/build/tests owner.
 - `cairnStateRoot`: `.cairn/changes/<slug>/`, specs, decision-log.
@@ -35,7 +30,7 @@ Key fields:
 Default for non-trivial mutation: **branch + worktree**. Current tree is allowed only for tiny
 `direct`/`diagnose` fixes when clean and no user work can mix in.
 
-Preflight before creating/reusing: boundary output; `git status --short --branch`; remotes; current
+Preflight before creating/reusing: owner boundary; `git status --short --branch`; remotes; current
 branch; `git worktree list`; fetch/prune; base (`origin/main`, `origin/master`, or upstream);
 local-vs-remote divergence. If dirty, behind, ambiguous, or slug exists, choose reuse/new slug.
 

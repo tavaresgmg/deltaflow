@@ -1,9 +1,9 @@
 # Review
 
-Code generation is cheap; a wrong change that passes tests is expensive (METR 2025, DORA
-2025 — review, not typing, is the bottleneck). Review is proportional like everything in
-Cairn: scales with risk, never skipped, and asks "what is wrong here?" not "does it look
-fine?".
+Code generation is cheap; a wrong change that passes tests is expensive. Current AI delivery
+evidence lives in `docs/RESEARCH.md`; review, proof, and context are treated as load-bearing
+bottlenecks. Review is proportional like everything in Cairn: scales with risk, never skipped, and
+asks "what is wrong here?" not "does it look fine?".
 
 ## What review catches that proof does not
 
@@ -26,3 +26,10 @@ collateral damage outside the touched owner.
 A reviewer that rubber-stamps is worse than none. Default skeptical: hunt the bug, the missing
 case, the broken contract. If a real look finds nothing, say so plainly. Never present an
 unreviewed change as reviewed.
+
+## Subagent panel
+
+Use a panel only for deep methodology/design or high-risk cross-boundary work. Split agents by
+distinct lenses, keep them read-only unless write scopes are disjoint, and reconcile conflicts in the
+main thread. Required output: lens, source, claim attacked, evidence, recommendation, accepted
+downside. Record the decision and accepted downside; do not paste transcripts into durable docs.

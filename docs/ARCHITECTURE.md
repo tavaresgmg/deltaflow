@@ -1,18 +1,21 @@
 # Architecture
 
-Cairn is a development workflow **router** — autonomous, memory- and workspace-aware —
-that picks the lightest workflow that still protects correctness. It is brownfield-first
-when a repo exists, not card-only (routing lives in `SKILL.md` + `references/modes.md`). It targets
-OpenAI Codex and Claude Code from one portable source.
+Cairn implements **Cairn Proofflow**: Evidence-Routed Development for AI-assisted software work.
+It routes by evidence, risk, and owner boundaries; then proves and reconciles before close. The
+product is a development workflow **router** — autonomous, memory- and workspace-aware — that picks
+the lightest workflow that still protects correctness. It is brownfield-first when a repo exists,
+not card-only (routing lives in `SKILL.md` + `references/modes.md`). It targets OpenAI Codex and
+Claude Code from one portable source.
 
-Decisions live in `docs/DECISIONS.md`; the evidence behind them is in `docs/RESEARCH.md`.
+Method synthesis lives in `docs/METHODOLOGY.md`; decisions live in `docs/DECISIONS.md`; the
+evidence behind them is in `docs/RESEARCH.md`.
 
 ## Product shape
 
 One primary skill, `cairn` (the router/loop). Starting with one skill avoids trigger
-ambiguity and keeps evaluation simple; it can split once real usage proves stable
-subflows. On Claude, the core delegates to existing domain skills (`analyze`, `product`,
-etc.) when present; on Codex it must be self-contained.
+ambiguity and keeps the runtime surface small; it can split only after real usage proves a
+narrow subflow. The plugin no longer ships a separate research agent; isolated research remains a
+method stage that can use the host harness when available.
 
 ## Portability: one source, generated shims (Decision 2)
 
@@ -33,10 +36,9 @@ layers — **dispatch** (SessionStart bootstrap detects harness + injects routin
 + coherence Stop hook). Rationale in Decision 3; per-surface enforcement status (Claude vs Codex,
 strong/proven/advisory/pending) is owned by the Harness status section below.
 
-Context budget is enforced by `plugins/cairn/scripts/cairn-budget.mjs` and
-`node scripts/validate-cairn.mjs`: the always-on bootstrap, the selected `SKILL.md`, each
-reference file, and aggregate reference/package surfaces have explicit word/character budgets.
-This keeps the router small while still using progressive disclosure for deeper guidance.
+Context budget is checked by `node scripts/validate-cairn.mjs`: the always-on bootstrap and
+selected skill surfaces stay intentionally small. This keeps the router cheap while still using
+progressive disclosure for deeper guidance.
 
 ## Core flow
 
@@ -44,9 +46,9 @@ This keeps the router small while still using progressive disclosure for deeper 
 input -> observe -> classify -> choose evidence -> choose artifact -> act -> verify -> close/sync
 ```
 
-The core product is not the eval harness or a spec folder. It is the **routing judgment**:
-what is the smallest workflow that can still catch the real risk? Evals measure that judgment,
-but dogfood, architecture review, and residue cleanup improve it.
+The core product is not a benchmark harness or a spec folder. It is the **routing judgment**:
+what is the smallest workflow that can still catch the real risk? Dogfood, architecture review,
+and residue cleanup improve it.
 
 Every non-trivial routed task should be explainable as a compact route card. This is an
 explanation contract, not a new durable artifact unless the selected mode already creates one:
@@ -70,7 +72,7 @@ visible in the existing plan/proof/change folder.
 | --- | --- | --- |
 | Routing | lower ceremony by default, escalates only on risk | everything becomes `tracked-change` or everything becomes `direct` |
 | Evidence | proof chosen before acting, proportional to risk | proof is bolted on after a confident answer |
-| Artifacts | one owner per fact; archive/sync/delete at close | plans, specs, eval notes, and roadmap all repeat the same stale claim |
+| Artifacts | one owner per fact; archive/sync/delete at close | plans, specs, notes, and roadmap all repeat the same stale claim |
 | Workspace | owner boundary is explicit before mutation | parent workspace silently edits child repo state |
 | Token economy | always-on context is tiny; depth is lazy-loaded | `SKILL.md` grows to explain every edge case |
 | Human use | user can predict why Cairn picked a path | framework vocabulary hides the actual decision |
@@ -86,20 +88,37 @@ plugin.manifest.json
   -> lazy references/ by mode or risk
   -> deterministic scripts/hooks report facts or block narrow cases
   -> .cairn/changes + specs + codebase maps persist state
-  -> eval JSONL + scoreboard feed regression decisions
 ```
 
 | Surface | Owner | Drift check |
 | --- | --- | --- |
 | Canonical plugin metadata | `plugins/cairn/plugin.manifest.json` | `build-manifests.mjs`, `validate-cairn.mjs` |
 | Harness shims | `.codex-plugin/`, `.claude-plugin/` | generated, never hand-edited |
-| Routing prompt surface | `hooks/bootstrap.md`, `SKILL.md` | activation evals + budget guard |
-| Progressive guidance | `skills/cairn/references/*.md` | budget guard + targeted reads |
+| Routing prompt surface | `hooks/bootstrap.md`, `SKILL.md` | `validate-cairn.mjs` + manual harness proof when needed |
+| Progressive guidance | `skills/cairn/references/*.md` | targeted reads |
 | Deterministic signals | `plugins/cairn/scripts/*.mjs`, hooks | smoke tests in `validate-cairn.mjs` |
-| Durable state | `.cairn/changes`, `.cairn/specs`, `.cairn/codebase` | `cairn-analyze.mjs`, `cairn-retention.mjs` |
-| Regression proof | `docs/evals/results/*.jsonl` | `eval-scoreboard.mjs` |
+| Durable state | `.cairn/changes`, `.cairn/specs`, `.cairn/codebase` | `cairn-close.mjs` |
 
 The five modes (size/risk-classified, lowest ceremony wins) are defined in `references/modes.md`.
+
+## Minimum operational core
+
+The runtime core is intentionally small:
+
+| Surface | Purpose |
+| --- | --- |
+| `SKILL.md` | route software work to exactly one mode |
+| `hooks/bootstrap.md` + `session-start.sh` | automatic Cairn entry point |
+| `user-prompt-submit.sh` + `cairn-anchor.mjs` | paced active-change resume anchor |
+| `hooks/hooks.json` | one plugin-bundled lifecycle registration file |
+| `cairn-workspace.mjs` | repo/state owner facts used by hooks and scaffold |
+| `cairn-guard.mjs` | mutation boundary guard where harness events fire |
+| `cairn-coherence.mjs` | Stop-time durable-mode coherence nudge |
+| `cairn-scaffold.mjs` | deterministic justified artifact creation |
+| `cairn-close.mjs` | validate change/proof/context-learned and archive/delete closeout |
+
+Everything else is support/dev evidence, not runtime core: manifest building and local structural
+validation.
 
 ## First-class stages (Decision 6)
 
@@ -111,7 +130,7 @@ version — lightweight by default, intent-gated so a small card stays cheap. De
 
 Layered, file-based, versioned in the repo — not any harness's native memory as canonical state.
 The `.cairn/` layout and resume protocol are owned by `references/memory.md`; templates by
-`references/artifacts.md`. Spec↔code reconciliation runs through `cairn-analyze.mjs` verify/drift
+`references/artifacts.md`. Spec↔code reconciliation runs through `cairn-close.mjs` verify/drift
 checks (names missing claims, refs, proof, and lifecycle decisions; does not run proof commands).
 
 ## Workspace model (Decision 5)
@@ -140,7 +159,7 @@ the deterministic logic we do need (dispatch, gates) lives in hooks/scripts, not
 ## Harness status (Codex vs Claude Code)
 
 Cairn ships one source for Codex and Claude Code, but the harnesses do not expose identical
-controls. This contract separates proven guarantees from advisory behavior so docs, evals, and
+controls. This contract separates proven guarantees from advisory behavior so docs and
 status copy do not overclaim.
 
 ### Status terms
@@ -157,10 +176,9 @@ status copy do not overclaim.
 | Plugin manifest | Strong | Generated from `plugins/cairn/plugin.manifest.json`. |
 | Skill loading | Proven | The `cairn` skill routes brownfield work by activation text. |
 | `SessionStart` | Strong | Injects `hooks/bootstrap.md`; resume/compact also append `cairn-anchor.mjs`. |
-| `UserPromptSubmit` anchor | Strong | `user-prompt-submit.sh` injects the anchor only when active-change state appears or changes; smoke-tested both branches. |
+| `UserPromptSubmit` anchor | Strong | Injects only the resume-anchor text: active slug, task count, up to 5 truncated open tasks, up to 3 recent decisions, and a re-read reminder. No active change/unchanged/paced turns inject 0 bytes. |
 | `PreToolUse` mutation guard | Strong | `hooks/hooks.json` routes edit/write tools to `cairn-guard.mjs`. |
 | `Stop` coherence hook | Strong | `cairn-coherence.mjs` nudges missing durable state for declared durable modes. |
-| Project agent | Advisory | `agents/cairn-researcher.md` keeps external research isolated and read-only. |
 | Structured automation | Advisory | `claude -p --output-format json` can capture cost, turns, duration, and errors for future probes. |
 
 ### Codex
@@ -171,88 +189,13 @@ status copy do not overclaim.
 | Skill loading | Proven | The `cairn` skill loads from `skills/` and can auto-route brownfield work. |
 | `SessionStart` | Proven | `session-start.sh` emits the bootstrap as plain text when no Claude JSON contract is present. |
 | `Stop` coherence hook | Proven | Used for end-of-turn missing-state nudges. |
-| `UserPromptSubmit` anchor | Pending upstream | Mirrors the proven `SessionStart` plain-text path; state-change delivery not yet live-verified on Codex. |
+| `UserPromptSubmit` anchor | Pending upstream | Same resume-anchor payload as Claude; paced state-change delivery not yet live-verified on Codex. |
 | `PreToolUse` mutation guard | Pending upstream | Upstream fixed `apply_patch` emission (PR #18391) and docs now list it as a target, but runtime delivery via the installed plugin is not yet confirmed locally. |
 | Write protection | Advisory | The prose contract still requires boundary checks before mutation; enforcement is best-effort. |
 
 ### Shared deterministic checks
 
-`node plugins/cairn/scripts/cairn-doctor.mjs` is read-only and should answer:
-
-- Are Codex and Claude CLIs visible on `PATH`?
-- Do generated manifests match the canonical source?
-- Are required hooks and helper scripts present?
-- Which harness surfaces are strong, proven, advisory, or pending upstream?
-- Is the current repo/workspace boundary detectable?
-
-The doctor is not a benchmark and must not run model evals, mutate plugin installs, trust hooks, or
-publish anything. If it cannot verify a live harness fact cheaply, it should say so instead of
-promoting the claim.
-
----
-
-## Appendix — worked example (brownfield eval-harness card)
-
-Illustrative point-in-time walkthrough; version pins in commands are a snapshot, not current.
-
-### Input
-
-Card: "Cairn says it supports Claude Code and faster evals, but the eval harness is Codex-only
-and slow. Add a cheap cross-harness smoke that proves one must-fire and one must-not case on
-both Codex and Claude."
-
-### Observe
-
-Read first:
-
-- a local `.cairn/codebase/<area>.md` map if one exists (this repo keeps an eval-harness map
-  in its own gitignored `.cairn/`, since the plugin source treats `.cairn/` as local dev state).
-- `scripts/eval-autotrigger.mjs` for runner shape and detection signals.
-- `docs/evals/auto-trigger.md` for protocol and result log.
-- `scripts/validate-cairn.mjs` for release-time checks.
-
-A codebase map removes repeated rediscovery: it names temp fixture ownership, result-file
-ownership, the reason for `R*` realistic cases, and why must-not cases must stay in fast subsets.
-
-### Classify
-
-Mode: `delta-spec`
-
-Why: medium brownfield behavior change touching a script, validation, docs, and committed
-evidence. It is not a simple direct edit because the claim crosses two harnesses.
-
-### Act
-
-Changes made in this example:
-
-- Add `--harness codex|claude`, `--jobs`, `durationMs`, and `harnessVersion` to
-  `scripts/eval-autotrigger.mjs`.
-- Keep fixtures isolated per process/label/case so parallel cases cannot share state.
-- Record fast Codex and Claude JSONL summaries under `docs/evals/results/`.
-- Make `validate-cairn.mjs` fail if docs claim key eval proof but the JSONL summary is missing
-  or mismatched.
-- Update roadmap/install/eval docs to distinguish fast cross-harness proof from the still-open
-  full matrix.
-
-### Verify
-
-```bash
-node scripts/eval-autotrigger.mjs R5,N2 cairn-fast-codex-0.136-default --jobs 2 --timeout-ms 120000
-node scripts/eval-autotrigger.mjs R5,N2 cairn-fast-claude-2.1.159-default --harness claude --jobs 2 --timeout-ms 120000
-node --check scripts/eval-autotrigger.mjs && node --check scripts/validate-cairn.mjs
-node scripts/validate-cairn.mjs
-node plugins/cairn/scripts/cairn-analyze.mjs .cairn/changes/<slug>   # if a change folder exists locally
-git diff --check
-```
-
-Expected proof:
-
-- Codex fast subset: 1/1 must-fire fired and routed, 0/1 must-not misfires.
-- Claude fast subset: 1/1 must-fire fired and routed, 0/1 must-not misfires.
-- `validate-cairn.mjs` passes and checks the JSONL summaries.
-
-### Close
-
-Keep the codebase map because it captures non-obvious ownership and proof boundaries. Keep
-the JSONL results as durable evidence. Do not keep raw Claude/Codex transcript logs unless a
-failure needs investigation.
+`node scripts/validate-cairn.mjs` checks package shape, manifest parity, hook registration, and the
+minimal scaffold/close/anchor workflow. Harness status still needs direct CLI proof:
+`codex plugin list -m cairn`, `claude plugin list`, and focused hook/plugin smokes when changing
+runtime behavior.

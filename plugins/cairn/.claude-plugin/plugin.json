@@ -1,6 +1,6 @@
 {
   "name": "cairn",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "description": "Brownfield-first, autonomous workflow router for AI coding agents (Codex + Claude Code).",
   "author": {
     "name": "Guilherme Tavares"

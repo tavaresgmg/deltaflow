@@ -4,9 +4,9 @@ Route: mode/owner/evidence/artifact/proof/residue. Shared checklist: `workflow.m
 
 ## Context readiness
 
-`context.readiness` (boundary detector: `thin|partial|strong`) grades repo docs (`AGENTS.md`,
-tests, `.cairn` maps/specs). Calibrate autonomy — thin context + full autonomy ships subtle
-bugs (METR 2025):
+`context.readiness` (`thin|partial|strong`) grades owner clarity, repo docs (`AGENTS.md`),
+tests, and `.cairn` maps/specs. Calibrate autonomy — thin context + full autonomy ships subtle
+bugs:
 
 - **thin** — no `direct` for non-trivial work; inspect first, declare the gap before mutating,
   write the missing map at close (Principle 9).

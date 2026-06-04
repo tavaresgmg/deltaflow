@@ -11,7 +11,7 @@
 ## Design Rules
 
 Canonical principles are repo-only (`PRINCIPLES.md`). Reuse the existing owner before creating one.
-Improve judgment through dogfood before eval spend.
+Improve judgment through dogfood before new automation.
 
 ## Failure Controls
 
@@ -22,7 +22,7 @@ Improve judgment through dogfood before eval spend.
 | Hallucinated certainty | Grade confirmed/deduced/hypothesized. |
 | Spec theater | Smallest sufficient mode; no PRD for small work. |
 | Context rot | Fix stale maps/specs/instructions. |
-| Boundary damage | Boundary detector/guard before mutation. |
+| Boundary damage | Owner-boundary preflight/guard before mutation. |
 
 ## Anti-Rationalization Red Flags
 

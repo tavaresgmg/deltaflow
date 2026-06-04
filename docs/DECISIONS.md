@@ -15,6 +15,7 @@ Evidence base: `docs/RESEARCH.md`.
 | 4 | Layered file-based memory, versioned in the repo (hybrid commit) | Accepted |
 | 5 | Umbrella workspace model (folder → N repos) | Accepted |
 | 6 | Brainstorm / web research / official docs as first-class stages | Accepted |
+| 7 | Cairn Proofflow as the named methodology | Accepted |
 
 Format per decision: **Contexto** (problem + evidence) → **Opções** (alternatives) →
 **Decisão** (what we chose) → **Tradeoff** (what we accept losing) → **Fontes** (primary evidence).
@@ -138,6 +139,24 @@ explícita, `/comando` como fallback, e UserPromptSubmit orientado por estado/ha
 prompt text. **Validar empiricamente no Codex antes de travar.**
 Bug #22345: `disable-model-invocation` é ignorado para skills via plugin no Claude — não
 confiar nesse campo para gate de side-effect.
+
+### Addendum 2026-06-04 — cadência do `UserPromptSubmit`
+
+`UserPromptSubmit` dispara a cada prompt do usuário nos harnesses, mas isso não significa
+que o Cairn deve reinjetar contexto em todo turno. A política correta é: emitir a âncora
+quando um active change aparece ou troca de slug; em seguida, se a âncora mudou, esperar um
+gap curto de prompts antes de reemitir. O default local é 3 prompts (`CAIRN_ANCHOR_MIN_PROMPT_GAP`
+pode ajustar). Prompt text continua fora da política: estado estrutural e hash vencem
+palavra-chave. Tradeoff: uma mudança de estado pequena pode chegar um prompt depois; em troca,
+evitamos duplicar contexto mutável a cada interação normal. `SessionStart` em `compact|resume`
+continua sendo a via imediata para sobrevivência pós-compaction.
+
+O que entra no contexto quando emite: somente o texto de `cairn-anchor.mjs`, com título
+`## Cairn resume anchor`, slug ativo, contador de tarefas, até 5 tarefas abertas truncadas
+a 140 caracteres, contador de tarefas omitidas quando houver, até 3 decisões recentes truncadas
+e a instrução para reler `tasks.md`/`decision-log.md`. No estado local desta decisão, esse
+payload mede 588 bytes / 80 palavras. Em rodadas sem active change, âncora igual, ou mudança
+ainda dentro do gap, o hook injeta 0 bytes.
 
 ### Fontes
 
@@ -289,9 +308,58 @@ Delegar à skill de domínio (`analyze` modo research) quando existir. Owner ope
 Empilhar brainstorm-gate + Phase 0 research + doc-grounding pode recriar a cerimônia que
 queremos evitar em card pequeno. **O gate de "quando um card merece isso" precisa ser
 default-leve, por intent** (estilo quick-dev do BMAD) — nenhum framework decide isso
-automaticamente; é o ponto a afiar e validar nos evals.
+automaticamente; é o ponto a afiar com dogfood e prova de harness.
 
 ### Fontes
 
 Superpowers `skills/brainstorming`; BMAD discovery + Phase 0 research; práticas brownfield
 (`docs/RESEARCH.md`, seção "3 etapas de primeira classe").
+
+---
+
+## Decision 7 — Cairn Proofflow as the named methodology
+
+Status: Aceito (2026-06-04)
+
+### Contexto
+
+O Cairn já tinha metodologia real, mas espalhada: princípios em `docs/PRINCIPLES.md`,
+arquitetura em `docs/ARCHITECTURE.md`, evolução em `docs/DEVELOPMENT.md`, runtime nas
+referências da skill e enforcement nos scripts/hooks. Isso protegia a implementação, mas
+não explicava bem a tese: qual dor resolve, como cria método, onde OpenSpec/BMAD/Spec Kit
+entram, quando planeja, quando prova, e quais mecanismos realmente forçam comportamento.
+
+### Opções
+
+- Não nomear nada e manter só docs espalhados. Menos arquivo, mas método implícito.
+- Criar uma pasta grande de metodologia. Mais completo, mas risco alto de drift e dono duplicado.
+- **Criar um documento canônico de síntese, mantendo runtime e evidência nos donos existentes.**
+
+### Decisão
+
+Nome público: **Cairn Proofflow**.
+
+Categoria de trabalho: **Evidence-Routed Development**.
+
+Definição curta: rotear cada tarefa para o workflow mais leve que ainda protege correção,
+fechar com prova fresca e reconciliar contexto antes de seguir.
+
+`docs/METHODOLOGY.md` passa a ser o dono da narrativa: nome, tese, dores, ciclo
+`orient -> route -> shape -> build -> prove -> reconcile -> learn`, tradução de fontes,
+princípios como forças, artefatos por intenção, mecanismos force/check/guide, cenários,
+failure tests e anti-padrões. Ele não vira dono de runtime nem do processo operacional de
+evolução: referências da skill, `docs/DEVELOPMENT.md`, princípios, arquitetura, pesquisa e
+scripts continuam donos do comportamento detalhado.
+
+### Tradeoff
+
+Uma metodologia nomeada pode virar branding theater. A mitigação é operacional: nenhuma regra
+entra só porque soa elegante; precisa explicar falha real, melhorar workflow real, ou prevenir
+classe repetível de dano com menos cerimônia que a alternativa. Novos hooks/scripts ficam
+fora até existir sinal estrutural estável e falha estreita que prose/proof não protegem.
+
+### Fontes
+
+OpenSpec/OPSX workflows; Spec Kit; BMAD; Superpowers/GSD; DORA 2026 Gen AI report; METR 2026
+uplift update e survey; SPACE/DevEx; Agile principles; Kanban Guide; XP/YAGNI; Toyota
+Production System. Ver `docs/RESEARCH.md` e `docs/METHODOLOGY.md`.

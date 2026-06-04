@@ -24,7 +24,7 @@ that still protects correctness wins.
 Inspect the current system before proposing architecture. Reuse patterns, fit the owner
 boundary. Existing-system evidence beats abstract planning.
 *Enforced by:* PreToolUse guard (`cairn-guard.mjs`, Claude — harness parity in `gates.md`);
-*informed by* boundary detector (`cairn-boundary.mjs`, read-only).
+*informed by* workspace resolver (`cairn-workspace.mjs`, used by hooks/scripts).
 
 ## 3. Evidence first
 
@@ -32,7 +32,7 @@ Material facts need a source. No invented IDs, dates, owners, card facts, API be
 runtime status. Evidence ladder: live system > repo/code > official docs > primary web >
 secondary web > memory > inference. "Done"/"fixed"/"passes" require fresh proof named with
 command + result.
-*Checked by:* `cairn-analyze.mjs` (claim structure + refs exist, **not** proof execution);
+*Checked by:* `cairn-close.mjs` (claim structure + refs exist, **not** proof execution);
 proof artifacts near the work.
 
 ## 4. Reuse before invent
@@ -59,7 +59,7 @@ claim a gate Cairn cannot keep.
 
 Artifacts are deleted, archived, or synced — never left as clutter. Living specs sync;
 transient planning is archived or deleted at close.
-*Checked by:* retention helper (`cairn-retention.mjs`, read-only reporter); archive lifecycle.
+*Checked by:* `cairn-close.mjs` plus archive/delete lifecycle.
 
 ## 8. Token economy / concise comms
 
@@ -75,7 +75,7 @@ Two surfaces:
 Never compress: security warnings, irreversible-action confirmations, public artifacts
 (PRs/changelogs), and any number/ID/date/path. Concise is not ambiguous — every inference
 step stays explicit.
-*Enforced by:* `cairn-budget.mjs` + `validate-cairn.mjs` (tool-surface char caps). This principle
+*Enforced by:* `validate-cairn.mjs` (tool-surface and package checks). This principle
 owns the agent-output style; `SKILL.md` Output Style points here.
 
 ## 9. Compounding context
@@ -92,10 +92,10 @@ this records *what the system now knows*.
 Prompt text is weak evidence. Do not treat regexes, keywords, or phrasing as deterministic
 truth, a gate, or "smart" runtime policy. Prefer structural signals first: hook event source,
 active change state, artifact hash, owner boundary, executable status, and recorded proof.
-Text can help skill discovery and eval fixtures, but any text-derived route remains advisory
+Text can help skill discovery and focused smoke prompts, but any text-derived route remains advisory
 and must stay cheap, explicit, and near-miss tested.
-*Enforced by:* `user-prompt-submit.sh` + `cairn-anchor-policy.mjs` ignoring prompt text for
-anchor injection; *reinforced by:* auto-trigger eval near-misses.
+*Enforced by:* `user-prompt-submit.sh` + `cairn-anchor.mjs` ignoring prompt text for
+anchor injection.
 
 ## 11. Adversarial by default
 
@@ -125,6 +125,7 @@ jidoka/poka-yoke; smallest change ≈ XP YAGNI; decision-log ≈ ADRs (Nygard); 
 context budget ≈ cognitive-load theory (Sweller); compounding context ≈ kaizen + blameless
 postmortems; structured signals before text matching ≈ typed boundaries and observability over
 stringly heuristics; single-threaded coding + adversarial review ≈ Theory of Constraints
-(human review, not code generation, is the real bottleneck — METR 2025, DORA 2025);
+(human review, not code generation, remains a load-bearing bottleneck in current AI delivery
+evidence; see the refreshed DORA/METR ledger in `docs/RESEARCH.md`);
 adversarial by default ≈ Popperian falsification + red-team review (a claim is only as strong
 as the contrary case it survives, and the contrary case must itself be evidence-checked).
