@@ -44,7 +44,7 @@ be invoked by name. Manual override: invoke the `cairn` skill / `/cairn`.
 | `direct` | small clear reversible change with obvious target; not broad greenfield/scaffold | none unless useful |
 | `diagnose` | concrete failure, bug, flake, slowness | repro notes and proof |
 | `discovery` | ambiguous idea, research, greenfield/scaffold, product/domain/architecture uncertainty | brief or decision note |
-| `delta-spec` | medium brownfield behavior change | brief, delta, plan, proof |
+| `delta-spec` | medium brownfield behavior change | delta, plan, tasks, proof |
 | `tracked-change` | multi-phase, high-risk, cross-boundary, customer-visible | durable change folder |
 
 If unsure between two modes, choose the lower ceremony mode unless auth, data,

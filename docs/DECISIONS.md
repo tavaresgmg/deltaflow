@@ -213,6 +213,12 @@ verdade canônica fica em código/specs versionados; a memória só APONTA. Com 
 cross-máquina/time de trabalho em progresso é perdido — aceitável, pois resume local via anchor +
 `tasks.md` é preservado e o conhecimento durável ainda viaja.
 
+### Addendum 2026-06-04 — OpenSpec `/opsx:sync`
+
+OpenSpec `/opsx:sync` (default desde v1.4.0, 2026-06-01) reconcilia delta→spec no nível de
+markdown, mas não verifica a implementação; o passo de reconciliação spec↔código continua a ser
+construído por nós. Corrige o parêntese do Tradeoff acima ("sem comando nativo de reconciliação").
+
 ### Fontes
 
 BMAD `.decision-log.md`; OpenSpec delta/archive; developers.openai.com/codex/memories;

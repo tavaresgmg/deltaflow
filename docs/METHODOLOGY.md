@@ -215,8 +215,9 @@ Question: "What context was missing, misleading, or too expensive to rediscover?
 
 ## Mechanisms: Force, Check, Guide
 
-Not every useful mechanism can force behavior. Cairn only calls something deterministic when the
-harness or script can observe and enforce it.
+Cairn only calls something deterministic when a script or harness can observe and enforce it
+(Principle 6). The bar for promoting advisory behavior to a deterministic gate is the Mechanism
+Promotion Ladder in `docs/METHODOLOGY_DEEP_DIVE.md`.
 
 | Mechanism | Effect | Level |
 | --- | --- | --- |
@@ -231,15 +232,12 @@ harness or script can observe and enforce it.
 | `validate-cairn.mjs` | manifests, hooks, skill surfaces, and minimal workflow smoke stay coherent | check: CI/dev validation |
 | closeout discipline | surprises update the correct context owner | check: proof `Context learned` plus `cairn-close` finding; stronger mechanism deferred |
 
-Rule: promote a behavior from advisory to deterministic only when there is a stable structural signal
-and a narrow failure it can prevent. Otherwise keep it as method guidance plus proof.
-
 ## Claims And Evidence Bar
 
 | Claim | Evidence required | Status |
 | --- | --- | --- |
 | Cairn has a distinct methodology | named thesis, lifecycle, source translation, adversarial review | documented and adversarially reviewed; still needs more public dogfood cases |
-| Proportional routing reduces ceremony | real cases where `direct` stayed small and risky work escalated | partially proved by dogfood; public evidence pending |
+| Proportional routing reduces ceremony | real cases where `direct` stayed small and risky work escalated | partially proved — `.cairn/changes/archive` shows risky work escalating to delta-spec/tracked-change; the `direct`-stayed-small half is structurally uncaptured (direct leaves no artifact) |
 | Brownfield ownership improves safety | examples where owner/boundary checks prevented wrong-surface changes | partially proved in workspace and hook dogfood |
 | Force/check/guide split prevents overclaim | mechanism map plus validator/close proof | documented and structurally checked; harness parity remains per architecture ledger |
 | `Learn` declares a context owner | closeout records context owner plus learned fact, or explicit `none`/`deferred` | now checked by proof template and `cairn-close`; compounding impact unmeasured |
@@ -355,14 +353,8 @@ This is the Popper test for Cairn doctrine: every rule must be allowed to lose.
 Cairn is not a spec framework and not an agent swarm. It is a **method router with an honesty
 boundary**.
 
-Its differentiator is the combination:
-
-- proportional modes instead of one workflow;
-- brownfield-first ownership before design;
-- file-backed state without making every task a ceremony;
-- explicit split between advisory method and deterministic gates;
-- token economy as a first-class design constraint;
-- closeout that reconciles code, specs, proof, and context.
+The combination that makes this distinct, and where alternatives are stronger, lives in
+`docs/METHODOLOGY_DEEP_DIVE.md` (What Makes Cairn Different / Where Others Are Better).
 
 The method succeeds when a user can predict why Cairn chose a path, a reviewer can see what evidence
 closed the risk, and the next session inherits less confusion than the previous one.

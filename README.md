@@ -36,7 +36,7 @@ from a single source**.
 | `direct` | small, clear, reversible change | none |
 | `diagnose` | a concrete bug, flake, or slowness | repro notes + proof |
 | `discovery` | an ambiguous idea, research, greenfield, or scaffold | brief or decision note |
-| `delta-spec` | a medium brownfield behavior change | brief, delta, plan, proof |
+| `delta-spec` | a medium brownfield behavior change | delta, plan, tasks, proof |
 | `tracked-change` | multi-phase, high-risk, cross-boundary, customer-visible | durable change folder |
 
 The loop is the same every time: **Observe → Classify → Act → Verify → Close**.

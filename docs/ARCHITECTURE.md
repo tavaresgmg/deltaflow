@@ -2,8 +2,7 @@
 
 Cairn implements **Cairn Proofflow**: Evidence-Routed Development for AI-assisted software work.
 It routes by evidence, risk, and owner boundaries; then proves and reconciles before close. The
-product is a development workflow **router** — autonomous, memory- and workspace-aware — that picks
-the lightest workflow that still protects correctness. It is brownfield-first when a repo exists,
+product is a development workflow **router** — autonomous, memory- and workspace-aware. It is brownfield-first when a repo exists,
 not card-only (routing lives in `SKILL.md` + `references/modes.md`). It targets OpenAI Codex and
 Claude Code from one portable source.
 
@@ -36,9 +35,10 @@ layers — **dispatch** (SessionStart bootstrap detects harness + injects routin
 + coherence Stop hook). Rationale in Decision 3; per-surface enforcement status (Claude vs Codex,
 strong/proven/advisory/pending) is owned by the Harness status section below.
 
-Context budget is checked by `node scripts/validate-cairn.mjs`: the always-on bootstrap and
-selected skill surfaces stay intentionally small. This keeps the router cheap while still using
-progressive disclosure for deeper guidance.
+`node scripts/validate-cairn.mjs` caps the always-on bootstrap (`hooks/bootstrap.md`, ≤1400 bytes)
+and checks package/manifest/hook shape. The deeper skill surfaces (`SKILL.md`, `references/`) are
+kept small by progressive disclosure — lazy-loaded by mode/risk, a design discipline rather than a
+validator byte cap. This keeps the router cheap while loading depth only when useful.
 
 ## Core flow
 

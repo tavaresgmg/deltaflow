@@ -1,7 +1,7 @@
 # Review
 
 Code generation is cheap; a wrong change that passes tests is expensive. Current AI delivery
-evidence lives in `docs/RESEARCH.md`; review, proof, and context are treated as load-bearing
+evidence lives in `docs/RESEARCH.md` (repo-only); review, proof, and context are treated as load-bearing
 bottlenecks. Review is proportional like everything in Cairn: scales with risk, never skipped, and
 asks "what is wrong here?" not "does it look fine?".
 

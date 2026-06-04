@@ -119,8 +119,9 @@ specs, archive lifecycle), Spec Kit (phase separation, consistency analysis), Su
 technique (JuliusBrussee/caveman, wilpel/caveman-compression). See `framework-lessons.md` (runtime
 shorthand) and `docs/RESEARCH.md` (full borrow/avoid evidence).
 
-Theoretical lineage (why the shapes hold): proportional depth ≈ Cynefin domains (Snowden);
-observe→classify→act→verify→close ≈ OODA (Boyd); hard gates + boundary guard ≈ Lean
+Theoretical lineage (why the shapes hold): proportional depth ≈ Cynefin's match-the-response-to-the-domain
+(Snowden), not ceremony-scaling — diagnose analyzes a known cause, discovery probes ambiguity;
+observe→classify→act→verify→close adapts OODA's orient-before-act and fast feedback (Boyd); hard gates + boundary guard ≈ Lean
 jidoka/poka-yoke; smallest change ≈ XP YAGNI; decision-log ≈ ADRs (Nygard); concise comms +
 context budget ≈ cognitive-load theory (Sweller); compounding context ≈ kaizen + blameless
 postmortems; structured signals before text matching ≈ typed boundaries and observability over
